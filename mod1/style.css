@@ -1,0 +1,51 @@
+ul li a {
+	display: block;
+	float: left;
+	padding: 3px 10px;
+	background-color: Gray;
+	color: White;
+	font-weight: bold;
+	font-size: 1.4em;
+}
+ul li a.act {
+	text-decoration: underline;
+}
+ul li {
+	float: left;
+	padding: 0 2px;
+	list-style-type: none;
+}
+ul {
+	height: 30px;
+	margin: 0;
+	padding: 0;
+}
+div.typo3-noDoc table#list th {
+	font-size: 0.7em;
+}
+div.typo3-noDoc table#list {
+	border-collapse: collapse;
+}
+div.typo3-noDoc table#list td {
+	padding: 3px 5px;
+}
+div.typo3-noDoc table#list .left {
+	text-align: left;
+}
+div.typo3-noDoc div.error p {
+	color: red;
+	font-weight: bold;
+}
+div.typo3-noDoc div.succes p {
+	color: Green;
+	font-weight: bold;
+}
+fieldset input {
+	width: 400px;
+}
+fieldset input.check {
+	width: auto;
+}
+.nowrap {
+	white-space: nowrap;
+}

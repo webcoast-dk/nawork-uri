@@ -1,0 +1,8 @@
+# cat=basic//01; type=string; label=Language var: URL parameter which identifies the selected language (config.linkVars)
+LANGID = L
+
+# cat=basic//01; type=string; label=XML path: Path to the CoolUriConf.xml file
+XMLPATH = typo3conf/
+
+# cat=basic//01; type=boolean; label=Multi domain site: Check if your site has multidomains
+MULTIDOMAIN = 0

@@ -90,6 +90,7 @@ class Link_Func {
     $sql = str_replace('$1',$param,(string)$sql);
   	$db = Link_DB::getInstance();
   	$res = $db->query($sql);
+  	
   	if (mysql_error() || !$res) return $param;
   	$row = $db->fetch_row($res);
   	if (!$row) return $param;

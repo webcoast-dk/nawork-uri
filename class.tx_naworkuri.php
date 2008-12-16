@@ -15,18 +15,21 @@ function extractArraysFromParams($params) {
 }
 
 function getTranslateInstance() {
-  $this->confArray = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['cooluri']);
-  if (file_exists($this->confArray['XMLPATH'].'CoolUriConf.xml'))
-    $lt = Link_Translate::getInstance($this->confArray['XMLPATH'].'CoolUriConf.xml');
-  elseif (file_exists(PATH_typo3conf.'CoolUriConf.xml'))
-    $lt = Link_Translate::getInstance(PATH_typo3conf.'CoolUriConf.xml');
-  elseif (file_exists(dirname(__FILE__).'/cooluri/CoolUriConf.xml'))
-    $lt = Link_Translate::getInstance(dirname(__FILE__).'/cooluri/CoolUriConf.xml');
-  else return false;
-  return $lt;
+		// read ExtConf
+	$this->confArray = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
+		// read config file
+	if (file_exists($this->confArray['XMLPATH'].'CoolUriConf.xml'))
+		$lt = Link_Translate::getInstance($this->confArray['XMLPATH'].'CoolUriConf.xml');
+	elseif (file_exists(PATH_typo3conf.'CoolUriConf.xml'))
+		$lt = Link_Translate::getInstance(PATH_typo3conf.'CoolUriConf.xml');
+	elseif (file_exists(dirname(__FILE__).'/cooluri/CoolUriConf.xml'))
+		$lt = Link_Translate::getInstance(dirname(__FILE__).'/cooluri/CoolUriConf.xml');
+	else return false;
+	return $lt;
 }
 
 function cool2params($params, $ref) {
+	// debug(array("cool2params", $params, $ref));
 	
   if ($params['pObj']->siteScript && substr($params['pObj']->siteScript,0,9)!='index.php' && substr($params['pObj']->siteScript,0,1)!='?')	{
      
@@ -34,7 +37,7 @@ function cool2params($params, $ref) {
     $lt = $this->getTranslateInstance();
     if (!$lt) return;
     
-    
+	// prefix the URIs with SERVER_NAME@ on multidomain Sites    
     if ($this->confArray['MULTIDOMAIN']) {
       if (empty(Link_Translate::$conf->cache->prefix)) {
         $this->simplexml_addChild(Link_Translate::$conf->cache,'prefix',$_SERVER['SERVER_NAME'].'@');
@@ -82,37 +85,41 @@ function simplexml_addChild($parent, $name, $value=''){
 }
 
 function params2cool(&$params, $ref) {
-  if (!$GLOBALS['TSFE']->config['config']['tx_cooluri_enable']) {
+
+		// is cooluri enabled
+	if (!$GLOBALS['TSFE']->config['config']['tx_cooluri_enable']) {
 		return;
 	}
 
-  if (!empty($params['args']['page']['shortcut']) && $params['args']['page']['doktype']==4) {
-    $shortcut = $params['args']['page']['shortcut'];
-    $limit = 5;
-    while (!empty($shortcut) && $limit>0) {
-      $page = $GLOBALS['TSFE']->sys_page->getPage($shortcut);
-      if (!$page) break;
-      $shortcut = $page['shortcut'];
-      $params['args']['page'] = $page;
-      --$limit;
-    }
-  } elseif (!empty($params['args']['page']['shortcut_mode']) && $params['args']['page']['shortcut_mode']==1 && $params['args']['page']['doktype']==4) {
-      $page = $this->getShorucutpage($params['args']['page']);
-      $params['args']['page'] = $page;
-  }
+		// handle shortcut pages
+	if (!empty($params['args']['page']['shortcut']) && $params['args']['page']['doktype']==4) {
+		$shortcut = $params['args']['page']['shortcut'];
+		$limit = 5;
+		while (!empty($shortcut) && $limit>0) {
+			$page = $GLOBALS['TSFE']->sys_page->getPage($shortcut);
+			if (!$page) break;
+			$shortcut = $page['shortcut'];
+			$params['args']['page'] = $page;
+			--$limit;
+		}
+	} elseif (!empty($params['args']['page']['shortcut_mode']) && $params['args']['page']['shortcut_mode']==1 && $params['args']['page']['doktype']==4) {
+		$page = $this->getShorucutpage($params['args']['page']);
+		$params['args']['page'] = $page;
+	}
   
-  if ($params['args']['page']['doktype']==3) {
-    switch ($params['args']['page']['urltype']) {
-      case 1: $url = 'http://'; break;
-      case 4: $url = 'https://'; break;
-      case 2: $url = 'ftp://'; break;
-      case 3: $url = 'mailto:'; break;
-    }
-    $params['LD']['totalURL'] = $url.$params['args']['page']['url'];
-    return;
-  }
-  
-  $tu = explode('?',$params['LD']['totalURL']);
+		// handle external url pages
+	if ($params['args']['page']['doktype']==3) {
+		switch ($params['args']['page']['urltype']) {
+			case 1: $url = 'http://'; break;
+			case 4: $url = 'https://'; break;
+			case 2: $url = 'ftp://'; break;
+			case 3: $url = 'mailto:'; break;
+		}
+		$params['LD']['totalURL'] = $url.$params['args']['page']['url'];
+		return;
+	}
+  		
+	$tu = explode('?',$params['LD']['totalURL']);
   if (isset($tu[1])) {
     $anch = explode('#',$tu[1]);
     $pars = Link_Func::convertQuerystringToArray($tu[1]);
@@ -120,7 +127,10 @@ function params2cool(&$params, $ref) {
     $pars['id'] = $params['args']['page']['uid'];
     
     $lt = $this->getTranslateInstance();
-    if (!$lt) return;
+    if (!$lt) {
+    	debug("nolt");
+    	return;
+    }
     
     if ($this->confArray['MULTIDOMAIN']) {
       if (empty(Link_Translate::$conf->cache->prefix)) {
@@ -305,7 +315,7 @@ function getPageTitle($conf,$value) {
     if ($value['L'] > 0) {
     	$page = $GLOBALS['TSFE']->sys_page->getPage($id);    	
     } else {
-    	$page = tx_cooluri::getPage($id);
+    	$page = tx_naworkuri::getPage($id);
     }
     
     $temp = $db->exec_SELECTquery('COUNT(*) as num','sys_template','pid='.$id.' AND root=1'.$GLOBALS['TSFE']->cObj->enableFields('sys_template'));

@@ -71,6 +71,34 @@ class Link_Translate {
       
       // first let's look into the caches
       if (!empty($lConf->cache) && !empty($lConf->cache->usecache) && (string)$lConf->cache->usecache==1) {
+      			// let's have a look into the cache, we'll look for all possibiltes (meaning trainling slash)
+  			$tempuri = explode('?',$uri);
+ 			$tempuri[0] = Link_Func::prepareLinkForCache($tempuri[0],$lConf);
+ 			$xuri = $tempuri[0];
+ 			/*
+  			$tempuri[0] = preg_match('~/$~',$tempuri[0])?substr($tempuri[0],0,strlen($tempuri[0])-1):$tempuri[0].'/'; // add or remove trailing slash
+  			//$xuri = $uri;
+  			$temp = '';
+  			
+  			if (!empty($lConf->cache->cacheparams) && $lConf->cache->cacheparams==1) {
+  				$tempurix = implode('?',$tempuri);
+  				$xuri = $uri;
+  			} else {
+  				$tempurix = $tempuri[0];
+  			}
+  			
+        	$q = $db->query('SELECT * FROM '.$tp.'cache WHERE url=\''.$xuri.'\' OR url=\''.$tempurix.'\'');
+			*/
+ 			
+        	$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('pid, sys_language_uid, params','tx_naworkuri_uri', 'deleted=0 AND path="'.$xuri.'"' );
+        	if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
+        		$cachedparams = Array('id'=>$row['pid'],'L'=>$row['sys_language_uid']);
+        		$cachedparams = array_merge($cachedparams,unserialize($row['params']));
+        	} else {
+        		Link_Func::pageNotFound($lConf);
+        	}
+        	
+      		/*
   			$tp = Link_Func::getTablesPrefix($lConf);
   			$db = Link_DB::getInstance();
   			
@@ -115,6 +143,7 @@ class Link_Translate {
   					Link_Func::pageNotFound($lConf);
   				}
   			}
+			*/
   	  } // end cache
       
       //now we have a uri which will be parsed (without unwanted stuff)
@@ -350,7 +379,6 @@ class Link_Translate {
             }
           }
         }
-        
       } // end !empty($uri) && empty($cachedparams)
 	    
       $temp =  empty($cachedparams)?$finaluriparts:$cachedparams;
@@ -381,15 +409,15 @@ class Link_Translate {
     return $this->params2cool($params,'',false);
   }
   
-  public function params2cool(array $params, $file = '', $entityampersand = true, $dontconvert = false, $forceUpdate = false) {
-  	$lConf = &self::$conf;
-  	if (!empty($lConf->cooluris) && $lConf->cooluris==1 && !$dontconvert) {
-  		
+	public function params2cool(array $params, $file = '', $entityampersand = true, $dontconvert = false, $forceUpdate = false) {
+		$lConf = &self::$conf;
+	  	if (!empty($lConf->cooluris) && $lConf->cooluris==1 && !$dontconvert) {
+
   		// if cache is allowed, we'll look for an uri
 
   		if (!empty($lConf->cache) && !empty($lConf->cache->usecache) && $lConf->cache->usecache==1) {
-  			$tp = Link_Func::getTablesPrefix($lConf);
-  			$db = Link_DB::getInstance();
+  			// $tp = Link_Func::getTablesPrefix($lConf);
+  			// $db = Link_DB::getInstance();
   			// cache is valid for only a sort period of time, after that time we need to do a recheck
   			$checkfornew = !empty($lConf->cache->params2cool)&&!empty($lConf->cache->params2cool->checkforchangeevery)?(string)$lConf->cache->params2cool->checkforchangeevery:0;
   			$originalparams = $params;
@@ -400,8 +428,23 @@ class Link_Translate {
   				$originalparams = Link_Func::array_intersect_key($originalparams,self::$coolParamsKeys);
   			}
   			
-  			$q = $db->query('SELECT *, DATEDIFF(NOW(),tstamp) AS daydiff FROM '.$tp.'cache WHERE params=\''.Link_Func::prepareParamsForCache($originalparams,$tp).'\'');
-        $row = $db->fetch($q);
+  			$parameters = $originalparams;
+  			$save_uid  = $parameters['id'];
+  			$save_lang = ($parameters['L'])?$parameters['L']:0;
+  			unset($parameters['id']);
+  			unset($parameters['L']);
+  			
+  			$save_params = serialize($parameters);
+  			$save_hash_params = md5($save_params);
+  			
+  			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid, path', 'tx_naworkuri_uri', 'deleted=0 AND pid='.$save_uid.' AND sys_language_uid='.$save_lang.' AND hash_params LIKE "'.$save_hash_params.'"' );
+  			if ( $row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
+				return Link_Func::prepareforOutput($row['path'],$lConf);
+			}
+			
+			/*
+			$q = $db->query('SELECT *, DATEDIFF(NOW(),tstamp) AS daydiff FROM '.$tp.'cache WHERE params=\''.Link_Func::prepareParamsForCache($originalparams,$tp).'\'');
+			$row = $db->fetch($q);
   			if ($row) {
 
     			if ($row['daydiff']==NULL) $row['daydiff'] = 2147483647; // daydiff isn't set, we force new check
@@ -419,7 +462,7 @@ class Link_Translate {
   					}
   					return Link_Func::prepareforOutput($row['url'],$lConf).$qs; // uri found in cache
   				}
-  			}
+  			} */
   		}  // end cache
 		
  		
@@ -468,7 +511,9 @@ class Link_Translate {
   				}
   			}
   		}
-  		// now the pagepath
+  		
+  			// now the pagepath
+  			// @TODO rewrite to TYPO3_DB
   		$translatedpagepath = Array();
   		$pagepath = Array();
   		
@@ -520,6 +565,7 @@ class Link_Translate {
   				} else {
   					$pagepath = $uf;
   				}
+
   				unset($params[(string)$lConf->pagepath->saveto]);
   				$pagepath = array_reverse($pagepath);
   			} // end pagepath
@@ -675,10 +721,43 @@ class Link_Translate {
 	  				$p = $params;
 	  			}
   			
-  			
+  					// save uri to cache
+  					// @TODO the path must be unique here 
 	  			$path = Link_Func::prepareLinkForCache($path,$lConf);
 	  			if (!empty($originalParams)) {
+	  					
+	  					// create params
+	  				$params = $originalParams;
+	  				
+	  				$save_uid = $params['id'];
+	  				$save_lang = ($params['L'])?$params['L']:0;
+	  				unset($params['id']);
+	  				unset($params['L']);
+	  				
+	  				$save_path   = $path;
+	  				$save_params = serialize($params);
+	  				$save_hash_path   = md5($path);
+	  				$save_hash_params = md5($save_params);
+		  				
+	  					// save if record is not already present
+					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND hash_path LIKE "'.$save_hash_path.'" AND  hash_params LIKE "'.$save_hash_params.'"' );
+					if ( $GLOBALS['TYPO3_DB']->sql_num_rows($dbres) == 0){
+						$GLOBALS['TYPO3_DB']->exec_INSERTquery(
+		  					'tx_naworkuri_uri',
+		  					array(
+		  						'pid' => $save_uid,
+		  						'sys_language_uid' => $save_lang,
+		  						'crdate' => mktime(),
+		  						'path'   => $save_path,
+		  						'params' => $save_params,
+		  						'hash_path'    => $save_hash_path,
+		  						'hash_params'  => $save_hash_params,
+		  					)
+		  				);
+					}	
+	  			
 	  				if (!empty($updatecacheid)) {
+	  					
 	  					// first we will update the timestamp (so we will now, when the last uri check was)
 	    				$db->query('UPDATE '.$tp.'cache SET tstamp=NOW() WHERE id='.$updatecacheid);
 	           			if ($cacheduri!=$path.$p) {
@@ -698,21 +777,24 @@ class Link_Translate {
 	    					$db->query('INSERT INTO '.$tp.'cache(url,params,crdatetime) VALUES(\''.$path.$p.'\',\''.Link_Func::prepareParamsForCache($originalParams).'\',NOW())');
 	    				} elseif ( $res && $path != '' && $originalParams['id'] != 0 && $row = $db->fetch($res) ) {
 							$tmpParams = unserialize($row['params']);
-
-							$createAlternativePath = false;
-							$arrParam = (array)$lConf->appendixcomparison;
-							foreach ($arrParam['param'] as $param) {
-								if ($tmpParams[$param] != $originalParams[$param]) {
-									$createAlternativePath = true;
-								}		
-							}
-												
+							
+							// @TODO what is this?
+							//$createAlternativePath = false;
+							//$arrParam = (array)$lConf->appendixcomparison;
+							//foreach ($arrParam['param'] as $param) {
+							//	if ($tmpParams[$param] != $originalParams[$param]) {
+							//		$createAlternativePath = true;
+							//	}		
+							//}
+							
+							
 							if ($createAlternativePath) {
 								$path = $this->createAlternativePath($path, $originalParams, $tp, $p);
 							}
 	    				}
-					}
-	  			}
+					} 
+	  			} 
+	  			
 	  		} 
   		
 	  		//if (!empty($params)) $path .= $params;

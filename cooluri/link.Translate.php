@@ -648,11 +648,11 @@ class Link_Translate {
 	  	  	}
     	
   				//valuemaps
-	  	  	$valuemaps = '';
+	  	  	$value_maps = '';
 	  	  	if (!empty($lConf->valuemaps) && !empty($lConf->valuemaps->valuemap)) {
 	  	  		foreach ($lConf->valuemaps->valuemap as $part) {
 	  	  			if (!empty($predefparts[(string)$part->parameter]) && empty($paramsinorder[(string)$part->parameter])) {
-	  	  				$valuemaps .= $predefparts[(string)$part->parameter].Link_Func::getSeparator($part);
+	  	  				$value_maps .= $predefparts[(string)$part->parameter].Link_Func::getSeparator($part);
 	  					unset($predefparts[(string)$part->parameter]);
 	  					unset($params[(string)$part->parameter]);
 	  				}
@@ -660,11 +660,11 @@ class Link_Translate {
 	  		}
 	  		
 				// predefinedparts
-	  		$predefinedparts = '';
+	  		$predefined_parts = '';
 	  		if (!empty($lConf->predefinedparts) && !empty($lConf->predefinedparts->part)) {
 	  			foreach ($lConf->predefinedparts->part as $part) {
 	  				if (!empty($predefparts[(string)$part->parameter]) && empty($paramsinorder[(string)$part->parameter])) {
-	  					$predefinedparts .= $predefparts[(string)$part->parameter].Link_Func::getSeparator($part);
+	  					$predefined_parts .= $predefparts[(string)$part->parameter].Link_Func::getSeparator($part);
 	  					unset($predefparts[(string)$part->parameter]);
 	  					unset($params[(string)$part->parameter]);
 	  				}
@@ -672,23 +672,23 @@ class Link_Translate {
 	  		}
 	  		
 	  			// uriparts
-	  		$uriparts = '';
+	  		$uri_parts = '';
 	  		if (!empty($lConf->uriparts) && !empty($lConf->uriparts->part)) {
 	  			foreach ($lConf->uriparts->part as $part) {
 	  				if (!empty($part['static']) && $part['static']==1 && empty($paramsinorder[(string)$part->value])) {
-	  					$uriparts .= (string)$part->value.Link_Func::getSeparator($part);
+	  					$uri_parts .= (string)$part->value.Link_Func::getSeparator($part);
 	  				}
 	  				elseif (!empty($translatedpagepath[(string)$part->parameter]) && empty($paramsinorder[(string)$part->parameter])) {
-	  					$uriparts .= $translatedpagepath[(string)$part->parameter].Link_Func::getSeparator($part);
+	  					$uri_parts .= $translatedpagepath[(string)$part->parameter].Link_Func::getSeparator($part);
 	  					unset($params[(string)$part->parameter]);
 	  				}
 	  			}
 	  		}
   		
 	  		// if pagepath is not empty, that means not all pagepaths were added to $translatepagepath. We'll just add it
-	  		$pagepath = '';
+	  		$page_path = '';
 	  		if (!empty($lConf->pagepath) && !empty($lConf->pagepath->saveto) && !empty($pagepath)) {
-	  			$pagepath = implode(Link_Func::getSeparator(),$pagepath).Link_Func::getSeparator();
+	  			$page_path = implode(Link_Func::getSeparator(),$pagepath).Link_Func::getSeparator();
 	  		}
   		
 	  		if (!empty($lConf->partorder) && !empty($lConf->partorder->part)) {
@@ -700,13 +700,12 @@ class Link_Translate {
 	  			$partorder = Array('pagepath','uriparts','valuemaps','predefinedparts');
 	  		}
 
-		
 	  		foreach ($partorder as $part_key) {
 	  			switch ($part_key) {
-	  				case 'uriparts':   	    $path .= $uriparts;        break;
-	  				case 'valuemaps':       $path .= $valuemaps;       break;
-	  				case 'predefinedparts': $path .= $predefinedparts; break;
-	  				case 'pagepath':        $path .= $pagepath;        break;
+	  				case 'uriparts':   	    $path .= $uri_parts;        break;
+	  				case 'valuemaps':       $path .= $value_maps;       break;
+	  				case 'predefinedparts': $path .= $predefined_parts; break;
+	  				case 'pagepath':        $path .= $page_path;        break;
 	  			}
 	  		}
 

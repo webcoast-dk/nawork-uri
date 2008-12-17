@@ -93,7 +93,7 @@ class Link_Translate {
         	$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('pid, sys_language_uid, params','tx_naworkuri_uri', 'deleted=0 AND path="'.$xuri.'"' );
         	if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
         		$cachedparams = Array('id'=>$row['pid'],'L'=>$row['sys_language_uid']);
-        		$cachedparams = array_merge($cachedparams,unserialize($row['params']));
+        		$cachedparams = array_merge($cachedparams, $this->explode_params($row['params']));
         	} else {
         		Link_Func::pageNotFound($lConf);
         	}
@@ -435,7 +435,7 @@ class Link_Translate {
   			unset($parameters['L']);
   				
   			// @TODO serialize params in a readable way
-  			$save_params = serialize($parameters);
+  			$save_params = $this->implode_params($parameters);
   			$save_hash_params = md5($save_params);
   			
   			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid, path', 'tx_naworkuri_uri', 'deleted=0 AND pid='.$save_uid.' AND sys_language_uid='.$save_lang.' AND hash_params LIKE "'.$save_hash_params.'"' );
@@ -743,7 +743,10 @@ class Link_Translate {
 	  				unset($params['L']);
 	  				
 	  				$save_path   = $path;
-	  				$save_params = serialize($params);
+	  				$save_params = $this->implode_params($params);
+	  				
+	  				debug(array($params,$save_params));
+	  				
 	  				$save_hash_path   = md5($path);
 	  				$save_hash_params = md5($save_params);
 		  				
@@ -881,6 +884,30 @@ class Link_Translate {
     
     return $string;
   }
+  
+  
+  private function explode_params($param_string){
+  		$result = array();
+  		$tmp = explode('&',$param_string);
+  		foreach ($tmp as $part){
+  			list($key,$value) = explode('=',$part);
+  			$result[$key] = $value;
+  		}
+  		return $result;
+  }
+  
+  private function implode_params($params_array){
+  		$result = '';
+  		$i = 0;
+  		foreach ($params_array as $key => $value){
+  			if ($i>0)  $result .= '&';
+  			$result .= $key.'='.$value;
+  			$i++;
+  		}
+  		return $result;
+  }
+  
+  
   
 }
 

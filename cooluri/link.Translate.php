@@ -415,7 +415,7 @@ class Link_Translate {
 
   		// if cache is allowed, we'll look for an uri
 
-  		if (!empty($lConf->cache) && !empty($lConf->cache->usecache) && $lConf->cache->usecache==1) {
+  		if ( !empty($lConf->cache) && !empty($lConf->cache->usecache) && $lConf->cache->usecache==1) {
   			// $tp = Link_Func::getTablesPrefix($lConf);
   			// $db = Link_DB::getInstance();
   			// cache is valid for only a sort period of time, after that time we need to do a recheck
@@ -433,7 +433,8 @@ class Link_Translate {
   			$save_lang = ($parameters['L'])?$parameters['L']:0;
   			unset($parameters['id']);
   			unset($parameters['L']);
-  			
+  				
+  			// @TODO serialize params in a readable way
   			$save_params = serialize($parameters);
   			$save_hash_params = md5($save_params);
   			
@@ -513,7 +514,8 @@ class Link_Translate {
   		}
   		
   			// now the pagepath
-  			// @TODO rewrite to TYPO3_DB
+  			// @TODO rewrite to TYPO3_DB and use the already loaded rootline
+  			
   		$translatedpagepath = Array();
   		$pagepath = Array();
   		
@@ -527,6 +529,7 @@ class Link_Translate {
   				$limit = 10;
   				while ($limit>0 && (empty($lConf->pagepath->idconstraint)?$result:($result && Link_Func::constraint($curid,$lConf->pagepath->idconstraint)))) {
   					--$limit;
+  					
   					if (empty($lConf->pagepath->alias)) $sel = (string)$lConf->pagepath->title;
   					else $sel = (string)$lConf->pagepath->alias;
             
@@ -562,6 +565,7 @@ class Link_Translate {
   						$pagepath[] = $row[1];
   						$lastpid = $row[0];
   					}
+  					
   				} else {
   					$pagepath = $uf;
   				}
@@ -606,9 +610,10 @@ class Link_Translate {
 	  				}
 	  			}
 	  		} // end paramorder
-    		
-    		// we need list of separators
-	  		$seps = Array();
+
+	  		
+    			// we need list of separators
+    		$seps = Array();
 	  		if (!empty($lConf->predefinedparts) && !empty($lConf->predefinedparts->part)) {
 	  			foreach ($lConf->predefinedparts->part as $part) {
 	  				$seps[(string)$part->parameter] = Link_Func::getSeparator($part);
@@ -628,6 +633,7 @@ class Link_Translate {
     				}
     			}
     		}
+    			
     		if (!empty($lConf->paramorder) && !empty($lConf->paramorder->param)) {
     			foreach ($lConf->paramorder->param as $par) {
     				$paramsinorder[(string)$par] = true;
@@ -641,45 +647,48 @@ class Link_Translate {
 				}
 	  	  	}
     	
-  		
-	  	  	$vm = '';
+  				//valuemaps
+	  	  	$valuemaps = '';
 	  	  	if (!empty($lConf->valuemaps) && !empty($lConf->valuemaps->valuemap)) {
 	  	  		foreach ($lConf->valuemaps->valuemap as $part) {
 	  	  			if (!empty($predefparts[(string)$part->parameter]) && empty($paramsinorder[(string)$part->parameter])) {
-	  					$vm .= $predefparts[(string)$part->parameter].Link_Func::getSeparator($part);
+	  	  				$valuemaps .= $predefparts[(string)$part->parameter].Link_Func::getSeparator($part);
 	  					unset($predefparts[(string)$part->parameter]);
 	  					unset($params[(string)$part->parameter]);
 	  				}
 	  			}
 	  		}
-
-	  		$pp = '';
+	  		
+				// predefinedparts
+	  		$predefinedparts = '';
 	  		if (!empty($lConf->predefinedparts) && !empty($lConf->predefinedparts->part)) {
 	  			foreach ($lConf->predefinedparts->part as $part) {
 	  				if (!empty($predefparts[(string)$part->parameter]) && empty($paramsinorder[(string)$part->parameter])) {
-	  					$pp .= $predefparts[(string)$part->parameter].Link_Func::getSeparator($part);
+	  					$predefinedparts .= $predefparts[(string)$part->parameter].Link_Func::getSeparator($part);
 	  					unset($predefparts[(string)$part->parameter]);
 	  					unset($params[(string)$part->parameter]);
 	  				}
 	  			}
 	  		}
-	  		$tp = '';
+	  		
+	  			// uriparts
+	  		$uriparts = '';
 	  		if (!empty($lConf->uriparts) && !empty($lConf->uriparts->part)) {
 	  			foreach ($lConf->uriparts->part as $part) {
 	  				if (!empty($part['static']) && $part['static']==1 && empty($paramsinorder[(string)$part->value])) {
-	  					$tp .= (string)$part->value.Link_Func::getSeparator($part);
+	  					$uriparts .= (string)$part->value.Link_Func::getSeparator($part);
 	  				}
 	  				elseif (!empty($translatedpagepath[(string)$part->parameter]) && empty($paramsinorder[(string)$part->parameter])) {
-	  					$tp .= $translatedpagepath[(string)$part->parameter].Link_Func::getSeparator($part);
+	  					$uriparts .= $translatedpagepath[(string)$part->parameter].Link_Func::getSeparator($part);
 	  					unset($params[(string)$part->parameter]);
 	  				}
 	  			}
 	  		}
   		
 	  		// if pagepath is not empty, that means not all pagepaths were added to $translatepagepath. We'll just add it
-	  		$pagep = '';
+	  		$pagepath = '';
 	  		if (!empty($lConf->pagepath) && !empty($lConf->pagepath->saveto) && !empty($pagepath)) {
-	  			$pagep = implode(Link_Func::getSeparator(),$pagepath).Link_Func::getSeparator();
+	  			$pagepath = implode(Link_Func::getSeparator(),$pagepath).Link_Func::getSeparator();
 	  		}
   		
 	  		if (!empty($lConf->partorder) && !empty($lConf->partorder->part)) {
@@ -692,12 +701,12 @@ class Link_Translate {
 	  		}
 
 		
-	  		foreach ($partorder as $p) {
-	  			switch ($p) {
-	  				case 'uriparts': $path .= $tp; break;
-	  				case 'valuemaps': $path .= $vm; break;
-	  				case 'predefinedparts': $path .= $pp; break;
-	  				case 'pagepath': $path .= $pagep; break;
+	  		foreach ($partorder as $part_key) {
+	  			switch ($part_key) {
+	  				case 'uriparts':   	    $path .= $uriparts;        break;
+	  				case 'valuemaps':       $path .= $valuemaps;       break;
+	  				case 'predefinedparts': $path .= $predefinedparts; break;
+	  				case 'pagepath':        $path .= $pagepath;        break;
 	  			}
 	  		}
 
@@ -722,7 +731,7 @@ class Link_Translate {
 	  			}
   			
   					// save uri to cache
-  					// @TODO the path must be unique here 
+  					// @TODO make the path unique here
 	  			$path = Link_Func::prepareLinkForCache($path,$lConf);
 	  			if (!empty($originalParams)) {
 	  					

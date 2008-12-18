@@ -1,83 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cooluri>
-  <cooluris>1</cooluris>
+	
+		
+	<multidomain>1</multidomain>
   
-  <cache>
-    <usecache>1</usecache>
-    <params2cool>
-      <checkforchangeevery>1</checkforchangeevery>
-    </params2cool>
-    <cool2params>
-      <translateifnotfound>0</translateifnotfound>
-      <oldlinksvalidfor>365</oldlinksvalidfor>
-    </cool2params>
-    <cacheparams>0</cacheparams>
-    
-    <pagenotfound>
-      <status>HTTP/1.0 404 Not Found</status>
-      <behavior type="message"><![CDATA[ <h1>Page not found!</h1> ]]></behavior>
-    </pagenotfound>
-  </cache>
+	<pagenotfound>
+		<status>HTTP/1.0 404 Not Found</status>
+		<behavior type="message"><![CDATA[ <h1>Page not found!</h1> ]]></behavior>
+	</pagenotfound>
 
-  <pagepath>
-    <title>tx_realurl_pathsegment,alias,subtitle,title</title>
-    <saveto>id</saveto>
-    <default>0</default>    
-    <userfunc>tx_cooluri->getPageTitle</userfunc>
-    <t3conv>1</t3conv>
-  </pagepath>
+	
+	<!-- define fixed uri segments -->
+	<predefinedparts>
+		<!-- ignore these parameters in uri -->  
+		<part>
+			<parameter>tx_ttnews[backPid]</parameter>
+		</part>
+		<part>
+			<parameter>cHash</parameter>
+		</part>
+		<part>
+			<parameter>no_cache</parameter>
+		</part>
+		<!-- parameter type=0 is ignored at all and not stored in db -->
+		<part>
+			<parameter>type</parameter>
+			<value>0</value>
+		</part>
+		<part>
+			<parameter>L</parameter>
+			<value>0</value>
+		</part>		
+		<part key="predef_uri_part"> 
+			<parameter>predef_uri_value</parameter> 
+			<value>1</value> 
+		</part>
+		<!-- /number-123/.. >> &number=123 -->  
+		<part key="number-###">
+			<parameter>number</parameter>
+		</part>
+	</predefinedparts>
+
+	<!-- pagetree >> path -->
+	<pagepath>
+		<field>alias,subtitle,title</field>
+		<limit>10</limit>
+	</pagepath>
+
+	<!-- remap parameters to db values -->  
+	<uriparts>
+		<part>
+			<parameter>tx_ttnews[tt_news]</parameter>
+			<field>title</field>
+			<table>tt_news</table>
+			<where>uid=###</where>
+		</part>
+		<part>
+			<parameter>pages[uid]</parameter>
+			<field>subtitle,title</field>
+			<table>pages</table>
+			<where>uid=###</where>
+		</part>
+	</uriparts>
  
-  <uriparts>
-    <part>
-      <parameter>tx_ttnews[tt_news]</parameter>
-      <lookindb>
-        <to>SELECT title FROM tt_news WHERE uid=$1</to>
-        <translatetoif>
-          <match>^[0-9]+$</match>
-        </translatetoif>
-        <t3conv>1</t3conv>
-      </lookindb>
-    </part>
-    <part>
-      <parameter>tx_eeblog[showUid]</parameter>
-      <lookindb>
-        <to>SELECT subject FROM tx_eeblog_maintable WHERE uid=$1</to>
-        <translatetoif>
-          <match>^[0-9]+$</match>
-        </translatetoif>
-        <t3conv>1</t3conv>
-      </lookindb>
-    </part>
-  </uriparts>
-    
-  <predefinedparts>
-    <part>
-      <parameter>tx_ttnews[backPid]</parameter>
-    </part>
-    <part>
-      <parameter>cHash</parameter>
-    </part>
-    <part>
-      <parameter>tx_eeblog[pointer]</parameter>
-    </part>
-    <part>
-      <parameter>tx_eeblog[backPID]</parameter>
-    </part>
-    <part>
-      <parameter>no_cache</parameter>
-    </part>
-  </predefinedparts>
-  
-  <valuemaps>
-    <valuemap>
-      <parameter>L</parameter>
-      <value key="">0</value>
-      <value key="en">1</value>
-    </valuemap>
-  </valuemaps>
+	<!-- remap parameters to constant values -->  
+	<valuemaps>
+		<valuemap>
+			<parameter>L</parameter>
+			<value key="">0</value>
+			<value key="en">1</value>
+		</valuemap>
+		<valuemap>
+			<parameter>type</parameter>
+			<value key="text">99</value>
+		</valuemap>
+	</valuemaps>
   
   <paramorder>
     <param>L</param>
+	<param>path</param>
+	<param>path</param>
   </paramorder>
+  
+  <!-- the order of the different parts -->
+  <partorder>
+    <part>pagepath</part>
+	<part>uriparts</part>
+	<part>valuemaps</part>
+	<part>predefinedparts</part>
+  </partorder>
   
 </cooluri>

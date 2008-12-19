@@ -7,27 +7,41 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 	protected function setUp() {
 		$this->test_subject = new tx_naworkuri_transformer();
 	}
-		
+	
+	/**
+	 * Enter description here...
+	 *
+	 */	
 	public function tearDown(){
 		unset($this->test_subject);
 	}
 	
+	public function test_empty_cache_db() {
+		$dbres = $GLOBALS['TYPO3_DB']->sql_query('TRUNCATE TABLE `tx_naworkuri_uri`' );
+	 	$this->assertEquals( 1,1);
+	} 
+		
+	/**
+	 * Enter description here...
+	 *
+	 */
 	public function test_param_implode_works_basically() {
 		$this->assertEquals( 'id=2&L=1&foo[bar]=123', $this->test_subject->implode_parameters(array('id'=>2,'L'=>1,'foo[bar]'=>123 ) ) );
 	}
 	
+	/**
+	 * Enter description here...
+	 *
+	 */
 	public function test_param_explode_works_basically() {
 		$this->assertEquals( array('id'=>2,'L'=>1,'foo[bar]'=>123) , $this->test_subject->explode_parameters('id=2&L=1&foo[bar]=123') );
 	}
 	
-	public function test_uri2params_works_basically() {
-		$this->assertEquals( array('id'=>20, 'type'=>50, "L"=>0 ), $this->test_subject->uri2params('kontaktlinsen/bam/text/') );
-	}
-	
-	public function test_uri2params_works_ignores_extra_params() {
-		$this->assertEquals( array('id'=>20, 'type'=>50, "L"=>0 ), $this->test_subject->uri2params('kontaktlinsen/bam/text/?unknown_param=unknown_value') );
-	}
-		
+
+	/**
+	 * Enter description here...
+	 *
+	 */
 	public function test_params2uri_predefinedparts_works(){
 		$params = array(
 			'number'=>123,
@@ -64,10 +78,14 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 		
 	}
 	
+	/**
+	 * Enter description here...
+	 *
+	 */
 	public function test_params2uri_valuemaps_works(){
 		$params = array( 
 			'L'=>1,
-			'type'=>99,
+			'type'=>50,
 			'not_encoded_params' => 'not_encoded_value'
 		);
 		
@@ -80,7 +98,7 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 		);
 		
 		$this->assertEquals(
-			array('L'=>1, 'type'=>99),
+			array('L'=>1, 'type'=>50),
 			$encoded_params 
 		);
 		
@@ -147,13 +165,19 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 	}
 	
 	public function test_params2uri_works_basically() {
-		$this->assertEquals( 'Kontaktlinsen/bam/text/', $this->test_subject->params2uri( array('id'=>20, 'type'=>99, "L"=>0 ) ) );
+		$this->assertEquals( 'kontaktlinsen/bam/text/', $this->test_subject->params2uri( array('id'=>20, 'type'=>50, "L"=>0 ) ) );
 	}
 	
 	public function test_params2uri_works_with_unknown_parameters() {
-		$this->assertEquals( 'Kontaktlinsen/bam/text/?unknown_param=unknown_value', $this->test_subject->params2uri( array('id'=>20, 'type'=>99, "L"=>0 , 'unknown_param'=>'unknown_value') ) );
+		$this->assertEquals( 'kontaktlinsen/bam/text/?unknown_param=unknown_value', $this->test_subject->params2uri( array('id'=>20, 'type'=>50, "L"=>0 , 'unknown_param'=>'unknown_value') ) );
 	}
 
+	public function test_uri2params_works_basically() {
+		$this->assertEquals( array('id'=>20, 'type'=>50, "L"=>0 ), $this->test_subject->uri2params('kontaktlinsen/bam/text/') );
+	}
 	
+	public function test_uri2params_works_ignores_extra_params() {
+		$this->assertEquals( array('id'=>20, 'type'=>50, "L"=>0 ), $this->test_subject->uri2params('kontaktlinsen/bam/text/?unknown_param=unknown_value') );
+	}
 }
 ?>

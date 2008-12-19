@@ -63,12 +63,15 @@ class tx_naworkuri_transformer {
 			// @TODO check the path for possible sql injections or use only the md5 value
 			
 		list($path,$params) = explode('?',$uri);
-  		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('pid, sys_language_uid, params','tx_naworkuri_uri', 'deleted=0 AND path="'.$path.'"' );
+  		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('pid, sys_language_uid, params','tx_naworkuri_uri', 'deleted=0 AND path="'.$path.'" AND domain="'.$this->domain.'"' );
         if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
         	$cachedparams = Array('id'=>$row['pid'],'L'=>$row['sys_language_uid']);
         	$cachedparams = array_merge($cachedparams, $this->explode_parameters($row['params']));
         	return $cachedparams;
         }
+        
+        	// @TODO handle 404 here
+        	
 		return;
 	}
 		
@@ -120,7 +123,11 @@ class tx_naworkuri_transformer {
   			$uri = $tmp_uri;
   		} else {
   				// save new uri
-  			$uri = $this->params2uri_write_cache($encoded_params, implode('/',$path).'/' ); 
+	  			// @TODO transliterate and prepare url 
+	  		$uri = implode('/',$path).'/' ;
+	  		$uri = strtolower($uri); // lowercase
+	  		$uri = str_replace(' ','_',$uri);  // nospace
+  			$uri = $this->params2uri_write_cache($encoded_params, $uri); 
   		}
   		
   			// add not encoded parameters
@@ -166,7 +173,7 @@ class tx_naworkuri_transformer {
 	 * @param unknown_type $uri
 	 */
 	public function params2uri_write_cache($params, $uri){
-		debug(array('write',$params, $uri));
+
 			// check if the path is unique
 		$tmp_uri    = $uri;
 		$search_hash   = md5($tmp_uri);
@@ -208,8 +215,10 @@ class tx_naworkuri_transformer {
 			'hash_params' => md5($save_params)
 		);
 		
-		$GLOBALS['TYPO3_DB']->exec_INSERTquery('tx_naworkuri_uri', $save_record );
+		$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
+		$GLOBALS['TYPO3_DB']->debugOutput = 1;
 		
+		$dbres = $GLOBALS['TYPO3_DB']->exec_INSERTquery('tx_naworkuri_uri', $save_record );
 		return ($uri);
 	}
 

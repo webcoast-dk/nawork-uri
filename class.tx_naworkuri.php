@@ -1,5 +1,6 @@
 <?php
 require_once 'cooluri/link.Main.php';
+require_once 'lib/class.tx_naworkuri_transformer.php';
 
 class tx_naworkuri {
 
@@ -29,39 +30,17 @@ function getTranslateInstance() {
 }
 
 function cool2params($params, $ref) {
-	// debug(array("cool2params", $params, $ref));
-	
-  if ($params['pObj']->siteScript && substr($params['pObj']->siteScript,0,9)!='index.php' && substr($params['pObj']->siteScript,0,1)!='?')	{
-     
-    /*  create link translator singleton */
-    $lt = $this->getTranslateInstance();
-    if (!$lt) return;
-    
-	// prefix the URIs with SERVER_NAME@ on multidomain Sites    
-    if ($this->confArray['MULTIDOMAIN']) {
-      if (empty(Link_Translate::$conf->cache->prefix)) {
-        $this->simplexml_addChild(Link_Translate::$conf->cache,'prefix',$_SERVER['SERVER_NAME'].'@');
-      } else {
-        Link_Translate::$conf->cache->prefix = $_SERVER['SERVER_NAME'].'@';
-      }
-    }
-    
-    $pars = $lt->cool2params($params['pObj']->siteScript);
-    
-    	/* make shure the lang parameter is an int */
-    $extconf =  unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['cooluri']);
-    if ($extconf['LANGID'] && $pars[$extconf['LANGID']] ){
-    	 $pars[$extconf['LANGID']] = (int) $pars[$extconf['LANGID']];
-    }
 
-    $params['pObj']->id = $pars['id'];
-    unset($pars['id']);
-    $pars = $this->extractArraysFromParams($pars);
-    $params['pObj']->mergingWithGetVars($pars);
-  } else {
-    //$link = $lt->params2cool($_GET);
-    //var_dump($GLOBALS['TSFE']->config['config']['tx_cooluri_enable']);
-  }
+	if ($params['pObj']->siteScript && substr($params['pObj']->siteScript,0,9)!='index.php' && substr($params['pObj']->siteScript,0,1)!='?')	{
+			// trabnslate uri
+		$translator = tx_naworkuri_transformer::getInstance($translator);
+		$uri_params = $translator->uri2params($params['pObj']->siteScript);
+			// set id
+		$params['pObj']->id = $uri_params['id'];
+	    unset($uri_params['id']);
+	    	// set other params
+	    $params['pObj']->mergingWithGetVars($uri_params);
+	} 
 }
 
 function getShorucutpage($page) {

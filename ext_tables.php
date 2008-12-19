@@ -9,26 +9,27 @@ if (TYPO3_MODE == 'BE')	{
 
 	// add new fields to page records
 $tempColumns = Array( 
-	'tx_realurl_pathsegment' => array(
-		'label' => 'LLL:EXT:cooluri/locallang_db.php:pages.tx_cooluri_pathsegment',
+	'tx_naworkuri_pathsegment' => array(
+		'label' => 'LLL:EXT:nawork_uri/locallang_db.php:pages.tx_naworkuri_pathsegment',
 		'config' => Array (
 			'type' => 'input',
 			'size' => '30',
 			'max' => '30',
 		),
 	),
-	'tx_cooluri_exclude' => array(
-		'label' => 'LLL:EXT:cooluri/locallang_db.php:pages.tx_cooluri_exclude',
+	'tx_naworkuri_exclude' => array(
+		'label' => 'LLL:EXT:nawork_uri/locallang_db.php:pages.tx_naworkuri_exclude',
 		'config' => Array (
 			'type' => 'check',
 			'default' => '0' 
 		)
 	)
 ); 
+
 t3lib_div::loadTCA('pages');
 t3lib_extMgm::addTCAcolumns('pages',$tempColumns,1);
-t3lib_extMgm::addToAllTCAtypes('pages','tx_realurl_pathsegment','2','after:nav_title');
-t3lib_extMgm::addToAllTCAtypes('pages','tx_cooluri_exclude');
+t3lib_extMgm::addToAllTCAtypes('pages','tx_naworkuri_pathsegment','2','after:nav_title');
+t3lib_extMgm::addToAllTCAtypes('pages','tx_naworkuri_exclude');
 
 	// add URI-Records
 t3lib_extMgm::allowTableOnStandardPages('tx_naworkuri_uri');
@@ -48,8 +49,7 @@ $TCA['tx_naworkuri_uri'] = Array (
 		'thumbnail' => 'image',
         'dynamicConfigFile' => t3lib_extMgm::extPath($_EXTKEY).'tca.php',
         'iconfile' => t3lib_extMgm::extRelPath($_EXTKEY).'icon_naworkuri_uri.gif',
-    ),
-    'feInterface' => Array ()
+    )
 );	
 
 

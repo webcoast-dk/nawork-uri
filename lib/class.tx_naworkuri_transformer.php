@@ -2,6 +2,7 @@
 class tx_naworkuri_transformer {
 	
 	private $conf;
+	private $domain;
 	private static $instance = null;
 
 	/**
@@ -10,10 +11,17 @@ class tx_naworkuri_transformer {
 	 * @param SimpleXMLElement $configXML
 	 */
 	public function __construct ($configXML=false){
+			// read configuration
 		if ($configXML) {
 			$this->conf = $configXML;
 		} else {
 			$this->conf = new SimpleXMLElement(file_get_contents( t3lib_extMgm::extPath('nawork_uri').'/lib/default_UriConf.xml'));
+		}
+			// check multidomain mode
+		if ( (string)$this->conf->multidomain == '1' ) {
+			$this->domain = t3lib_div::getIndpEnv('TYPO3_HOST_ONLY');
+		} else {
+			$this->domain = '';
 		}
 	}
 	
@@ -52,7 +60,8 @@ class tx_naworkuri_transformer {
 		if (empty($uri)) return;
       
 			// look into the db
-			// @TODO check the path for possible sql injections
+			// @TODO check the path for possible sql injections or use only the md5 value
+			
 		list($path,$params) = explode('?',$uri);
   		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('pid, sys_language_uid, params','tx_naworkuri_uri', 'deleted=0 AND path="'.$path.'"' );
         if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
@@ -70,24 +79,12 @@ class tx_naworkuri_transformer {
 	 * @return string $uri encoded uri
 	 */
 	public function params2uri ($params){
-		
 			// find already created uris
-		$parameters = $params;
-		$save_uid   = $parameters['id'];
-		$save_lang  = ($parameters['L'])?$parameters['L']:0;
-		unset($parameters['id']);
-		unset($parameters['L']);
-		  
-		$save_params = $this->implode_parameters($parameters);
-		  
-		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid, path', 'tx_naworkuri_uri', 'deleted=0 AND pid='.$save_uid.' AND sys_language_uid='.$save_lang.' AND params LIKE "'.$save_params.'"' );
-		if ( $row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
-				// an exact match was found return the url directly
-			return $row['path'];
+		if ( $tmp_uri = $this->params2uri_read_cache($params) ) {
+			return $tmp_uri;
 		}
-			
+		
 			// create new uri because no exact match was found on cache
-
 		$original_params = $params;
 		$encoded_params = array();
 
@@ -117,13 +114,14 @@ class tx_naworkuri_transformer {
   			}
   		}
   		
-  			// implode the uri
-  		$uri = implode('/',$path).'/';
-  		
-  			// make the uri unique
-  			
-  			// save uri to db
-  			
+  			// find a already cached uri with these params 
+  		if ( $tmp_uri = $this->params2uri_read_cache($encoded_params) ) {
+  				// use cache uri
+  			$uri = $tmp_uri;
+  		} else {
+  				// save new uri
+  			$uri = $this->params2uri_write_cache($encoded_params, implode('/',$path).'/' ); 
+  		}
   		
   			// add not encoded parameters
   		$i =0; 
@@ -135,6 +133,85 @@ class tx_naworkuri_transformer {
   		return($uri);
   				
 	}	
+	
+	/**
+	 * find the cached entry for the given parameters if any 
+	 * 
+	 * @param array $params
+	 * @return string : uri wich matches to these params otherwise false 
+	 */
+	public function params2uri_read_cache($params){
+		
+		$search_uid   = $params['id'];
+		$search_lang  = ($params['L'])?$params['L']:0;
+		
+		unset($params['id']);
+		unset($params['L']);
+		  
+		$search_params = $this->implode_parameters($params);
+		$search_hash   = md5($search_params);
+		$search_domain = $this->domain;
+				  
+		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('path', 'tx_naworkuri_uri', 'deleted=0 AND pid='.$search_uid.' AND sys_language_uid='.$search_lang.' AND domain="'.$search_domain.'" AND params LIKE "'.$search_params.'"' );
+		if ( $row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
+			return $row['path'];
+		}
+		return false; 
+	}
+	
+	/**
+	 * write a new uri param combination to the cache
+	 *
+	 * @param unknown_type $params
+	 * @param unknown_type $uri
+	 */
+	public function params2uri_write_cache($params, $uri){
+		debug(array('write',$params, $uri));
+			// check if the path is unique
+		$tmp_uri    = $uri;
+		$search_hash   = md5($tmp_uri);
+		$search_domain = $this->domain;
+
+		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND domain="'.$search_domain.'" AND hash_path LIKE "'.$search_hash.'"' );
+		
+		if ( $GLOBALS['TYPO3_DB']->sql_num_rows($dbres) > 0 ){
+				// make the uri unique
+			$append = 1;
+			$tmp_uri    = $uri.$append.'/' ;
+			$search_hash   = md5($tmp_uri);	
+			do {
+				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND domain="'.$search_domain.'" AND hash_path LIKE "'.$search_hash.'"' );
+				$append ++;
+				if ($append>10 ) return; 
+			} while ( $GLOBALS['TYPO3_DB']->sql_num_rows($dbres) > 0 );
+		}
+		
+		$uri = $tmp_uri;
+			
+			// save uri to db cache
+		$save_uid    = $params['id'];
+		$save_lang   = $params['L'];
+		$save_domain = $this->domain;
+		
+		unset($params['id']);
+		unset($params['L']);
+		
+		$save_params = $this->implode_parameters($params);
+		
+		$save_record = array(
+			'pid' => $save_uid,
+			'sys_language_uid' =>  $save_lang,
+			'domain' => $this->domain,
+			'path'   => $uri,
+			'params' => $save_params,
+			'hash_path' => md5($uri),
+			'hash_params' => md5($save_params)
+		);
+		
+		$GLOBALS['TYPO3_DB']->exec_INSERTquery('tx_naworkuri_uri', $save_record );
+		
+		return ($uri);
+	}
 
 	/**
 	 * encode the predifined parts
@@ -263,6 +340,7 @@ class tx_naworkuri_transformer {
 		}
 		return $parts;
 	}
+	
 	
 	/*
 	 * Helper functions

@@ -67,14 +67,18 @@ $TCA['tx_naworkuri_uri'] = Array (
             'exclude' => 1,        
             'label' => 'Hash Path',        
             'config' => Array (
-                'type' => 'none',
+                'type' => 'input',
+        		'readOnly' => 1,
+      			'size' => '30',
         	 )
         ),
         'hash_params' => Array (        
             'exclude' => 1,        
-            'label' => 'Hash Path',        
+            'label' => 'Hash Params',        
             'config' => Array (
-                'type' => 'none',    
+                'type' => 'input',    
+        		'readOnly' => 1,
+         		'size' => '30',
             )
         ),
     ),

@@ -5,7 +5,7 @@ require_once 'lib/class.tx_naworkuri_transformer.php';
 class tx_naworkuri {
 
 	/**
-	 * decode 
+	 * decode uri and extract parameters
 	 *
 	 * @param unknown_type $params
 	 * @param unknown_type $ref
@@ -26,16 +26,16 @@ class tx_naworkuri {
 		    	// set other params
 		    $params['pObj']->mergingWithGetVars($uri_params);
 		} 
+		
 	}
 	
 	/**
-	 * convert typolink parameteres 2 uri
+	 * convert typolink parameters 2 uri
 	 *
 	 * @param array $params
 	 * @param array $ref
 	 */
 	function params2uri(&$params, $ref) {
-	
 		if ( 
 			$GLOBALS['TSFE']->config['config']['tx_naworkuri_enable']==1 
 			&& $params['LD']['url']
@@ -51,7 +51,12 @@ class tx_naworkuri {
 		}
 	}
 
-
+	/**
+	 * Enter description here...
+	 *
+	 * @param unknown_type $params
+	 * @param unknown_type $ref
+	 */
 	function redirect2uri($params, $ref) {
 		if ( 
 			$GLOBALS['TSFE']->config['config']['tx_naworkuri_enable']==1 
@@ -61,7 +66,7 @@ class tx_naworkuri {
 			&& (substr($GLOBALS['TSFE']->siteScript,0,9)=='index.php' 
 			|| substr($GLOBALS['TSFE']->siteScript,0,1)=='?')
 		){
-			
+			// do something here
 		}
 		
 		/*
@@ -109,7 +114,21 @@ class tx_naworkuri {
 	 */
 	  
 	}
-	
+
+		/**
+		 * Update the md5 value automatically
+		 *
+		 * @param unknown_type $incomingFieldArray
+		 * @param unknown_type $table
+		 * @param unknown_type $id
+		 * @param unknown_type $res
+		 */
+	public function processDatamap_preProcessFieldArray(&$incomingFieldArray, &$table, &$id, &$res){
+		if ($table=="tx_naworkuri_uri"){
+			if ($incomingFieldArray['path'])   $incomingFieldArray['hash_path']   = md5($incomingFieldArray['path']);
+			if ($incomingFieldArray['params']) $incomingFieldArray['hash_params'] = md5($incomingFieldArray['params']);
+		}
+	}
 }
 
 

@@ -171,6 +171,11 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 	public function test_params2uri_works_with_unknown_parameters() {
 		$this->assertEquals( 'kontaktlinsen/bam/text/?unknown_param=unknown_value', $this->test_subject->params2uri( array('id'=>20, 'type'=>50, "L"=>0 , 'unknown_param'=>'unknown_value') ) );
 	}
+	
+	public function test_params2uri_works_with_translitartion() {
+		$this->assertEquals( 'ueber-fielmann/', $this->test_subject->params2uri( array('id'=>5) ) );
+		$this->assertEquals( 'ueber-fielmann/die-geschichte-der-brille/', $this->test_subject->params2uri( array('id'=>23) ) );
+	}
 
 	public function test_uri2params_works_basically() {
 		$this->assertEquals( array('id'=>20, 'type'=>50, "L"=>0 ), $this->test_subject->uri2params('kontaktlinsen/bam/text/') );
@@ -178,6 +183,10 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 	
 	public function test_uri2params_works_ignores_extra_params() {
 		$this->assertEquals( array('id'=>20, 'type'=>50, "L"=>0 ), $this->test_subject->uri2params('kontaktlinsen/bam/text/?unknown_param=unknown_value') );
+	}
+	
+	public function test_transliteration() {
+		$this->assertEquals( 'ueber/ss', $this->test_subject->transliterate('über/ß') );
 	}
 }
 ?>

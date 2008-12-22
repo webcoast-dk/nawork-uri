@@ -1,4 +1,6 @@
 <?php
+require_once (PATH_t3lib.'class.t3lib_page.php');
+
 class tx_naworkuri_transformer {
 	
 	private $conf;
@@ -368,8 +370,11 @@ class tx_naworkuri_transformer {
 			while ($limit && $id > 0){
   				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( implode(',',$fields).',uid,pid,hidden' , 'pages', 'uid='.$id.' AND deleted=0', '', '' ,1 );
 				$row   = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
-				//$row = $GLOBALS['TSFE']->sys_page->getPage($id);
 				if (!$row) break; // no page found
+					// translate
+				if (TYPO3_MODE=='FE'){
+					$row   = $GLOBALS['TSFE']->sys_page->getPageOverlay($row);
+				}
 				foreach ($fields as $field){
 					if ( $row['pid']==0 ) break;
 					if ( $row[$field] ) {
@@ -427,13 +432,24 @@ class tx_naworkuri_transformer {
 			// no punctuation and space
 		$uri = str_replace( '&', '-', $uri);
 			// no whitespace
-	  	$uri = preg_replace( '/[\s-]+/', '-', $uri);
- 			// lowercase
-		$uri = strtolower($uri);          
-			// remove tags
+	  	$uri = preg_replace( '/[\s-]+/u', '-', $uri);
+ 			// remove tags
 		$uri = strip_tags($uri);
-	  		 
-		$sonderzeichen = array( 
+
+/*
+	 if(@function_exists('iconv'))
+    {
+        return iconv($from, $to, $str);
+    }
+    else if(@function_exists('recode_string'))
+    {
+        return recode_string($from . '..'  . $to, $str);
+    }
+
+// recode 
+*/
+		
+	  	$sonderzeichen = array( 
 			'ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'ß' => 'ss',
 			'Ä' => 'ae', 'Ö' => 'oe', 'Ü' => 'ue',
 			'è' => 'e' , 'é' => 'e', 'ê' => 'e',
@@ -460,10 +476,9 @@ class tx_naworkuri_transformer {
 		 );
 	 
 		$uri = strtr($uri, $sonderzeichen);
-	      
-		if ( !preg_match('/[\x80-\xff]/', $uri) )
-	        return $uri;
-	
+	    
+	//	if ( !preg_match('/[\x80-\xff]/', $uri) )
+	//        return $uri;
 	  
         $chars = array(
 	        // Decompositions for Latin-1 Supplement
@@ -566,8 +581,9 @@ class tx_naworkuri_transformer {
 	        chr(194).chr(163) => ''
 	    );
 
+	    		// lowercase
+		$uri = strtolower($uri); 
         $uri = strtr($uri, $chars);
-	
 	    return $uri;
 	}  
 	

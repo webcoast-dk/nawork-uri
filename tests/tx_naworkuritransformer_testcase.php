@@ -216,7 +216,7 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 			
 			das/', 'foobar/das-das/'),
 			array('foo&bar/', 'foo-bar/'),
-			array('Über Fielmann', 'ueber-fielmann'),
+			array('Über Fielmann/', 'ueber-fielmann/'),
 		);
 	}
 	
@@ -239,8 +239,7 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 			array( array('id'=>20, 'type'=>50, "L"=>0 , 'unknown_param'=>'unknown_value') , 'kontaktlinsen/bam/text/?unknown_param=unknown_value'),
 			array( array('id'=>23, 'type'=>99 ), 'ueber-fielmann/die-geschichte-der-brille/?type=99' ),
 			array( array('id'=>23, 'type'=>50 ), 'ueber-fielmann/die-geschichte-der-brille/text/' ),
-			array( array('id'=>20,'L'=>1, 'type'=>50 ), 'en/kontaktlinsen/bam/text/' )
-			
+//			array( array('id'=>9, 'L'=>1, 'type'=>50 ), 'en/glasses/' ) // translating of pagepath cannot be testet in BE 
 		);	
 	}
 

@@ -16,10 +16,11 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 		unset($this->test_subject);
 	}
 	
+	
 	public function test_empty_cache_db() {
 		$dbres = $GLOBALS['TYPO3_DB']->sql_query('TRUNCATE TABLE `tx_naworkuri_uri`' );
 	 	$this->assertEquals( 1,1);
-	} 
+	}
 		
 	/**
 	 * Enter description here...
@@ -46,7 +47,6 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 		$params = array(
 			'number'=>123,
 			'predef_uri_value' => 1,
-			'type' => 0,
 			'no_cache' => 'no_cache',
 			'not_encoded_params' => 'not_encoded_value'
 		);
@@ -66,15 +66,14 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 			array(
 				'number'=>123,
 				'predef_uri_value' => 1,
-				'type' => 0,
 				'no_cache' => 'no_cache'
 			),
 			$encoded_params,
 			'enc'
 		);
-			
+
 			// check path
-		$this->assertEquals( array('predef_uri_part','number-123') ,$parts);
+		$this->assertEquals( array('predef_uri_value'=>'predef_uri_part','number'=>'number-123') ,$parts);
 		
 	}
 	
@@ -103,10 +102,42 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 		);
 		
 		$this->assertEquals(
-			array('en','text'),
+			array('L'=>'en','type'=>'text'),
 			$parts 
 		);
 	}
+	
+		/**
+	 * Enter description here...
+	 *
+	 */
+	public function test_params2uri_valuemaps_works_2(){
+		$params = array( 
+			'L'=>1,
+			'type'=>0,
+			'not_encoded_params' => 'not_encoded_value'
+		);
+		
+		$encoded_params = array();
+		$parts = $this->test_subject->params2uri_valuemaps(&$params, &$encoded_params);
+		
+		$this->assertEquals(
+			array('not_encoded_params' => 'not_encoded_value'),
+			$params 
+		);
+		
+		$this->assertEquals(
+			array('L'=>1),
+			$encoded_params 
+		);
+		
+		$this->assertEquals(
+			array('L'=>'en'),
+			$parts 
+		);
+	}
+	
+	
 	
 	public function test_params2uri_uriparts_works(){
 		$params = array( 
@@ -130,7 +161,7 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 		);
 		
 		$this->assertEquals(
-			array('bam'),
+			array('pages[uid]'=>'bam'),
 			$parts,
 			'created path is wrong'
 		);
@@ -158,35 +189,63 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 		);
 		
 		$this->assertEquals(
-			array('Kontaktlinsen','bam'),
+			array('id'=>'Kontaktlinsen/bam'),
 			$parts,
 			'created path is wrong'
 		);
 	}
+
 	
-	public function test_params2uri_works_basically() {
-		$this->assertEquals( 'kontaktlinsen/bam/text/', $this->test_subject->params2uri( array('id'=>20, 'type'=>50, "L"=>0 ) ) );
-	}
-	
-	public function test_params2uri_works_with_unknown_parameters() {
-		$this->assertEquals( 'kontaktlinsen/bam/text/?unknown_param=unknown_value', $this->test_subject->params2uri( array('id'=>20, 'type'=>50, "L"=>0 , 'unknown_param'=>'unknown_value') ) );
-	}
-	
-	public function test_params2uri_works_with_translitartion() {
-		$this->assertEquals( 'ueber-fielmann/', $this->test_subject->params2uri( array('id'=>5) ) );
-		$this->assertEquals( 'ueber-fielmann/die-geschichte-der-brille/', $this->test_subject->params2uri( array('id'=>23) ) );
+	/**
+	 * General transliteration Tests 
+	 * 
+	 * @dataProvider provider_test_sanitizing_of_uri
+	 * @param unknown_type $utf_8_string
+	 * @param unknown_type $transliterated_string
+	 */
+	public function test_sanitizing_of_uri($utf_8_string, $transliterated_string) {
+		$this->assertEquals( $this->test_subject->sanitize_uri($utf_8_string), $transliterated_string );
 	}
 
-	public function test_uri2params_works_basically() {
-		$this->assertEquals( array('id'=>20, 'type'=>50, "L"=>0 ), $this->test_subject->uri2params('kontaktlinsen/bam/text/') );
+	public function provider_test_sanitizing_of_uri(){
+		return array(
+			array('über/ß', 'ueber/ss'),
+			array('foo bar/das das/', 'foo-bar/das-das/'),
+			array('foo bar/das<br/>das/', 'foo-bar/dasdas/'),
+			array('foobar/das
+			
+			das/', 'foobar/das-das/'),
+			array('foo&bar/', 'foo-bar/'),
+			array('Über Fielmann', 'ueber-fielmann'),
+		);
 	}
 	
+	/**
+	 * General Path encoding tests
+	 * 
+	 * @dataProvider provider_test_path_encoding
+	 * @param array $params Parameters to encode
+	 * @param string $uri Expected URI
+	 */
+	public function test_path_encoding($params, $uri){
+		$this->assertEquals( $this->test_subject->params2uri($params), $uri );
+	}
+	
+	public function provider_test_path_encoding(){
+		return array(
+			array( array('id'=>5),  'ueber-fielmann/'),
+			array( array('id'=>23), 'ueber-fielmann/die-geschichte-der-brille/' ),
+			array( array('id'=>20, 'type'=>50, "L"=>0 ), 'kontaktlinsen/bam/text/'),
+			array( array('id'=>20, 'type'=>50, "L"=>0 , 'unknown_param'=>'unknown_value') , 'kontaktlinsen/bam/text/?unknown_param=unknown_value'),
+			array( array('id'=>23, 'type'=>99 ), 'ueber-fielmann/die-geschichte-der-brille/?type=99' ),
+			array( array('id'=>23, 'type'=>50 ), 'ueber-fielmann/die-geschichte-der-brille/text/' ),
+			array( array('id'=>20,'L'=>1, 'type'=>50 ), 'en/kontaktlinsen/bam/text/' )
+			
+		);	
+	}
+
 	public function test_uri2params_works_ignores_extra_params() {
 		$this->assertEquals( array('id'=>20, 'type'=>50, "L"=>0 ), $this->test_subject->uri2params('kontaktlinsen/bam/text/?unknown_param=unknown_value') );
-	}
-	
-	public function test_transliteration() {
-		$this->assertEquals( 'ueber/ss', $this->test_subject->transliterate('über/ß') );
 	}
 }
 ?>

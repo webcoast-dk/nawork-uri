@@ -60,8 +60,6 @@ class tx_naworkuri_transformer {
 		if (empty($uri)) return;
       
 			// look into the db
-			// @TODO check the path for possible sql injections or use only the md5 value
-			
 		list($path,$params) = explode('?',$uri);
 		$hash_path = md5($path);
   		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('pid, sys_language_uid, params','tx_naworkuri_uri', 'deleted=0 AND hash_path="'.$hash_path.'" AND domain="'.$this->domain.'"' );
@@ -84,13 +82,34 @@ class tx_naworkuri_transformer {
 	 */
 	public function params2uri ($params){
 			// find already created uris
-		if ( $tmp_uri = $this->params2uri_read_cache($params) ) {
-			return $tmp_uri;
+		if ( $cache_uri = $this->params2uri_read_cache($params) ) {
+			return $cache_uri;
 		}
 		
 			// create new uri because no exact match was found on cache
 		$original_params = $params;
-		$encoded_params = array();
+		$encoded_params  = array();
+		$encoded_uri     = $this->params2uri_path(&$original_params, &$encoded_params);
+		
+  			// find a already cached uri with these params 
+  		if ( $tmp_uri = $this->params2uri_read_cache($encoded_params) ) {
+  			$uri = $tmp_uri;
+  		} else {
+  			$uri = $this->params2uri_write_cache($encoded_params, $this->sanitize_uri($encoded_uri) ); 
+  		}
+  		
+  			// add not encoded parameters
+  		$i =0; 
+  		foreach ($original_params as $key => $value){
+  			$uri.= ( ($i>0)?'&':'?' ).$key.'='.$value;
+  			$i++;
+  		}
+  		
+  		return($uri);
+  				
+	}	
+	
+	public function params2uri_path(&$original_params, &$encoded_params) {
 
 			// transform the parameters
 		$predef_path    = $this->params2uri_predefinedparts(&$original_params, &$encoded_params );
@@ -118,33 +137,24 @@ class tx_naworkuri_transformer {
   			}
   		}
   		
-  			// find a already cached uri with these params 
-  		if ( $tmp_uri = $this->params2uri_read_cache($encoded_params) ) {
-  				// use cache uri
-  			$uri = $tmp_uri;
-  		} else {
-	  			
-	  		$uri = implode('/',$path).'/' ;
-	  		
-	  			// prepare 
-	  		$uri = strtolower($uri);           // lowercase
-	  		$uri = str_replace(' ','-',$uri);  // nospace
-	  		$uri = $this->transliterate($uri); // transliterate
-	  		debug('save:'.$uri);
-	  			// save
-  			$uri = $this->params2uri_write_cache($encoded_params, $uri); 
-  		}
   		
-  			// add not encoded parameters
-  		$i =0; 
-  		foreach ($original_params as $key => $value){
-  			$uri.= ( ($i>0)?'&':'?' ).$key.'='.$value;
-  			$i++;
+  			// order the params 
+  		$res = array();
+  		foreach ($this->conf->paramorder->param as $param) {
+  			$param_name = (string)$param;
+  			if (isset($path[$param_name]) && $path[$param_name]){
+  				$res[]=$path[$param_name];
+  				unset($path[$param_name]);
+  			}
   		}
-  		
-  		return($uri);
-  				
-	}	
+  			// add params with not specified order
+  		foreach ($path as $key=>$param) {
+  			$res[]=$param;
+  		}
+  			// add the rest
+		return (implode('/',$res).'/');
+		
+	}
 	
 	/**
 	 * find the cached entry for the given parameters if any 
@@ -154,8 +164,8 @@ class tx_naworkuri_transformer {
 	 */
 	public function params2uri_read_cache($params){
 		
-		$search_uid   = $params['id'];
-		$search_lang  = ($params['L'])?$params['L']:0;
+		$search_uid   = (int)$params['id'];
+		$search_lang  = (int)($params['L'])?$params['L']:0;
 		
 		unset($params['id']);
 		unset($params['L']);
@@ -180,7 +190,7 @@ class tx_naworkuri_transformer {
 	public function params2uri_write_cache($params, $uri){
 
 			// check if the path is unique
-		$tmp_uri    = $uri;
+		$tmp_uri       = $uri;
 		$search_hash   = md5($tmp_uri);
 		$search_domain = $this->domain;
 
@@ -256,9 +266,9 @@ class tx_naworkuri_transformer {
   					if ($value && $params[$param_name] == $value ){
   						$encoded_params[$param_name]=$params[$param_name];
 	  					unset($params[$param_name]);
-	  					$parts[] = $key;
+	  					$parts[$param_name] = $key;
   					} else if (!$value) {
-  						$parts[] = str_replace('###', $params[$param_name], $key);
+  						$parts[$param_name] = str_replace('###', $params[$param_name], $key);
   						$encoded_params[$param_name]=$params[$param_name];
 						unset($params[$param_name]);  						
   					}
@@ -282,10 +292,17 @@ class tx_naworkuri_transformer {
   			if ( $param_name && isset($params[$param_name]) ) {
 				foreach($valuemap->value as $value){
 					if ( (string)$value == $params[$param_name]){
-						$part = (string)$value->attributes()->key;
-						if ($part)  $parts[] = $part;
-						$encoded_params[$param_name]=$params[$param_name];
-						unset($params[$param_name]);  	
+						$key = (string)$value->attributes()->key;
+						$remove = (string)$value->attributes()->remove;
+						if (!$remove){
+							if ($key) {
+								$parts[$param_name] = $key;
+							}
+							$encoded_params[$param_name]=$params[$param_name];
+							unset($params[$param_name]);  
+						} else {
+							unset($params[$param_name]);
+						}	
 					}  	
 				}			
   			}
@@ -313,7 +330,7 @@ class tx_naworkuri_transformer {
   				if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_row($dbres) ){
   					foreach ($row as $value){
   						if ($value){
-  							$parts[] = $value;
+  							$parts[$param_name] = $value;
 							$encoded_params[$param_name]=$params[$param_name];
 							unset($params[$param_name]);  		
   						}
@@ -351,6 +368,7 @@ class tx_naworkuri_transformer {
 			while ($limit && $id > 0){
   				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( implode(',',$fields).',uid,pid,hidden' , 'pages', 'uid='.$id.' AND deleted=0', '', '' ,1 );
 				$row   = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
+				//$row = $GLOBALS['TSFE']->sys_page->getPage($id);
 				if (!$row) break; // no page found
 				foreach ($fields as $field){
 					if ( $row['pid']==0 ) break;
@@ -366,7 +384,8 @@ class tx_naworkuri_transformer {
 			$encoded_params['id']=$params['id'];
 			unset($params['id']);  
 		}
-		return $parts;
+		
+		return array('id'=>implode('/',$parts));
 	}
 	
 	
@@ -403,8 +422,17 @@ class tx_naworkuri_transformer {
 	 * @return string
 	 */
 	
-	public static function transliterate($string) { 
+	public static function sanitize_uri($uri) {
 		
+			// no punctuation and space
+		$uri = str_replace( '&', '-', $uri);
+			// no whitespace
+	  	$uri = preg_replace( '/[\s-]+/', '-', $uri);
+ 			// lowercase
+		$uri = strtolower($uri);          
+			// remove tags
+		$uri = strip_tags($uri);
+	  		 
 		$sonderzeichen = array( 
 			'ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'ß' => 'ss',
 			'Ä' => 'ae', 'Ö' => 'oe', 'Ü' => 'ue',
@@ -431,10 +459,10 @@ class tx_naworkuri_transformer {
 			'ý' => 'y', 'ÿ' => 'y'
 		 );
 	 
-		$string = strtr($string, $sonderzeichen);
+		$uri = strtr($uri, $sonderzeichen);
 	      
-		if ( !preg_match('/[\x80-\xff]/', $string) )
-	        return $string;
+		if ( !preg_match('/[\x80-\xff]/', $uri) )
+	        return $uri;
 	
 	  
         $chars = array(
@@ -538,9 +566,9 @@ class tx_naworkuri_transformer {
 	        chr(194).chr(163) => ''
 	    );
 
-        $string = strtr($string, $chars);
+        $uri = strtr($uri, $chars);
 	
-	    return $string;
+	    return $uri;
 	}  
 	
 }

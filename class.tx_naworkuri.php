@@ -35,19 +35,18 @@ class tx_naworkuri {
 	 * @param array $params
 	 * @param array $ref
 	 */
-	function params2uri(&$params, $ref) {
+	function params2uri(&$link, $ref) {
 		if ( 
 			$GLOBALS['TSFE']->config['config']['tx_naworkuri_enable']==1 
-			&& $params['LD']['url']
+			&& $link['LD']['url']
 		){
 				// create translator
+				
 			$translator = tx_naworkuri_transformer::getInstance($translator);
-			list($path,$parameters) = explode ('?',$params['LD']['url']);
-			$parameter_array = $translator->explode_parameters($parameters);
+			list($path,$params) = explode ('?',$link['LD']['totalURL']);
+			$parameters = $translator->explode_parameters($params);
 				// translate
-			$new_uri    = $translator->params2uri($parameter_array);
-				// set result
-			$params['LD']['totalURL'] = $new_uri;
+			$link['LD']['totalURL'] = $translator->params2uri($parameters);
 		}
 	}
 

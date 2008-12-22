@@ -22,15 +22,6 @@
 		<part>
 			<parameter>no_cache</parameter>
 		</part>
-		<!-- parameter type=0 is ignored at all and not stored in db -->
-		<part>
-			<parameter>type</parameter>
-			<value>0</value>
-		</part>
-		<part>
-			<parameter>L</parameter>
-			<value>0</value>
-		</part>		
 		<part key="predef_uri_part"> 
 			<parameter>predef_uri_value</parameter> 
 			<value>1</value> 
@@ -67,27 +58,29 @@
 	<valuemaps>
 		<valuemap>
 			<parameter>L</parameter>
-			<value key="">0</value>
+			<value key="" remove="1" >0</value>
 			<value key="en">1</value>
 		</valuemap>
 		<valuemap>
 			<parameter>type</parameter>
+			<value key="" remove="1" >0</value>
 			<value key="text">50</value>
+			<value key="pdf">55</value>
 		</valuemap>
 	</valuemaps>
   
-  <paramorder>
-    <param>L</param>
-	<param>path</param>
-	<param>path</param>
-  </paramorder>
+	<paramorder>
+		<param>L</param>
+		<param>id</param>
+		<param>type</param>
+	</paramorder>
   
-  <!-- the order of the different parts -->
-  <partorder>
-    <part>pagepath</part>
-	<part>uriparts</part>
-	<part>valuemaps</part>
-	<part>predefinedparts</part>
-  </partorder>
+	<!-- the order of the different parts -->
+	<partorder>
+		<part>pagepath</part>
+		<part>uriparts</part>
+		<part>valuemaps</part>
+		<part>predefinedparts</part>
+	</partorder>
   
 </cooluri>

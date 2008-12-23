@@ -17,6 +17,7 @@ class tx_naworkuri_transformer {
 		if ($configXML) {
 			$this->conf = $configXML;
 		} else {
+			debug('fallback:'.t3lib_extMgm::extPath('nawork_uri'));
 			$this->conf = new SimpleXMLElement(file_get_contents( t3lib_extMgm::extPath('nawork_uri').'/lib/default_UriConf.xml'));
 		}
 			// check multidomain mode
@@ -43,9 +44,8 @@ class tx_naworkuri_transformer {
 				debug('conf:'.PATH_site.$confArray['XMLPATH'] );
 				$config_xml = new SimpleXMLElement(file_get_contents( PATH_site.$confArray['XMLPATH']));
 			} elseif (file_exists(PATH_typo3conf.'NaworkUriConf.xml')){
+				debug('conf:'.PATH_typo3conf.'NaworkUriConf.xml' );
 				$config_xml = new SimpleXMLElement(file_get_contents( PATH_typo3conf.'NaworkUriConf.xml'));
-			} elseif (file_exists(dirname(__FILE__).'/cooluri/NaworkUriConf.xml')) {
-				$config_xml = new SimpleXMLElement(file_get_contents( dirname(__FILE__).'/cooluri/NaworkUriConf.xml'));
 			}
 			
 			self::$instance = new tx_naworkuri_transformer($config_xml);

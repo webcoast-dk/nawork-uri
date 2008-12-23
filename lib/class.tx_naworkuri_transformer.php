@@ -153,9 +153,12 @@ class tx_naworkuri_transformer {
   		foreach ($path as $param=>$path_segment) {
   			if ($path_segment) $res[]=$path_segment;
   		}
-  			// add the rest
-		return (implode('/',$res).'/');
-		
+  			// return 
+  		if (count($res)){
+  			return (implode('/',$res).'/');
+  		} else {
+  			return '';
+  		}
 	}
 	
 	/**

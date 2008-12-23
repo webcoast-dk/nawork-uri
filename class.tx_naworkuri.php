@@ -1,5 +1,4 @@
 <?php
-require_once 'cooluri/link.Main.php';
 require_once 'lib/class.tx_naworkuri_transformer.php';
 
 class tx_naworkuri {
@@ -26,7 +25,6 @@ class tx_naworkuri {
 		    	// set other params
 		    $params['pObj']->mergingWithGetVars($uri_params);
 		} 
-		
 	}
 	
 	/**

@@ -40,12 +40,9 @@ class tx_naworkuri {
 			$GLOBALS['TSFE']->config['config']['tx_naworkuri_enable']==1 
 			&& $link['LD']['url']
 		){
-				// create translator
-				
-			$translator = tx_naworkuri_transformer::getInstance($translator);
 			list($path,$params) = explode ('?',$link['LD']['totalURL']);
+			$translator = tx_naworkuri_transformer::getInstance($translator);
 			$parameters = $translator->explode_parameters($params);
-				// translate
 			$link['LD']['totalURL'] = $translator->params2uri($parameters);
 		}
 	}
@@ -65,7 +62,14 @@ class tx_naworkuri {
 			&& (substr($GLOBALS['TSFE']->siteScript,0,9)=='index.php' 
 			|| substr($GLOBALS['TSFE']->siteScript,0,1)=='?')
 		){
-			// do something here
+			list($path,$params) = explode('?',$GLOBALS['TSFE']->siteScript);
+			$translator = tx_naworkuri_transformer::getInstance($translator);
+			$parameters = $translator->explode_parameters($params);
+			$uri = $translator->params2uri($parameters);
+			if( !($_SERVER['REQUEST_METHOD']=='POST') && $path == 'index.php' ) {
+      			header('Location: '.$GLOBALS['TSFE']->config['config']['baseURL'].$uri,true,301);
+      			exit;
+    		} 
 		}
 		
 		/*

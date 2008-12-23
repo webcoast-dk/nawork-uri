@@ -38,7 +38,7 @@ class tx_naworkuri_transformer {
 		if (!self::$instance) {
 				 
 			$confArray = unserialize( $GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
-			debug($confArray['XMLPATH'] );
+			debug(PATH_site.$confArray['XMLPATH'] );
 			$config_xml = false;
 			
 			if (file_exists( PATH_site.$confArray['XMLPATH'] )){

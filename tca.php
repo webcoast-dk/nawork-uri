@@ -6,7 +6,7 @@ $TCA['tx_naworkuri_uri'] = Array (
     'interface' => Array (
         'showRecordFieldList' => 'sys_language_uid,l18n_parent,l18n_diffsource,domain,path,params'
     ),
-    'feInterface' => Array(),
+    'feInterface' => $TCA['tx_naworkuri_uri']['feInterface'],
     'columns' => Array (
         'sys_language_uid' => array (        
             'exclude' => 1,

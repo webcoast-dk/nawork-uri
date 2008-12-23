@@ -144,14 +144,14 @@ class tx_naworkuri_transformer {
   		$res = array();
   		foreach ($this->conf->paramorder->param as $param) {
   			$param_name = (string)$param;
-  			if (isset($path[$param_name]) && $path[$param_name]){
-  				$res[]=$path[$param_name];
+  			if (isset($path[$param_name]) && $segment = $path[$param_name]){
+  				if ($segment) $res[]=$segment;
   				unset($path[$param_name]);
   			}
   		}
   			// add params with not specified order
-  		foreach ($path as $key=>$param) {
-  			$res[]=$param;
+  		foreach ($path as $param=>$path_segment) {
+  			if ($path_segment) $res[]=$path_segment;
   		}
   			// add the rest
 		return (implode('/',$res).'/');

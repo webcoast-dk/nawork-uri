@@ -34,7 +34,7 @@
 
 	<!-- pagetree >> path -->
 	<pagepath>
-		<field>alias,subtitle,title</field>
+		<field>tx_naworkuri_pathsegment,alias,subtitle,title</field>
 		<limit>10</limit>
 	</pagepath>
 

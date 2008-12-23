@@ -378,7 +378,8 @@ class tx_naworkuri_transformer {
 				foreach ($fields as $field){
 					if ( $row['pid']==0 ) break;
 					if ( $row[$field] ) {
-						array_unshift($parts,$row[$field]);
+						$segment = $row[$field];
+						array_unshift($parts,$segment);
 						break; // field found
 					}
 					

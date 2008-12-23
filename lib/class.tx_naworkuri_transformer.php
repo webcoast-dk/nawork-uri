@@ -39,8 +39,9 @@ class tx_naworkuri_transformer {
 			$confArray = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
 			$config_xml = false;
 			
-			if (file_exists($confArray['XMLPATH'].'NaworkUriConf.xml')){
-				$config_xml = new SimpleXMLElement(file_get_contents( $confArray['XMLPATH'].'NaworkUriConf.xml'));
+			if (file_exists( PATH_site.$confArray['XMLPATH'] )){
+				debug('conf:'.PATH_site.$confArray['XMLPATH'] );
+				$config_xml = new SimpleXMLElement(file_get_contents( PATH_site.$confArray['XMLPATH']));
 			} elseif (file_exists(PATH_typo3conf.'NaworkUriConf.xml')){
 				$config_xml = new SimpleXMLElement(file_get_contents( PATH_typo3conf.'NaworkUriConf.xml'));
 			} elseif (file_exists(dirname(__FILE__).'/cooluri/NaworkUriConf.xml')) {

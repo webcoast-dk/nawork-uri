@@ -17,7 +17,7 @@ class tx_naworkuri_transformer {
 		if ($configXML) {
 			$this->conf = $configXML;
 		} else {
-			debug('fallback:'.t3lib_extMgm::extPath('nawork_uri'));
+			debug('fallback:'.t3lib_extMgm::extPath('nawork_uri').'::'.PATH_site.$confArray['XMLPATH']);
 			$this->conf = new SimpleXMLElement(file_get_contents( t3lib_extMgm::extPath('nawork_uri').'/lib/default_UriConf.xml'));
 		}
 			// check multidomain mode

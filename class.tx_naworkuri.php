@@ -22,7 +22,7 @@ class tx_naworkuri {
 			
 				// set GET array
 			$GLOBALS['_GET'] = array_merge(	$GLOBALS['_GET'],$uri_params);
-			
+			debug ($GLOBALS['_GET']);
 				// set id & other params
 			$params['pObj']->id = $uri_params['id'];
 		    unset($uri_params['id']);

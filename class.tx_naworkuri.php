@@ -40,8 +40,15 @@ class tx_naworkuri {
 			&& $link['LD']['url']
 		){
 			list($path,$params) = explode ('?',$link['LD']['totalURL']);
+			
+			$parameters = array();
+			$tmp = explode('&',$params);
+			foreach ($tmp as $part){
+				list($key,$value) = explode('=',$part);
+				$parameters[$key] = $value;
+			}
+
 			$translator = tx_naworkuri_transformer::getInstance($translator);
-			$parameters = $translator->explode_parameters($params);
 			$link['LD']['totalURL'] = $translator->params2uri($parameters);
 		}
 	}

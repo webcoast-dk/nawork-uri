@@ -16,7 +16,7 @@ class tx_naworkuri {
 			&& substr($params['pObj']->siteScript,0,9)!='index.php' 
 			&& substr($params['pObj']->siteScript,0,1)!='?'
 		){
-				// trabnslate uri
+				// translate uri
 			$translator = tx_naworkuri_transformer::getInstance($translator);
 			$uri_params = $translator->uri2params($params['pObj']->siteScript);
 						
@@ -24,8 +24,7 @@ class tx_naworkuri {
 			$params['pObj']->id = $uri_params['id'];
 		    unset($uri_params['id']);
 		    $params['pObj']->mergingWithGetVars($uri_params);
-		      debug ("---");
-		    debug ($GLOBALS['_GET']);
+
 		} 
 	}
 	

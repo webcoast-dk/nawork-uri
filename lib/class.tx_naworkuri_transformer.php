@@ -324,8 +324,10 @@ class tx_naworkuri_transformer {
 	/**
 	 * Enter description here...
 	 *
-	 * @param unknown_type $params
-	 * @param unknown_type $encoded_params
+	 * @TODO add record translation handling
+	 * 
+	 * @param array $params
+	 * @param array $encoded_params
 	 * @return unknown
 	 */
 	public function params2uri_uriparts (&$params, &$encoded_params ){
@@ -338,12 +340,13 @@ class tx_naworkuri_transformer {
   				$field  = (string)$uripart->field;
   				$where  = str_replace('###',$params[$param_name], (string)$uripart->where);
   				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery($field, $table, $where, '', '' ,1 );
-  				if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_row($dbres) ){
-  					foreach ($row as $value){
+  				if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
+  					foreach ($row as $key=>$value){
   						if ($value){
   							$parts[$param_name] = $value;
 							$encoded_params[$param_name]=$params[$param_name];
-							unset($params[$param_name]);  		
+							unset($params[$param_name]); 
+							break;	
   						}
   					}
   				}

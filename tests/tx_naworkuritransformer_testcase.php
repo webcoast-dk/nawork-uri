@@ -165,6 +165,30 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 			$parts,
 			'created path is wrong'
 		);
+		
+		
+	}
+	
+	public function test_params2uri_uriparts_works2(){
+
+		$params = array('pages[uid]'=>32);
+		$encoded_params = array();
+
+		$parts = $this->test_subject->params2uri_uriparts(&$params, &$encoded_params);
+			
+		$this->assertEquals(
+			array('pages[uid]'=>32),
+			$encoded_params,
+			'encoded params wrong'
+		);
+		
+		$this->assertEquals(
+			array('pages[uid]'=>'blub'),
+			$parts,
+			'created path is wrong'
+		);
+		
+		
 	}
 	
 	public function test_params2uri_pagepath_works(){
@@ -195,6 +219,7 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 		);
 	}
 
+		
 	public function provider_test_params2uri_uri_unique(){
 		return array(
 			array('kontaktlinsen/bam/text/' , 'kontaktlinsen/bam/text/1/'),
@@ -207,6 +232,7 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 	 *
 	 * @dataProvider provider_test_params2uri_uri_unique
 	 */
+	/*
 	public function test_params2uri_uri_unique($path,$expected_result){
 		
 		$res = $this->test_subject->params2uri_uri_unique($path);
@@ -215,6 +241,7 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 			$expected_result
 		);
 	}
+	*/
 	
 	public function provider_test_params2uri_pagepath(){
 		return array(

@@ -70,7 +70,14 @@ class tx_naworkuri {
 		){
 			list($path,$params) = explode('?',$GLOBALS['TSFE']->siteScript);
 			$translator = tx_naworkuri_transformer::getInstance($translator);
-			$parameters = $translator->explode_parameters($params);
+			
+			$parameters = array();
+			$tmp = explode('&',$params);
+			foreach ($tmp as $part){
+				list($key,$value) = explode('=',$part);
+				$parameters[$key] = $value;
+			}
+			
 			$uri = $translator->params2uri($parameters);
 			if( !($_SERVER['REQUEST_METHOD']=='POST') && $path == 'index.php' ) {
       			header('Location: '.$GLOBALS['TSFE']->config['config']['baseURL'].$uri,true,301);

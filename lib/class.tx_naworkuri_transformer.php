@@ -352,7 +352,7 @@ class tx_naworkuri_transformer {
   				}
   			}
 		}
-		debug($params);
+
 		return $parts;
 	}
 	

@@ -19,10 +19,13 @@ class tx_naworkuri {
 				// trabnslate uri
 			$translator = tx_naworkuri_transformer::getInstance($translator);
 			$uri_params = $translator->uri2params($params['pObj']->siteScript);
-				// set id
+			
+				// set GET array
+			$GLOBALS['_GET'] = array_merge(	$GLOBALS['_GET'],$uri_params);
+			
+				// set id & other params
 			$params['pObj']->id = $uri_params['id'];
 		    unset($uri_params['id']);
-		    	// set other params
 		    $params['pObj']->mergingWithGetVars($uri_params);
 		} 
 	}

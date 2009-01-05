@@ -192,26 +192,8 @@ class tx_naworkuri_transformer {
 	 */
 	public function params2uri_write_cache($params, $uri){
 
-			// check if the path is unique
-		$tmp_uri       = $uri;
-		$search_hash   = md5($tmp_uri);
-		$search_domain = $this->domain;
-
-		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND domain="'.$search_domain.'" AND hash_path LIKE "'.$search_hash.'"' );
-		
-		if ( $GLOBALS['TYPO3_DB']->sql_num_rows($dbres) > 0 ){
-				// make the uri unique
-			$append = 1;
-			$tmp_uri    = $uri.$append.'/' ;
-			$search_hash   = md5($tmp_uri);	
-			do {
-				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND domain="'.$search_domain.'" AND hash_path LIKE "'.$search_hash.'"' );
-				$append ++;
-				if ($append>10 ) return; 
-			} while ( $GLOBALS['TYPO3_DB']->sql_num_rows($dbres) > 0 );
-		}
-		
-		$uri = $tmp_uri;
+			// make the uri unique
+		$uri = $this->params2uri_uri_unique($uri);
 			
 			// save uri to db cache
 		$save_uid    = $params['id'];
@@ -238,6 +220,32 @@ class tx_naworkuri_transformer {
 		
 		$dbres = $GLOBALS['TYPO3_DB']->exec_INSERTquery('tx_naworkuri_uri', $save_record );
 		return ($uri);
+	}
+
+		/**
+		 * Make shire this URI is unique for the current domain
+		 *
+		 * @param string $uri URI
+		 * @return string unique URI 
+		 */
+	public function params2uri_uri_unique($uri){
+		$tmp_uri       = $uri;
+		$search_hash   = md5($tmp_uri);
+		$search_domain = $this->domain;
+
+		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND domain="'.$search_domain.'" AND hash_path LIKE "'.$search_hash.'"' );
+		
+		if ( $GLOBALS['TYPO3_DB']->sql_num_rows($dbres) > 0 ){
+				// make the uri unique
+			$append = 0;
+			do {
+				$append ++;
+				$tmp_uri      = $uri.$append.'/' ;
+				$search_hash  = md5($tmp_uri);
+				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND domain="'.$search_domain.'" AND hash_path LIKE "'.$search_hash.'"' );
+			} while ( $GLOBALS['TYPO3_DB']->sql_num_rows($dbres) > 0 && $append < 100);
+		}
+		return $tmp_uri;
 	}
 
 	/**

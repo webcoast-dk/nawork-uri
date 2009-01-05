@@ -168,7 +168,7 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 	}
 	
 	public function test_params2uri_pagepath_works(){
-			$params = array( 
+		$params = array( 
 			'id'=>20,
 			'not_encoded_params' => 'not_encoded_value'
 		);
@@ -195,6 +195,58 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 		);
 	}
 
+	public function provider_test_params2uri_uri_unique(){
+		return array(
+			array('kontaktlinsen/bam/text/' , 'kontaktlinsen/bam/text/1/'),
+			array('kontaktlinsen/blub/text/' , 'kontaktlinsen/blub/text/'),
+			array('kontaktlinsen/baz/' , 'kontaktlinsen/baz/3/')
+		);
+	}
+	/**
+	 * Enter description here...
+	 *
+	 * @dataProvider provider_test_params2uri_uri_unique
+	 */
+	public function test_params2uri_uri_unique($path,$expected_result){
+		
+		$res = $this->test_subject->params2uri_uri_unique($path);
+		$this->assertEquals(
+			$res,
+			$expected_result
+		);
+	}
+	
+	public function provider_test_params2uri_pagepath(){
+		return array(
+			array('20', 'Kontaktlinsen/bam', 'simple id is converted' ),
+			array('29', 'Brillenmode/hidden page', 'hidden pages are shown' ),
+			array('31', 'Brillenmode/folder/folder content', 'sysfolders are shown in path' ),
+			
+		);
+	}
+	
+	/**
+	 * General path encoding Tests 
+	 * 
+	 * @dataProvider provider_test_params2uri_pagepath
+	 * @param unknown_type $utf_8_string
+	 * @param unknown_type $transliterated_string
+	 */
+	public function test_params2uri_pagepath($id, $path, $error){
+
+		$params = array('id'=>$id,);
+		$encoded_params = array();
+		
+		$parts = $this->test_subject->params2uri_pagepath(&$params, &$encoded_params);
+		
+		$this->assertEquals(
+			implode('/',$parts),
+			$path,
+			$error
+		);
+		
+	}
+	
 	
 	/**
 	 * General transliteration Tests 

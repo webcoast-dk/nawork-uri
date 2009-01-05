@@ -52,6 +52,12 @@
 			<table>pages</table>
 			<where>uid=###</where>
 		</part>
+		<part>
+			<parameter>tx_standocuments_pi_details[doc]</parameter>
+			<field>number,title</field>
+			<table>tx_standocuments_documents</table>
+			<where>uid=###</where>
+		</part>
 	</uriparts>
  
 	<!-- remap parameters to constant values -->  

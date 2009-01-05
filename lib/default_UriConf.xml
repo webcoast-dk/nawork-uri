@@ -35,7 +35,7 @@
 	<!-- pagetree >> path -->
 	<pagepath>
 		<field>tx_naworkuri_pathsegment,alias,subtitle,title</field>
-		<limit>10</limit>
+		<limit>100</limit>
 	</pagepath>
 
 	<!-- remap parameters to db values -->  

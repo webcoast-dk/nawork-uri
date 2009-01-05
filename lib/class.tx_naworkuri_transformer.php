@@ -412,13 +412,9 @@ class tx_naworkuri_transformer {
 	 */
 	
 	public function explode_parameters($param_string){
-		$result = array();
-		$tmp = explode('&',$param_string);
-		foreach ($tmp as $part){
-			list($key,$value) = explode('=',$part);
-			$result[$key] = $value;
-		}
-		return $result;
+		$res = array();
+		parse_str($param_string, $res);
+		return $res; 
 	}
   
 	public function implode_parameters($params_array){

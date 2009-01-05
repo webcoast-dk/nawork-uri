@@ -35,7 +35,7 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 	 *
 	 */
 	public function test_param_explode_works_basically() {
-		$this->assertEquals( array('id'=>2,'L'=>1,'foo[bar]'=>123) , $this->test_subject->explode_parameters('id=2&L=1&foo[bar]=123') );
+		$this->assertEquals( array('id'=>2,'L'=>1,'foo'=>array('bar'=>123 ) ) , $this->test_subject->explode_parameters('id=2&L=1&foo[bar]=123') );
 	}
 	
 

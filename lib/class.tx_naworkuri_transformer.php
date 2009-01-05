@@ -444,6 +444,7 @@ class tx_naworkuri_transformer {
 		
 			// no punctuation and space
 		$uri = str_replace( '&', '-', $uri);
+		$uri = str_replace( '.', '-', $uri);
 			// no whitespace
 	  	$uri = preg_replace( '/[\s-]+/u', '-', $uri);
  			// remove tags

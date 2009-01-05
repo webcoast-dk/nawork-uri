@@ -81,8 +81,8 @@ class tx_naworkuri {
 		 */
 	public function processDatamap_preProcessFieldArray(&$incomingFieldArray, &$table, &$id, &$res){
 		if ($table=="tx_naworkuri_uri"){
-			if ($incomingFieldArray['path']   || $incomingFieldArray['path']==''  ) $incomingFieldArray['hash_path']   = md5($incomingFieldArray['path']);
-			if ($incomingFieldArray['params'] || $incomingFieldArray['params']='' ) $incomingFieldArray['hash_params'] = md5($incomingFieldArray['params']);
+			if ($incomingFieldArray['path']   || $incomingFieldArray['path']   =='' ) $incomingFieldArray['hash_path']   = md5($incomingFieldArray['path']);
+			if ($incomingFieldArray['params'] || $incomingFieldArray['params'] =='' ) $incomingFieldArray['hash_params'] = md5($incomingFieldArray['params']);
 		}
 	}
 }

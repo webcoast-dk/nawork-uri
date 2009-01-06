@@ -455,7 +455,7 @@ class tx_naworkuri_transformer {
 		$uri = str_replace( '.', '-', $uri);
 			// no whitespace
 	  	$uri = preg_replace( '/[\s-]+/u', '-', $uri);
- 			// remove tags
+			// remove tags
 		$uri = strip_tags($uri);
 
 /*
@@ -603,9 +603,13 @@ class tx_naworkuri_transformer {
 	        chr(194).chr(163) => ''
 	    );
 
-	    		// lowercase
+	    	// lowercase
 		$uri = strtolower($uri); 
         $uri = strtr($uri, $chars);
+
+        	// remove all still not alphanumeric chars
+       	$uri = preg_replace( '/[^A-Za-z0-9\/\-]+/u', '-', $uri);
+ 	
 	    return $uri;
 	}  
 	

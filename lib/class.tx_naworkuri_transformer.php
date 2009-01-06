@@ -381,28 +381,36 @@ class tx_naworkuri_transformer {
 			
 				// walk the pagepath
 			while ($limit && $id > 0){
-  				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( implode(',',$fields).',uid,pid,hidden,tx_naworkuri_exclude' , 'pages', 'uid='.$id.' AND deleted=0', '', '' ,1 );
+  				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( 'tx_naworkuri_pathsegment,'.implode(',',$fields).',uid,pid,hidden,tx_naworkuri_exclude' , 'pages', 'uid='.$id.' AND deleted=0', '', '' ,1 );
 				$row   = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
 				if (!$row) break; // no page found
+				
 					// translate
 				if (TYPO3_MODE=='FE'){
 					$row   = $GLOBALS['TSFE']->sys_page->getPageOverlay($row);
 				}
 					// extract part
-				if ($row['tx_naworkuri_exclude'] == 0 ){ 
-					foreach ($fields as $field){
-						if ( $row['pid']==0 ) break;
-						if ( $row[$field] ) {
-							$segment = $row[$field];
+				if ($row['tx_naworkuri_exclude'] == 0 ){
+					if ( $row['pid']==0 && $row['tx_naworkuri_pathsegment'] ){
+							$segment = $row['tx_naworkuri_pathsegment'];
 							array_unshift($parts,$segment);
-							break; // field found
+							break;
+					} else {
+						foreach ($fields as $field){
+							if ( $row[$field] ) {
+								$segment = $row[$field];
+								array_unshift($parts,$segment);
+								break; // field found
+							}
 						}
 					}
 				}
 					// continue fetching the path
 				$id = $row['pid'];
 				$limit--;
-			}
+			} 
+			
+			
 			$encoded_params['id']=$params['id'];
 			unset($params['id']);  
 		}

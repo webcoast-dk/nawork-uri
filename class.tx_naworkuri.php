@@ -36,7 +36,7 @@ class tx_naworkuri {
 	 */
 	function params2uri(&$link, $ref) {
 		if ( 
-			$GLOBALS['TSFE']->config['config']['tx_naworkuri_enable']==1 
+			$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable']==1 
 			&& $link['LD']['url']
 		){
 			list($path,$params) = explode ('?',$link['LD']['totalURL']);
@@ -61,9 +61,9 @@ class tx_naworkuri {
 	 */
 	function redirect2uri($params, $ref) {
 		if ( 
-			$GLOBALS['TSFE']->config['config']['tx_naworkuri_enable']==1 
+			$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable']==1 
 			&& empty($_GET['ADMCMD_prev']) 
-			&& $GLOBALS['TSFE']->config['config']['tx_naworkuri_redirect']==1 
+			&& $GLOBALS['TSFE']->config['config']['tx_naworkuri.']['redirect']==1 
 			&& $GLOBALS['TSFE']->siteScript 
 			&& (substr($GLOBALS['TSFE']->siteScript,0,9)=='index.php' 
 			|| substr($GLOBALS['TSFE']->siteScript,0,1)=='?')

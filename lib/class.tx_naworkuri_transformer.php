@@ -391,11 +391,7 @@ class tx_naworkuri_transformer {
 				}
 					// extract part
 				if ($row['tx_naworkuri_exclude'] == 0 ){
-					if ( $row['pid']==0 && $row['tx_naworkuri_pathsegment'] ){
-							$segment = $row['tx_naworkuri_pathsegment'];
-							array_unshift($parts,$segment);
-							break;
-					} else {
+					if ($row['pid']>0){
 						foreach ($fields as $field){
 							if ( $row[$field] ) {
 								$segment = $row[$field];
@@ -403,7 +399,10 @@ class tx_naworkuri_transformer {
 								break; // field found
 							}
 						}
-					}
+					} elseif ( $row['pid']==0 && $row['tx_naworkuri_pathsegment'] ){
+						$segment = $row['tx_naworkuri_pathsegment'];
+						array_unshift($parts,$segment);
+					}  
 				}
 					// continue fetching the path
 				$id = $row['pid'];

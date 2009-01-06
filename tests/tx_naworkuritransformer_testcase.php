@@ -77,119 +77,70 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 		
 	}
 	
+	public function provider_test_params2uri_valuemaps_works(){
+		return array(
+			array(
+				array('L'=>1,'type'=>50,'not_encoded_params' => 'not_encoded_value'),
+				array('L'=>'en','type'=>'text'),
+			),
+			array(
+				array( 'L'=>1,'type'=>0,'not_encoded_params' => 'not_encoded_value'),
+				array('L'=>'en'),
+			),
+		);
+	}
+	
 	/**
-	 * Enter description here...
-	 *
+	 * General path encoding Tests 
+	 * 
+	 * @dataProvider provider_test_params2uri_valuemaps_works
+	 * @param unknown_type $utf_8_string
+	 * @param unknown_type $transliterated_string
 	 */
-	public function test_params2uri_valuemaps_works(){
-		$params = array( 
-			'L'=>1,
-			'type'=>50,
-			'not_encoded_params' => 'not_encoded_value'
-		);
-		
+	public function test_params2uri_valuemaps_works($params, $expected_parts, $error=''){
 		$encoded_params = array();
 		$parts = $this->test_subject->params2uri_valuemaps(&$params, &$encoded_params);
 		
 		$this->assertEquals(
-			array('not_encoded_params' => 'not_encoded_value'),
-			$params 
-		);
-		
-		$this->assertEquals(
-			array('L'=>1, 'type'=>50),
-			$encoded_params 
-		);
-		
-		$this->assertEquals(
-			array('L'=>'en','type'=>'text'),
-			$parts 
+			$expected_parts,
+			$parts,
+			$error
 		);
 	}
 	
-		/**
-	 * Enter description here...
-	 *
+
+	public function provider_test_params2uri_uriparts_works(){
+		return array(
+			array( 
+				array('pages[uid]'=>20,'not_encoded_params' => 'not_encoded_value'),
+				array('pages[uid]'=>'bam'),
+			),
+			array(
+				array('pages[uid]'=>32),
+				array('pages[uid]'=>'blub'),
+			)
+		);
+	}
+	
+	/**
+	 * General path encoding Tests 
+	 * 
+	 * @dataProvider provider_test_params2uri_uriparts_works
+	 * @param unknown_type $utf_8_string
+	 * @param unknown_type $transliterated_string
 	 */
-	public function test_params2uri_valuemaps_works_2(){
-		$params = array( 
-			'L'=>1,
-			'type'=>0,
-			'not_encoded_params' => 'not_encoded_value'
-		);
-		
-		$encoded_params = array();
-		$parts = $this->test_subject->params2uri_valuemaps(&$params, &$encoded_params);
-		
-		$this->assertEquals(
-			array('not_encoded_params' => 'not_encoded_value'),
-			$params 
-		);
-		
-		$this->assertEquals(
-			array('L'=>1),
-			$encoded_params 
-		);
-		
-		$this->assertEquals(
-			array('L'=>'en'),
-			$parts 
-		);
-	}
 	
-	
-	
-	public function test_params2uri_uriparts_works(){
-		$params = array( 
-			'pages[uid]'=>20,
-			'not_encoded_params' => 'not_encoded_value'
-		);
-		
+	public function test_params2uri_uriparts_works($params, $expected_parts, $error=''){
 		$encoded_params = array();
 		$parts = $this->test_subject->params2uri_uriparts(&$params, &$encoded_params);
 		
 		$this->assertEquals(
-			array('not_encoded_params' => 'not_encoded_value'),
-			$params,
-			"not encoded params are wrong"
-		);
-		
-		$this->assertEquals(
-			array('pages[uid]'=>20),
-			$encoded_params,
-			'encoded params wrong'
-		);
-		
-		$this->assertEquals(
-			array('pages[uid]'=>'bam'),
+			$expected_parts,
 			$parts,
-			'created path is wrong'
+			$error
 		);
-		
-		
 	}
 	
-	public function test_params2uri_uriparts_works2(){
-
-		$params = array('pages[uid]'=>32);
-		$encoded_params = array();
-
-		$parts = $this->test_subject->params2uri_uriparts(&$params, &$encoded_params);
-			
-		$this->assertEquals(
-			array('pages[uid]'=>32),
-			$encoded_params,
-			'encoded params wrong'
-		);
-		
-		$this->assertEquals(
-			array('pages[uid]'=>'blub'),
-			$parts,
-			'created path is wrong'
-		);
-		
-		
-	}
 	
 	public function test_params2uri_pagepath_works(){
 		$params = array( 
@@ -219,35 +170,13 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 		);
 	}
 
-		
-	public function provider_test_params2uri_uri_unique(){
-		return array(
-			array('kontaktlinsen/bam/text/' , 'kontaktlinsen/bam/text/1/'),
-			array('kontaktlinsen/blub/text/' , 'kontaktlinsen/blub/text/'),
-			array('kontaktlinsen/baz/' , 'kontaktlinsen/baz/3/')
-		);
-	}
-	/**
-	 * Enter description here...
-	 *
-	 * @dataProvider provider_test_params2uri_uri_unique
-	 */
-	/*
-	public function test_params2uri_uri_unique($path,$expected_result){
-		
-		$res = $this->test_subject->params2uri_uri_unique($path);
-		$this->assertEquals(
-			$res,
-			$expected_result
-		);
-	}
-	*/
 	
 	public function provider_test_params2uri_pagepath(){
 		return array(
 			array('20', 'Kontaktlinsen/bam', 'simple id is converted' ),
 			array('29', 'Brillenmode/hidden page', 'hidden pages are shown' ),
 			array('31', 'Brillenmode/folder/folder content', 'sysfolders are shown in path' ),
+			array('35', 'Brillenmode/blubbbb', 'sysfolders are shown in path' ),
 			
 		);
 	}

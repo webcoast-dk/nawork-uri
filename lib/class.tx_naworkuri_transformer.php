@@ -377,11 +377,11 @@ class tx_naworkuri_transformer {
 				// get setup
 			$limit  = (int)(string)$this->conf->pagepath->limit;
 			if (!$limit) $limit=10;
-			$fields  = explode(',', (string)$this->conf->pagepath->field );
+			$fields  = explode(',', 'tx_naworkuri_pathsegment,'.(string)$this->conf->pagepath->field );
 			
 				// walk the pagepath
 			while ($limit && $id > 0){
-  				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( 'tx_naworkuri_pathsegment,'.implode(',',$fields).',uid,pid,hidden,tx_naworkuri_exclude' , 'pages', 'uid='.$id.' AND deleted=0', '', '' ,1 );
+  				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( implode(',',$fields).',uid,pid,hidden,tx_naworkuri_exclude' , 'pages', 'uid='.$id.' AND deleted=0', '', '' ,1 );
 				$row   = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
 				if (!$row) break; // no page found
 				
@@ -394,13 +394,13 @@ class tx_naworkuri_transformer {
 					if ($row['pid']>0){
 						foreach ($fields as $field){
 							if ( $row[$field] ) {
-								$segment = $row[$field];
+								$segment = trim($row[$field]);
 								array_unshift($parts,$segment);
 								break; // field found
 							}
 						}
 					} elseif ( $row['pid']==0 && $row['tx_naworkuri_pathsegment'] ){
-						$segment = $row['tx_naworkuri_pathsegment'];
+						$segment = trim($row['tx_naworkuri_pathsegment']);
 						array_unshift($parts,$segment);
 					}  
 				}

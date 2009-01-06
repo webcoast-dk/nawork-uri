@@ -608,7 +608,7 @@ class tx_naworkuri_transformer {
         $uri = strtr($uri, $chars);
 
         	// remove all still not alphanumeric chars
-       	$uri = preg_replace( '/[^A-Za-z0-9\/\-]+/u', '-', $uri);
+       	$uri = preg_replace( '/[^A-Za-z0-9\/\-]+/u', '', $uri);
  	
 	    return $uri;
 	}  

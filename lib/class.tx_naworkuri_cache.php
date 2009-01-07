@@ -11,12 +11,18 @@ class tx_naworkuri_cache {
 	 * @return string : uri wich matches to these params otherwise false 
 	 */
 	public function read ($id, $lang, $domain, $parameters){
+
 			// sort parameters
 		$exploded_params = explode('&',$parameters);
 		sort($exploded_params);
-		$parameters = implode($exploded_params);
+		$parameters = implode('&',$exploded_params);
+		
 			// lookup in db
-		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('path', 'tx_naworkuri_uri', 'deleted=0 AND pid='.$id.' AND sys_language_uid='.$lang.' AND domain="'.$domain.'" AND hash_params LIKE "'.md5($parameters).'"' );
+		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
+			'path', 
+			'tx_naworkuri_uri', 
+			'deleted=0 AND pid='.$id.' AND sys_language_uid='.$lang.' AND domain="'.$domain.'" AND hash_params LIKE "'.md5($parameters).'"' 
+		);
 		if ( $row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
 			return $row['path'];
 		}
@@ -32,10 +38,12 @@ class tx_naworkuri_cache {
 	
 	// public function write($params, $uri){
 	public function write($id, $lang, $domain, $parameters, $path, $debug_info = ''){
+
 			// sort parameters
 		$exploded_params = explode('&',$parameters);
 		sort($exploded_params);
-		$parameters = implode($exploded_params);
+		$parameters = implode('&',$exploded_params);
+		
 			// make uri unique
 		$path = $this->unique($path, $domain);
 			// save in dm

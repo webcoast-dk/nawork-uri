@@ -2,7 +2,7 @@
 
 require_once (t3lib_extMgm::extPath('nawork_uri').'/lib/class.tx_naworkuri_transformer.php');
 
-class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
+class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 	
 	protected function setUp() {
 		$this->test_subject = new tx_naworkuri_transformer();
@@ -21,23 +21,6 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 		$dbres = $GLOBALS['TYPO3_DB']->sql_query('TRUNCATE TABLE `tx_naworkuri_uri`' );
 	 	$this->assertEquals( 1,1);
 	}
-		
-	/**
-	 * Enter description here...
-	 *
-	 */
-	public function test_param_implode_works_basically() {
-		$this->assertEquals( 'id=2&L=1&foo[bar]=123', $this->test_subject->implode_parameters(array('id'=>2,'L'=>1,'foo[bar]'=>123 ) ) );
-	}
-	
-	/**
-	 * Enter description here...
-	 *
-	 */
-	public function test_param_explode_works_basically() {
-		$this->assertEquals( array('id'=>2,'L'=>1,'foo'=>array('bar'=>123 ) ) , $this->test_subject->explode_parameters('id=2&L=1&foo[bar]=123') );
-	}
-	
 
 	/**
 	 * Enter description here...
@@ -204,29 +187,6 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 	}
 	
 	
-	/**
-	 * General transliteration Tests 
-	 * 
-	 * @dataProvider provider_test_sanitizing_of_uri
-	 * @param unknown_type $utf_8_string
-	 * @param unknown_type $transliterated_string
-	 */
-	public function test_sanitizing_of_uri($utf_8_string, $transliterated_string) {
-		$this->assertEquals( $this->test_subject->sanitize_uri($utf_8_string), $transliterated_string );
-	}
-
-	public function provider_test_sanitizing_of_uri(){
-		return array(
-			array('über/ß', 'ueber/ss'),
-			array('foo bar/das das/', 'foo-bar/das-das/'),
-			array('foo bar/das<br/>das/', 'foo-bar/dasdas/'),
-			array('foobar/das
-			
-			das/', 'foobar/das-das/'),
-			array('foo&bar/', 'foo-bar/'),
-			array('Über Fielmann/', 'ueber-fielmann/'),
-		);
-	}
 	
 	/**
 	 * General Path encoding tests
@@ -243,11 +203,14 @@ class tx_naworkuritransformer_testcase extends tx_phpunit_testcase {
 		return array(
 			array( array('id'=>5),  'ueber-fielmann/'),
 			array( array('id'=>23), 'ueber-fielmann/die-geschichte-der-brille/' ),
+			array( array('id'=>23), 'ueber-fielmann/die-geschichte-der-brille/' ),
 			array( array('id'=>20, 'type'=>50, "L"=>0 ), 'kontaktlinsen/bam/text/'),
 			array( array('id'=>20, 'type'=>50, "L"=>0 , 'unknown_param'=>'unknown_value') , 'kontaktlinsen/bam/text/?unknown_param=unknown_value'),
 			array( array('id'=>23, 'type'=>99 ), 'ueber-fielmann/die-geschichte-der-brille/?type=99' ),
 			array( array('id'=>23, 'type'=>50 ), 'ueber-fielmann/die-geschichte-der-brille/text/' ),
-//			array( array('id'=>9, 'L'=>1, 'type'=>50 ), 'en/glasses/' ) // translating of pagepath cannot be testet in BE 
+			/*
+			array( array('id'=>9, 'L'=>1, 'type'=>50 ), 'en/glasses/' ) // translating of pagepath cannot be testet in BE
+			*/ 
 		);	
 	}
 

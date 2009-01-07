@@ -36,6 +36,7 @@
 	<pagepath>
 		<field>alias,subtitle,title</field>
 		<limit>100</limit>
+		
 	</pagepath>
 
 	<!-- remap parameters to db values -->  

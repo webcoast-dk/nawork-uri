@@ -106,8 +106,9 @@ class tx_naworkuri_transformer {
 		$search_params = $this->helper->implode_parameters($search);
 		$search_hash   = md5($search_params);
 		$search_domain = $this->domain;
-			
-		if ( $cache_uri = $this->cache->read($search_uid, $search_lang, $search_domain, $search_params) ) {
+		
+		$cache_uri = $this->cache->read($search_uid, $search_lang, $search_domain, $search_params);	
+		if ( $cache_uri !== false ) {
 			return $cache_uri;
 		}
 		

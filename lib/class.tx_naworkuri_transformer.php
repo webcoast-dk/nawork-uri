@@ -133,9 +133,9 @@ class tx_naworkuri_transformer {
   			$uri = $tmp_uri;
   		} else {
   			$debug_info = '';
-  			$debug_info .= "original_params  : ".implode('&',$original_params).chr(10);
-  			$debug_info .= "encoded_params   : ".implode('&',$encoded_params).chr(10);
-  			$debug_info .= "unencoded_params : ".implode('&',$unencoded_params).chr(10);
+  			$debug_info .= "original_params  : ".$this->helper->implode_parameters($original_params).chr(10);
+  			$debug_info .= "encoded_params   : ".$this->helper->implode_parameters($encoded_params).chr(10);
+  			$debug_info .= "unencoded_params : ".$this->helper->implode_parameters($unencoded_params).chr(10);
   			  			
   			$uri = $this->cache->write($cache_uid, $cache_lang, $cache_domain, $cache_params, $cache_path, $debug_info); 
   		}

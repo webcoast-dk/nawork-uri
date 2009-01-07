@@ -128,9 +128,11 @@ class tx_naworkuri_transformer {
 		$cache_params = $this->helper->implode_parameters($cache_data);
 		$cache_path   = $this->helper->sanitize_uri($encoded_uri);
 		$cache_domain = $this->domain;
-			
-  		if ( $tmp_uri = $this->cache->read($cache_uid, $cache_lang, $cache_domain, $cache_params) ) {
-  			$uri = $tmp_uri;
+
+		$cache_uri = $this->cache->read($cache_uid, $cache_lang, $cache_domain, $cache_params);
+		debug("cache read:".$cache_uri);
+  		if ( $cache_uri ) {
+  			$uri = $cache_uri;
   		} else {
   			$debug_info = '';
   			$debug_info .= "original_params  : ".$this->helper->implode_parameters($original_params).chr(10);

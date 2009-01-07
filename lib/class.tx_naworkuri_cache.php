@@ -57,7 +57,7 @@ class tx_naworkuri_cache {
 		$path = $this->unique($path, $domain);
 		
 		debug(array(
-				'cache_write_failure',
+				'cache_write',
 				$id, $lang, $domain, $parameters,
 				md5($parameters),
 				$path

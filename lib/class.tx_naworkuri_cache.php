@@ -27,7 +27,7 @@ class tx_naworkuri_cache {
 	 */
 	
 	// public function write($params, $uri){
-	public function write($id, $lang, $domain, $parameters, $path){
+	public function write($id, $lang, $domain, $parameters, $path, $debug_info = ''){
 		
 		$path = $this->unique($path, $domain);
 		
@@ -38,7 +38,8 @@ class tx_naworkuri_cache {
 			'path'   => $path,
 			'params' => $parameters,
 			'hash_path'   => md5($path),
-			'hash_params' => md5($parameters)
+			'hash_params' => md5($parameters),
+			'debug_info' => $debug_info
 		);
 		
 		$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;

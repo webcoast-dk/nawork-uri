@@ -81,9 +81,19 @@ $TCA['tx_naworkuri_uri'] = Array (
          		'size' => '30',
             )
         ),
+        'debug_info' => Array (        
+            'exclude' => 1,        
+            'label' => 'debug_info',        
+            'config' => Array (
+                'type' => 'text',    
+                'cols' => '50',
+        		'rows' => 5,
+            )
+        ),
+        
     ),
     'types' => Array (
-        '0' => Array('showitem' => 'sys_language_uid;;;;1-1-1, l18n_parent, l18n_diffsource,  path;;;;2-2-2, domain, params, hash_path;;;;3-3-3, hash_params'),
+        '0' => Array('showitem' => 'sys_language_uid;;;;1-1-1, l18n_parent, l18n_diffsource,  path;;;;2-2-2, domain, params, hash_path;;;;3-3-3, hash_params, debug_info'),
     ),
  
 );

@@ -33,6 +33,7 @@ CREATE TABLE tx_naworkuri_uri (
     params tinytext NOT NULL,
 	hash_path tinytext NOT NULL,
 	hash_params tinytext NOT NULL,
+	debug_info text NOT NULL,
 
     PRIMARY KEY (uid),
     KEY parent (pid)

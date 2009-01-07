@@ -21,9 +21,11 @@ class tx_naworkuri {
 			$uri_params = $translator->uri2params($params['pObj']->siteScript);
 			
 			if ($uri_params){ // uri found
+				debug($params['pObj']);
 				$params['pObj']->id = $uri_params['id'];
 			    unset($uri_params['id']);
 			    $params['pObj']->mergingWithGetVars($uri_params);
+			    debug($params['pObj']);
 			} else { // handle 404
 				$conf = $translator->getConfiguration();
 				if (!empty($conf->pagenotfound)) {

@@ -27,13 +27,7 @@ class tx_naworkuri_cache {
 		
 		if ( $row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
 			return $row['path'];
-			
 		} else {
-			debug(array(
-				'cache_search_failure',
-				$id, $lang, $domain, $parameters,
-				md5($parameters)
-			));
 			return false; 
 		}
 	}
@@ -56,13 +50,6 @@ class tx_naworkuri_cache {
 			// make uri unique
 		$path = $this->unique($path, $domain);
 		
-		debug(array(
-				'cache_write',
-				$id, $lang, $domain, $parameters,
-				md5($parameters),
-				$path
-		));
-			
 			// save in dm
 		$save_record = array(
 			'pid' => $id,

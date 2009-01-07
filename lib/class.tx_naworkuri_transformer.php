@@ -130,8 +130,7 @@ class tx_naworkuri_transformer {
 		$cache_domain = $this->domain;
 
 		$cache_uri = $this->cache->read($cache_uid, $cache_lang, $cache_domain, $cache_params);
-		debug("cache read:".$cache_uri);
-  		if ( $cache_uri ) {
+  		if ( $cache_uri !== false ) {
   			$uri = $cache_uri;
   		} else {
   			$debug_info = '';

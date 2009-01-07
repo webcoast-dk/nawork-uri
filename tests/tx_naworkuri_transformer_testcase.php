@@ -22,41 +22,34 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 	 	$this->assertEquals( 1,1);
 	}
 
+	public function provider_test_params2uri_predefinedparts_works(){
+		return array(
+			array(
+				array( 
+					'number'=>123,
+					'predef_uri_value' => 1,
+					'no_cache' => 'no_cache',
+					'not_encoded_params' => 'not_encoded_value'
+				),
+				array('predef_uri_value'=>'predef_uri_part','number'=>'number-123') 
+			),
+		);
+	}
+	
 	/**
 	 * Enter description here...
 	 *
+	 * @dataProvider provider_test_params2uri_predefinedparts_works
+	 * 
 	 */
-	public function test_params2uri_predefinedparts_works(){
-		$params = array(
-			'number'=>123,
-			'predef_uri_value' => 1,
-			'no_cache' => 'no_cache',
-			'not_encoded_params' => 'not_encoded_value'
-		);
-		
+	public function test_params2uri_predefinedparts_works($params, $expected_parts, $error=''){
 		$encoded_params = array();
-		$parts = $this->test_subject->params2uri_predefinedparts(&$params, &$encoded_params);
-		
-			// check unencoded_params
+		$parts = $this->test_subject->params2uri_predefinedparts(&$params, &$params, &$encoded_params);
 		$this->assertEquals(
-			array('not_encoded_params' => 'not_encoded_value'),
-			$params,
-			'noenc'
+			$expected_parts ,
+			$parts,
+			$error
 		);
-			
-			// check encoded_params
-		$this->assertEquals(
-			array(
-				'number'=>123,
-				'predef_uri_value' => 1,
-				'no_cache' => 'no_cache'
-			),
-			$encoded_params,
-			'enc'
-		);
-
-			// check path
-		$this->assertEquals( array('predef_uri_value'=>'predef_uri_part','number'=>'number-123') ,$parts);
 		
 	}
 	
@@ -82,7 +75,7 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 	 */
 	public function test_params2uri_valuemaps_works($params, $expected_parts, $error=''){
 		$encoded_params = array();
-		$parts = $this->test_subject->params2uri_valuemaps(&$params, &$encoded_params);
+		$parts = $this->test_subject->params2uri_valuemaps(&$params, &$params, &$encoded_params);
 		
 		$this->assertEquals(
 			$expected_parts,
@@ -115,7 +108,7 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 	
 	public function test_params2uri_uriparts_works($params, $expected_parts, $error=''){
 		$encoded_params = array();
-		$parts = $this->test_subject->params2uri_uriparts(&$params, &$encoded_params);
+		$parts = $this->test_subject->params2uri_uriparts(&$params, &$params, &$encoded_params);
 		
 		$this->assertEquals(
 			$expected_parts,
@@ -123,44 +116,15 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 			$error
 		);
 	}
-	
-	
-	public function test_params2uri_pagepath_works(){
-		$params = array( 
-			'id'=>20,
-			'not_encoded_params' => 'not_encoded_value'
-		);
-		
-		$encoded_params = array();
-		$parts = $this->test_subject->params2uri_pagepath(&$params, &$encoded_params);
-		
-		$this->assertEquals(
-			array('not_encoded_params' => 'not_encoded_value'),
-			$params,
-			"not encoded params are wrong"
-		);
-		
-		$this->assertEquals(
-			array('id'=>20),
-			$encoded_params,
-			'encoded params wrong'
-		);
-		
-		$this->assertEquals(
-			array('id'=>'Kontaktlinsen/bam'),
-			$parts,
-			'created path is wrong'
-		);
-	}
 
 	
 	public function provider_test_params2uri_pagepath(){
 		return array(
-			array('20', 'Kontaktlinsen/bam', 'simple id is converted' ),
-			array('29', 'Brillenmode/hidden page', 'hidden pages are shown' ),
-			array('31', 'Brillenmode/folder/folder content', 'sysfolders are shown in path' ),
-			array('35', 'Brillenmode/blubbbb', 'sysfolders are shown in path' ),
-			
+			array(array(id=>'20'), 'Kontaktlinsen/bam', 'simple id is converted' ),
+			array(array(id=>'29'), 'Brillenmode/hidden page', 'hidden pages are shown' ),
+			array(array(id=>'31'), 'Brillenmode/folder/folder content', 'sysfolders are shown in path' ),
+			array(array(id=>'35'), 'Brillenmode/blubbbb', 'sysfolders are shown in path' ),
+			array(array(id=>'19','L'=>'1'), 'Glasses/foo_en', 'sysfolders are shown in path' ),
 		);
 	}
 	
@@ -171,12 +135,10 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 	 * @param unknown_type $utf_8_string
 	 * @param unknown_type $transliterated_string
 	 */
-	public function test_params2uri_pagepath($id, $path, $error){
+	public function test_params2uri_pagepath($params, $path, $error){
 
-		$params = array('id'=>$id,);
 		$encoded_params = array();
-		
-		$parts = $this->test_subject->params2uri_pagepath(&$params, &$encoded_params);
+		$parts = $this->test_subject->params2uri_pagepath(&$params, &$params, &$encoded_params);
 		
 		$this->assertEquals(
 			implode('/',$parts),

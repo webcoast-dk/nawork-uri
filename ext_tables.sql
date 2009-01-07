@@ -7,6 +7,14 @@ CREATE TABLE pages (
 ); 
 
 #
+# Modifying pages_language_overlay table
+#
+CREATE TABLE pages_language_overlay (
+	tx_naworkuri_pathsegment varchar(30) default '',
+	tx_naworkuri_exclude tinyint(1) unsigned default '0'
+);
+
+#
 # Table structure for table 'tx_naworkuri_uri'
 #
 CREATE TABLE tx_naworkuri_uri (

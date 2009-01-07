@@ -7,7 +7,7 @@ if (TYPO3_MODE == 'BE')	{
 }
 */
 
-	// add new fields to page records
+	// add new fields to page and pages_language_overlay records
 $tempColumns = Array( 
 	'tx_naworkuri_pathsegment' => array(
 		'label' => 'LLL:EXT:nawork_uri/locallang_db.xml:pages.tx_naworkuri_pathsegment',
@@ -29,6 +29,10 @@ $tempColumns = Array(
 t3lib_div::loadTCA('pages');
 t3lib_extMgm::addTCAcolumns('pages',$tempColumns,1);
 t3lib_extMgm::addToAllTCAtypes('pages','tx_naworkuri_pathsegment,tx_naworkuri_exclude','','after:title');
+
+t3lib_div::loadTCA('pages_language_overlay');
+t3lib_extMgm::addTCAcolumns('pages_language_overlay',$tempColumns,1);
+t3lib_extMgm::addToAllTCAtypes('pages_language_overlay','tx_naworkuri_pathsegment,tx_naworkuri_exclude','','after:title');
 
 	// add URI-Records
 t3lib_extMgm::allowTableOnStandardPages('tx_naworkuri_uri');

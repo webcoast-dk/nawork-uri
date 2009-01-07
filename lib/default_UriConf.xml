@@ -67,7 +67,6 @@
 	</uriparts>
  
 	<!-- remap parameters to constant values -->  
-	<!-- @TODO add localisation of valuemaps based on laguage-->
 	<valuemaps>
 		<valuemap>
 			<parameter>L</parameter>

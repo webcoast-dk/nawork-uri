@@ -112,10 +112,11 @@ class tx_naworkuri_transformer {
 		}
 		
 			// create new uri because no exact match was found in cache
-		$original_params = $params;
-		$encoded_params  = array();
-		$encoded_uri     = $this->params2uri_process_parameters(&$original_params, &$encoded_params);
-		
+		$original_params  = $params;
+		$encoded_params   = array();
+		$unencoded_params = $original_params;
+		$encoded_uri      = $this->params2uri_process_parameters(&$original_params, &$unencoded_params, &$encoded_params);
+		 
   			// check for cache entry with these uri an create cache entry if needed 
   		$cache_data  = $encoded_params;
 		$cache_uid   = (int)$cache_data['id'];
@@ -134,10 +135,9 @@ class tx_naworkuri_transformer {
   			$uri = $this->cache->write($cache_uid, $cache_lang, $cache_domain, $cache_params, $cache_path); 
   		}
   		
-  			// readd not encoded parameters
-  			
+  			// read not encoded parameters
   		$i =0; 
-  		foreach ($original_params as $key => $value){
+  		foreach ($unencoded_params as $key => $value){
   			$uri.= ( ($i>0)?'&':'?' ).$key.'='.$value;
   			$i++;
   		}
@@ -146,13 +146,13 @@ class tx_naworkuri_transformer {
   				
 	}	
 	
-	public function params2uri_process_parameters(&$original_params, &$encoded_params) {
+	public function params2uri_process_parameters(&$original_params, &$unencoded_params, &$encoded_params) {
 
 			// transform the parameters
-		$predef_path    = $this->params2uri_predefinedparts(&$original_params, &$encoded_params );
- 		$valuemaps_path = $this->params2uri_valuemaps(&$original_params, &$encoded_params );
-		$uriparts_path  = $this->params2uri_uriparts(&$original_params, &$encoded_params );
- 		$page_path      = $this->params2uri_pagepath(&$original_params, &$encoded_params );
+		$predef_path    = $this->params2uri_predefinedparts(&$original_params, &$unencoded_params, &$encoded_params);
+ 		$valuemaps_path = $this->params2uri_valuemaps(&$original_params, &$unencoded_params, &$encoded_params);
+		$uriparts_path  = $this->params2uri_uriparts(&$original_params, &$unencoded_params, &$encoded_params);
+ 		$page_path      = $this->params2uri_pagepath(&$original_params, &$unencoded_params, &$encoded_params);
  		
   		if (!empty($this->conf->partorder) && !empty($this->conf->partorder->part)) {
   			$partorder = Array();
@@ -204,33 +204,33 @@ class tx_naworkuri_transformer {
 	 * @param array $encoded_params : encoded Parameters
 	 * @return array : Path Elements for final URI 
 	 */
-	public function params2uri_predefinedparts(&$params, &$encoded_params ){
+	public function params2uri_predefinedparts(&$original_params, &$unencoded_params, &$encoded_params ){
 		
 		$parts = array();
   		foreach ($this->conf->predefinedparts->part as $part) {
 
 			$param_name = (string)$part->parameter;
-  			if ( $param_name && isset($params[$param_name]) ) {
+  			if ( $param_name && isset($unencoded_params[$param_name]) ) {
   				$value  = (string)$part->value;
   				$key    = (string)$part->attributes()->key;
 			
   				if (!$key) {
   					if (!$value && $value!=='0' ) {
-	  					$encoded_params[$param_name]=$params[$param_name];
-	  					unset($params[$param_name]);
-	  				} elseif ($params[$param_name] == $value) {
-  						$encoded_params[$param_name]=$params[$param_name];
-  						unset($params[$param_name]);
+	  					$encoded_params[$param_name]=$unencoded_params[$param_name];
+	  					unset($unencoded_params[$param_name]);
+	  				} elseif ($unencoded_params[$param_name] == $value) {
+  						$encoded_params[$param_name]=$unencoded_params[$param_name];
+  						unset($unencoded_params[$param_name]);
 	  				}
   				} else {
-  					if ($value && $params[$param_name] == $value ){
-  						$encoded_params[$param_name]=$params[$param_name];
-	  					unset($params[$param_name]);
+  					if ($value && $unencoded_params[$param_name] == $value ){
+  						$encoded_params[$param_name]=$unencoded_params[$param_name];
+	  					unset($unencoded_params[$param_name]);
 	  					$parts[$param_name] = $key;
   					} else if (!$value) {
-  						$parts[$param_name] = str_replace('###', $params[$param_name], $key);
-  						$encoded_params[$param_name]=$params[$param_name];
-						unset($params[$param_name]);  						
+  						$parts[$param_name] = str_replace('###', $unencoded_params[$param_name], $key);
+  						$encoded_params[$param_name]=$unencoded_params[$param_name];
+						unset($unencoded_params[$param_name]);  						
   					}
   				}
   			}
@@ -245,23 +245,23 @@ class tx_naworkuri_transformer {
 	 * @param unknown_type $encoded_params
 	 * @return unknown
 	 */
-	public function params2uri_valuemaps (&$params, &$encoded_params ){
+	public function params2uri_valuemaps (&$original_params, &$unencoded_params, &$encoded_params ){
 		$parts = array();
 		foreach ($this->conf->valuemaps->valuemap as $valuemap) {
 			$param_name = (string)$valuemap->parameter;
-  			if ( $param_name && isset($params[$param_name]) ) {
+  			if ( $param_name && isset($unencoded_params[$param_name]) ) {
 				foreach($valuemap->value as $value){
-					if ( (string)$value == $params[$param_name]){
+					if ( (string)$value == $unencoded_params[$param_name]){
 						$key = (string)$value->attributes()->key;
 						$remove = (string)$value->attributes()->remove;
 						if (!$remove){
 							if ($key) {
 								$parts[$param_name] = $key;
 							}
-							$encoded_params[$param_name]=$params[$param_name];
-							unset($params[$param_name]);  
+							$encoded_params[$param_name]=$unencoded_params[$param_name];
+							unset($unencoded_params[$param_name]);  
 						} else {
-							unset($params[$param_name]);
+							unset($unencoded_params[$param_name]);
 						}	
 					}  	
 				}			
@@ -279,22 +279,22 @@ class tx_naworkuri_transformer {
 	 * @param array $encoded_params
 	 * @return unknown
 	 */
-	public function params2uri_uriparts (&$params, &$encoded_params ){
+	public function params2uri_uriparts (&$original_params, &$unencoded_params, &$encoded_params){
 		$parts = array();
 		foreach ($this->conf->uriparts->part as $uripart) {
 			
 			$param_name = (string)$uripart->parameter;
-  			if ( $param_name && isset($params[$param_name]) ) {
+  			if ( $param_name && isset($unencoded_params[$param_name]) ) {
   				$table  = (string)$uripart->table;
   				$field  = (string)$uripart->field;
-  				$where  = str_replace('###',$params[$param_name], (string)$uripart->where);
+  				$where  = str_replace('###',$unencoded_params[$param_name], (string)$uripart->where);
   				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery($field, $table, $where, '', '' ,1 );
   				if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
   					foreach ($row as $key=>$value){
   						if ($value){
   							$parts[$param_name] = $value;
-							$encoded_params[$param_name]=$params[$param_name];
-							unset($params[$param_name]); 
+							$encoded_params[$param_name]=$unencoded_params[$param_name];
+							unset($unencoded_params[$param_name]); 
 							break;	
   						}
   					}
@@ -312,15 +312,15 @@ class tx_naworkuri_transformer {
 	 * @param unknown_type $encoded_params
 	 * @return unknown
 	 */
-	public function params2uri_pagepath (&$params, &$encoded_params ) {
+	public function params2uri_pagepath (&$original_params, &$unencoded_params, &$encoded_params) {
 		$parts = array();
-		if ($this->conf->pagepath && $params['id']){
+		if ($this->conf->pagepath && $unencoded_params['id']){
 			 
 				// read alias and cast to int
-			if (is_numeric($params['id']) ){
-				$id = (int)$params['id'];
+			if (is_numeric($unencoded_params['id']) ){
+				$id = (int)$unencoded_params['id'];
 			} else {
-				$id = (int)$GLOBALS['TSFE']->sys_page->getPageIdFromAlias($params['id']);
+				$id = (int)$GLOBALS['TSFE']->sys_page->getPageIdFromAlias($unencoded_params['id']);
 			}
 			
 				// get setup
@@ -334,9 +334,24 @@ class tx_naworkuri_transformer {
 				$row   = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
 				if (!$row) break; // no page found
 				
-					// translate
-				if (TYPO3_MODE=='FE'){
-					$row   = $GLOBALS['TSFE']->sys_page->getPageOverlay($row);
+					// translate pagepath if needed
+					// @TODO some languages have to be excluded here
+				$lang = 0;
+				if ( $GLOBALS['TSFE'] && $GLOBALS['TSFE']->config['config']['sys_language_uid']){
+					$lang = (int)$GLOBALS['TSFE']->config['config']['sys_language_uid'];
+				}
+				if (isset($original_params['L'])) {
+					$lang = (int)$original_params['L'];
+				}
+				
+				if ( $lang > 0 ){
+					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( '*' , 'pages_language_overlay', 'pid='.$id.' AND deleted=0 AND sys_language_uid='.$lang, '', '' ,1 );
+					$translated_row   = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
+					foreach ($fields as $field){
+						if ($translated_row[$field] ) {
+							$row[$field] = $translated_row[$field];
+						}
+					}
 				}
 					// extract part
 				if ($row['tx_naworkuri_exclude'] == 0 ){
@@ -359,8 +374,8 @@ class tx_naworkuri_transformer {
 			} 
 			
 			
-			$encoded_params['id']=$params['id'];
-			unset($params['id']);  
+			$encoded_params['id']=$unencoded_params['id'];
+			unset($unencoded_params['id']);  
 		}
 		
 		return array('id'=>implode('/',$parts));

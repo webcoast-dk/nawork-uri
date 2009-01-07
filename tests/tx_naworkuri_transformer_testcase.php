@@ -149,6 +149,25 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 	}
 	
 	
+	public function provider_test_path_encoding(){
+		return array(
+			array( array('id'=>5),  'ueber-fielmann/'),
+			array( array('id'=>23), 'ueber-fielmann/die-geschichte-der-brille/' ),
+			array( array('id'=>23), 'ueber-fielmann/die-geschichte-der-brille/' ),
+			array( array('id'=>20, 'type'=>50, "L"=>0 ), 'kontaktlinsen/bam/text/'),
+			array( array('id'=>20, 'type'=>50, "L"=>0 , 'unknown_param'=>'unknown_value') , 'kontaktlinsen/bam/text/?unknown_param=unknown_value'),
+			array( array('id'=>23, 'type'=>99 ), 'ueber-fielmann/die-geschichte-der-brille/?type=99' ),
+			array( array('id'=>23, 'type'=>50 ), 'ueber-fielmann/die-geschichte-der-brille/text/' ),
+			array( array('id'=>1),  ''),		
+			array( array('id'=>1,'no_cache'=>1),  '1/'),		
+			array( array('no_cache'=>1,'id'=>1),  '1/'),		
+			array( array('no_cache'=>'1','id'=>"1"),  '1/'),		
+			
+			/*
+			array( array('id'=>9, 'L'=>1, 'type'=>50 ), 'en/glasses/' ) // translating of pagepath cannot be testet in BE
+			*/ 
+		);	
+	}
 	
 	/**
 	 * General Path encoding tests
@@ -161,21 +180,7 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 		$this->assertEquals( $this->test_subject->params2uri($params), $uri );
 	}
 	
-	public function provider_test_path_encoding(){
-		return array(
-			array( array('id'=>5),  'ueber-fielmann/'),
-			array( array('id'=>23), 'ueber-fielmann/die-geschichte-der-brille/' ),
-			array( array('id'=>23), 'ueber-fielmann/die-geschichte-der-brille/' ),
-			array( array('id'=>20, 'type'=>50, "L"=>0 ), 'kontaktlinsen/bam/text/'),
-			array( array('id'=>20, 'type'=>50, "L"=>0 , 'unknown_param'=>'unknown_value') , 'kontaktlinsen/bam/text/?unknown_param=unknown_value'),
-			array( array('id'=>23, 'type'=>99 ), 'ueber-fielmann/die-geschichte-der-brille/?type=99' ),
-			array( array('id'=>23, 'type'=>50 ), 'ueber-fielmann/die-geschichte-der-brille/text/' ),
-			/*
-			array( array('id'=>9, 'L'=>1, 'type'=>50 ), 'en/glasses/' ) // translating of pagepath cannot be testet in BE
-			*/ 
-		);	
-	}
-
+	
 	public function test_uri2params_works_ignores_extra_params() {
 		$this->assertEquals( array('id'=>20, 'type'=>50, "L"=>0 ), $this->test_subject->uri2params('kontaktlinsen/bam/text/?unknown_param=unknown_value') );
 	}

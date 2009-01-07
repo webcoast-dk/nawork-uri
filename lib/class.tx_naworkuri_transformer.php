@@ -61,6 +61,10 @@ class tx_naworkuri_transformer {
 		}
 		return self::$instance;
 	}
+	
+	public function getConfiguration(){
+		return $this->conf;
+	}
   
 	/**
 	 * Convert the uri path to the request parameters
@@ -80,10 +84,7 @@ class tx_naworkuri_transformer {
         	$cachedparams = array_merge($cachedparams, $this->helper->explode_parameters($row['params']));
         	return $cachedparams;
         }
-        
-        	// @TODO handle 404 here
-        	
-		return;
+		return false;
 	}
 		
 	/**

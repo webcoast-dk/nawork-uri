@@ -6,7 +6,12 @@
   
 	<pagenotfound>
 		<status>HTTP/1.0 404 Not Found</status>
+		<!--
 		<behavior type="message"><![CDATA[ <h1>Page not found!</h1> ]]></behavior>
+		<behavior type="redirect">http://localhost/fielmann/testcontent/404/</behavior>
+		<behavior type="page">http://localhost/fielmann/testcontent/404/</behavior>
+		-->
+		<behavior type="page">http://localhost/fielmann/testcontent/404/</behavior>
 	</pagenotfound>
 
 	
@@ -33,10 +38,10 @@
 	</predefinedparts>
 
 	<!-- pagetree >> path -->
+	<!-- @TODO add localisation of pagepath based on laguage -->
 	<pagepath>
 		<field>alias,subtitle,title</field>
 		<limit>100</limit>
-		
 	</pagepath>
 
 	<!-- remap parameters to db values -->  
@@ -62,6 +67,7 @@
 	</uriparts>
  
 	<!-- remap parameters to constant values -->  
+	<!-- @TODO add localisation of valuemaps based on laguage-->
 	<valuemaps>
 		<valuemap>
 			<parameter>L</parameter>

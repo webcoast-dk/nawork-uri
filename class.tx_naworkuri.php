@@ -19,12 +19,36 @@ class tx_naworkuri {
 				// translate uri
 			$translator = tx_naworkuri_transformer::getInstance($translator);
 			$uri_params = $translator->uri2params($params['pObj']->siteScript);
-						
-				// set id & other params
-			$params['pObj']->id = $uri_params['id'];
-		    unset($uri_params['id']);
-		    $params['pObj']->mergingWithGetVars($uri_params);
-
+			
+			if ($uri_params){ // uri found
+				$params['pObj']->id = $uri_params['id'];
+			    unset($uri_params['id']);
+			    $params['pObj']->mergingWithGetVars($uri_params);
+			} else { // handle 404
+				$conf = $translator->getConfiguration();
+				if (!empty($conf->pagenotfound)) {
+					header('Content-Type: text/html; charset=utf-8');
+				  	header((string)$conf->pagenotfound->status);
+	  				switch ((string)$conf->pagenotfound->behavior['type']) {
+			  			case 'message': 
+			  				$res = (string)$conf->pagenotfound->behavior; 
+			  				break;
+			  			case 'page':	
+			  				$res = implode('', file((string)$conf->pagenotfound->behavior)); 
+			  				break;
+			  			case 'redirect': 
+			  				$path = html_entity_decode((string)$conf->pagenotfound->behavior);
+						    if( !($_SERVER['REQUEST_METHOD']=='POST' && preg_match('/index.php/', $_SERVER['SCRIPT_NAME'])) ) {
+						      header('Location: '.$path,true,301);
+						      exit;
+						    } 
+		  				default: 
+		  					$res = '';
+	  				}
+				  	echo $res;
+				  	exit;
+			  	}
+			}
 		} 
 	}
 	

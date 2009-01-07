@@ -17,16 +17,32 @@ class tx_naworkuri_cache {
 		sort($exploded_params);
 		$parameters = implode('&',$exploded_params);
 		
+		
 			// lookup in db
 		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 			'path', 
-			'tx_naworkuri_uri', 
+			'tx_naworkuri_uri',
 			'deleted=0 AND pid='.$id.' AND sys_language_uid='.$lang.' AND domain="'.$domain.'" AND hash_params LIKE "'.md5($parameters).'"' 
 		);
+		
 		if ( $row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
+			debug(array(
+				'cache_search_sucess',
+				$id, $lang, $domain, $parameters,
+				md5($parameters),
+				$row['path']
+			));
+		
 			return $row['path'];
+			
+		} else {
+			debug(array(
+				'cache_search_failure',
+				$id, $lang, $domain, $parameters,
+				md5($parameters)
+			));
+			return false; 
 		}
-		return false; 
 	}
 	
 	/**

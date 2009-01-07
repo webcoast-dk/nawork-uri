@@ -94,7 +94,7 @@ class tx_naworkuri_transformer {
 	 */
 	public function params2uri ($params){
 		
-			// find already created uri
+			// find already created uri with exactly these parameters
 		$search = $params;
 		$search_uid   = (int)$search['id'];
 		$search_lang  = (int)($search['L'])?$search['L']:0;
@@ -110,12 +110,12 @@ class tx_naworkuri_transformer {
 			return $cache_uri;
 		}
 		
-			// create new uri because no exact match was found on cache
+			// create new uri because no exact match was found in cache
 		$original_params = $params;
 		$encoded_params  = array();
-		$encoded_uri     = $this->params2uri_path(&$original_params, &$encoded_params);
+		$encoded_uri     = $this->params2uri_process_parameters(&$original_params, &$encoded_params);
 		
-  			// lookup uri in cache 
+  			// check for cache entry with these uri an create cache entry if needed 
   		$cache_data  = $encoded_params;
 		$cache_uid   = (int)$cache_data['id'];
 		$cache_lang  = (int)($cache_data['L'])?$cache_data['L']:0;
@@ -124,16 +124,17 @@ class tx_naworkuri_transformer {
 		unset($cache_data['L']);
 		  
 		$cache_params = $this->helper->implode_parameters($cache_data);
+		$cache_path   = $this->helper->sanitize_uri($encoded_uri);
 		$cache_domain = $this->domain;
 			
   		if ( $tmp_uri = $this->cache->read($cache_uid, $cache_lang, $cache_domain, $cache_params) ) {
   			$uri = $tmp_uri;
   		} else {
-			$cache_path   = $this->helper->sanitize_uri($encoded_uri);
   			$uri = $this->cache->write($cache_uid, $cache_lang, $cache_domain, $cache_params, $cache_path); 
   		}
   		
-  			// add not encoded parameters
+  			// readd not encoded parameters
+  			
   		$i =0; 
   		foreach ($original_params as $key => $value){
   			$uri.= ( ($i>0)?'&':'?' ).$key.'='.$value;
@@ -144,7 +145,7 @@ class tx_naworkuri_transformer {
   				
 	}	
 	
-	public function params2uri_path(&$original_params, &$encoded_params) {
+	public function params2uri_process_parameters(&$original_params, &$encoded_params) {
 
 			// transform the parameters
 		$predef_path    = $this->params2uri_predefinedparts(&$original_params, &$encoded_params );

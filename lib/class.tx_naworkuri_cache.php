@@ -17,7 +17,7 @@ class tx_naworkuri_cache {
 		unset($params['id']);
 		unset($params['L']);
 		 
-		$imploded_params = $this->implode_parameters($params);
+		$imploded_params =$this->helper->implode_parameters($params);
 		
 		return $this->read($uid, $lang, $domain, $imploded_params);
 	}
@@ -29,7 +29,7 @@ class tx_naworkuri_cache {
 		unset($params['id']);
 		unset($params['L']);
 		 
-		$imploded_params = $this->implode_parameters($params);
+		$imploded_params = $this->helper->implode_parameters($params);
 		
 		return $this->write($uid, $lang, $domain, $imploded_params, $path, $debug_info);
 	}
@@ -116,16 +116,5 @@ class tx_naworkuri_cache {
 		return $tmp_uri;
 	}
 	
-	public function implode_parameters($params_array){
-		ksort($params_array);
-		$result = '';
-		$i = 0;
-		foreach ($params_array as $key => $value){
-			if ($i>0)  $result .= '&';
-			$result .= $key.'='.$value;
-			$i++;
-		}
-		return $result;
-	}
 }
 ?>

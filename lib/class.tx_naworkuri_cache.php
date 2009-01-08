@@ -34,25 +34,21 @@ class tx_naworkuri_cache {
 	}
 	
 	/**
-	 * Write a new URI to cache
+	 * Read Cache entry for the given URI
 	 *
-	 * @param array $params Parameter Array
-	 * @param string $domain current Domain
-	 * @param string $path preferred Path
-	 * @param string $debug_info Debug Infos
-	 * @return string URI wich was stored for the params
+	 * @param string $path URI Path
+	 * @param string $domain Current Domain
+	 * @return array cache result
 	 */
-	public function write_params ($params, $domain, $path, $debug_info=''){
-		$uid   = (int)$params['id'];
-		$lang  = (int)($params['L'])?$params['L']:0;
-		
-		unset($params['id']);
-		unset($params['L']);
-		 
-		$imploded_params = $this->helper->implode_parameters($params);
-		
-		return $this->write($uid, $lang, $domain, $imploded_params, $path, $debug_info);
+	public function read_path ($path, $domain){
+		$hash_path = md5($path);
+  		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('pid, sys_language_uid, params','tx_naworkuri_uri', 'deleted=0 AND hash_path="'.$hash_path.'" AND domain="'.$domain.'"' );
+        if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
+        	return $row;
+        }
+		return false;
 	}
+
 	
 	/**
 	 * Find the cached URI for the given parameters 
@@ -79,6 +75,27 @@ class tx_naworkuri_cache {
 	}
 	
 
+	/**
+	 * Write a new URI to cache
+	 *
+	 * @param array $params Parameter Array
+	 * @param string $domain current Domain
+	 * @param string $path preferred Path
+	 * @param string $debug_info Debug Infos
+	 * @return string URI wich was stored for the params
+	 */
+	public function write_params ($params, $domain, $path, $debug_info=''){
+		$uid   = (int)$params['id'];
+		$lang  = (int)($params['L'])?$params['L']:0;
+		
+		unset($params['id']);
+		unset($params['L']);
+		 
+		$imploded_params = $this->helper->implode_parameters($params);
+		
+		return $this->write($uid, $lang, $domain, $imploded_params, $path, $debug_info);
+	}
+	
 	/**
 	 * Write a new URI-Parameter combination to the cache
 	 *

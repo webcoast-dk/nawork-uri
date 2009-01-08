@@ -83,14 +83,14 @@ class tx_naworkuri_transformer {
       
 			// look into the db
 		list($path,$params) = explode('?',$uri);
-		$hash_path = md5($path);
-  		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('pid, sys_language_uid, params','tx_naworkuri_uri', 'deleted=0 AND hash_path="'.$hash_path.'" AND domain="'.$this->domain.'"' );
-        if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
-        		// params from str
-        	$cachedparams = Array();
-        	parse_str($row['params'], $cachedparams);
-        	$cachedparams['id'] = $row['pid'];
-        	$cachedparams['L'] = $row['sys_language_uid'];
+
+		$cache = $this->cache->read_path($path, $this->domain);
+        if ($cache){
+        		// cachedparams
+			$cachedparams = Array();
+        	parse_str($cache['params'], $cachedparams);
+        	$cachedparams['id'] = $cache['pid'];
+        	$cachedparams['L']  = $cache['sys_language_uid'];
         		// classic url params 
         	$getparams = Array();
         	parse_str($params, $getparams);

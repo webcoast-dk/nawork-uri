@@ -16,7 +16,7 @@ class tx_naworkuri_transformer {
 	private $cache;
 
 	/**
-	 * constructor
+	 * Constructor
 	 *
 	 * @param SimpleXMLElement $configXML
 	 */
@@ -62,6 +62,11 @@ class tx_naworkuri_transformer {
 		return self::$instance;
 	}
 	
+	/**
+	 * get Current Configuration
+	 *
+	 * @return SimpleXMLElement Configuration
+	 */
 	public function getConfiguration(){
 		return $this->conf;
 	}
@@ -70,6 +75,7 @@ class tx_naworkuri_transformer {
 	 * Convert the uri path to the request parameters
 	 *
 	 * @param string $uri
+	 * @return array Parameters extracted from path and GET
 	 */
 	public function uri2params ($uri = ''){
 			// remove opening slash
@@ -95,9 +101,9 @@ class tx_naworkuri_transformer {
 	}
 		
 	/**
-	 * Enter description here...
+	 * Encode Parameters as URI-Path
 	 *
-	 * @param array $params
+	 * @param str $param_str Parameter string
 	 * @return string $uri encoded uri
 	 */
 	public function params2uri ($param_str){
@@ -114,8 +120,34 @@ class tx_naworkuri_transformer {
 		$original_params  = $params;
 		$encoded_params   = array();
 		$unencoded_params = $original_params;
-		$encoded_uri      = $this->params2uri_process_parameters(&$original_params, &$unencoded_params, &$encoded_params);
 		 
+	 		// transform the parameters to path segments
+  		$path = array();		 
+		$path = array_merge($path, $this->params2uri_predefinedparts(&$original_params, &$unencoded_params, &$encoded_params) );
+ 		$path = array_merge($path, $this->params2uri_valuemaps(&$original_params, &$unencoded_params, &$encoded_params) );
+		$path = array_merge($path, $this->params2uri_uriparts(&$original_params, &$unencoded_params, &$encoded_params) );
+ 		$path = array_merge($path, $this->params2uri_pagepath(&$original_params, &$unencoded_params, &$encoded_params) );
+ 		
+  			// order the params like configured 
+  		$ordered_params = array();
+  		foreach ($this->conf->paramorder->param as $param) {
+  			$param_name = (string)$param;
+  			if (isset($path[$param_name]) && $segment = $path[$param_name]){
+  				if ($segment) $ordered_params[]=$segment;
+  				unset($path[$param_name]);
+  			}
+  		}
+  			// add params with not specified order
+  		foreach ($path as $param=>$path_segment) {
+  			if ($path_segment) $ordered_params[]=$path_segment;
+  		}
+  			// return 
+  		if (count($ordered_params)){
+  			$encoded_uri = implode('/',$ordered_params).'/';
+  		} else {
+  			$encoded_uri = '';
+  		}
+		
   			// check for cache entry with these uri an create cache entry if needed 
 		$cache_uri = $this->cache->read_params($encoded_params, $this->domain);
   		if ( $cache_uri !== false ) {
@@ -141,62 +173,13 @@ class tx_naworkuri_transformer {
   				
 	}	
 	
-	public function params2uri_process_parameters(&$original_params, &$unencoded_params, &$encoded_params) {
-
-			// transform the parameters
-		$predef_path    = $this->params2uri_predefinedparts(&$original_params, &$unencoded_params, &$encoded_params);
- 		$valuemaps_path = $this->params2uri_valuemaps(&$original_params, &$unencoded_params, &$encoded_params);
-		$uriparts_path  = $this->params2uri_uriparts(&$original_params, &$unencoded_params, &$encoded_params);
- 		$page_path      = $this->params2uri_pagepath(&$original_params, &$unencoded_params, &$encoded_params);
- 		
-  		if (!empty($this->conf->partorder) && !empty($this->conf->partorder->part)) {
-  			$partorder = Array();
-  			foreach ($this->conf->partorder->part as $p) {
-  				$partorder[] = (string)$p;
-  			}  
-  		} else {
-  			$partorder = Array('pagepath','uriparts','valuemaps','predefinedparts');
-  		}
-  			
-  			// order the parts
-		$path = array();
-  		foreach ($partorder as $part_key) {
-  			switch ($part_key) {
-  				case 'predefinedparts': $path = array_merge($path,$predef_path);     break;
-  				case 'valuemaps':       $path = array_merge($path,$valuemaps_path);  break;
-  				case 'uriparts':   	    $path = array_merge($path,$uriparts_path);   break;
-  				case 'pagepath':        $path = array_merge($path,$page_path);       break;
-  			}
-  		}
-  		
-  		
-  			// order the params 
-  		$res = array();
-  		foreach ($this->conf->paramorder->param as $param) {
-  			$param_name = (string)$param;
-  			if (isset($path[$param_name]) && $segment = $path[$param_name]){
-  				if ($segment) $res[]=$segment;
-  				unset($path[$param_name]);
-  			}
-  		}
-  			// add params with not specified order
-  		foreach ($path as $param=>$path_segment) {
-  			if ($path_segment) $res[]=$path_segment;
-  		}
-  			// return 
-  		if (count($res)){
-  			return (implode('/',$res).'/');
-  		} else {
-  			return '';
-  		}
-	}
-	
 
 	/**
-	 * encode the predifined parts
-	 *
-	 * @param array $params : already encoded Parameters
-	 * @param array $encoded_params : encoded Parameters
+	 * Encode the predifined parts
+	 * 
+	 * @param array $original_params  : original Parameters
+	 * @param array $unencoded_params : unencoded Parameters
+	 * @param array $encoded_params   : encoded Parameters
 	 * @return array : Path Elements for final URI 
 	 */
 	public function params2uri_predefinedparts(&$original_params, &$unencoded_params, &$encoded_params ){
@@ -235,10 +218,11 @@ class tx_naworkuri_transformer {
 	
 	/**
 	 * Encode tha Valuemaps 
-	 *
-	 * @param unknown_type $params
-	 * @param unknown_type $encoded_params
-	 * @return unknown
+	 * 
+	 * @param array $original_params  : original Parameters
+	 * @param array $unencoded_params : unencoded Parameters
+	 * @param array $encoded_params   : encoded Parameters
+	 * @return array : Path Elements for final URI 
 	 */
 	public function params2uri_valuemaps (&$original_params, &$unencoded_params, &$encoded_params ){
 		$parts = array();
@@ -266,13 +250,12 @@ class tx_naworkuri_transformer {
 	}
 	
 	/**
-	 * Enter description here...
-	 *
-	 * @TODO add record translation handling
+	 * Encode the Uriparts
 	 * 
-	 * @param array $params
-	 * @param array $encoded_params
-	 * @return unknown
+	 * @param array $original_params  : original Parameters
+	 * @param array $unencoded_params : unencoded Parameters
+	 * @param array $encoded_params   : encoded Parameters
+	 * @return array : Path Elements for final URI 
 	 */
 	public function params2uri_uriparts (&$original_params, &$unencoded_params, &$encoded_params){
 		$parts = array();
@@ -301,11 +284,12 @@ class tx_naworkuri_transformer {
 	}
 	
 	/**
-	 * Enter description here...
+	 * Encode the Pagepath
 	 *
-	 * @param unknown_type $params
-	 * @param unknown_type $encoded_params
-	 * @return unknown
+	 * @param array $original_params  : original Parameters
+	 * @param array $unencoded_params : unencoded Parameters
+	 * @param array $encoded_params   : encoded Parameters
+	 * @return array : Path Elements for final URI 
 	 */
 	public function params2uri_pagepath (&$original_params, &$unencoded_params, &$encoded_params) {
 		$parts = array();

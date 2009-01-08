@@ -80,19 +80,12 @@
 			<value key="pdf">55</value>
 		</valuemap>
 	</valuemaps>
-  
+
+	<!-- define the order of parameter path segments -->  
 	<paramorder>
 		<param>L</param>
 		<param>id</param>
 		<param>type</param>
 	</paramorder>
-  
-	<!-- the order of the different parts -->
-	<partorder>
-		<part>pagepath</part>
-		<part>uriparts</part>
-		<part>valuemaps</part>
-		<part>predefinedparts</part>
-	</partorder>
   
 </cooluri>

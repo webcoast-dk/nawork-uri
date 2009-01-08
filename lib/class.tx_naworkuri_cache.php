@@ -6,10 +6,21 @@ class tx_naworkuri_cache {
 	
 	private $helper;
 	
+	/**
+	 * Constructor
+	 *
+	 */
 	public function __construct (){
 		$this->helper = t3lib_div::makeInstance('tx_naworkuri_helper');
 	}
 	
+	/**
+	 * Read a previously created URI from cache 
+	 *
+	 * @param array $params Parameter Array
+	 * @param string $domain current Domain
+	 * @return string URI if found otherwise false
+	 */
 	public function read_params ($params, $domain){
 		$uid   = (int)$params['id'];
 		$lang  = (int)($params['L'])?$params['L']:0;
@@ -22,6 +33,15 @@ class tx_naworkuri_cache {
 		return $this->read($uid, $lang, $domain, $imploded_params);
 	}
 	
+	/**
+	 * Write a new URI to cache
+	 *
+	 * @param array $params Parameter Array
+	 * @param string $domain current Domain
+	 * @param string $path preferred Path
+	 * @param string $debug_info Debug Infos
+	 * @return string URI wich was stored for the params
+	 */
 	public function write_params ($params, $domain, $path, $debug_info=''){
 		$uid   = (int)$params['id'];
 		$lang  = (int)($params['L'])?$params['L']:0;
@@ -35,7 +55,7 @@ class tx_naworkuri_cache {
 	}
 	
 	/**
-	 * find the cached uri entry for the given parameters 
+	 * Find the cached URI for the given parameters 
 	 * 
 	 * @param int $id        : the if param
 	 * @param int $lang      : the L param
@@ -60,10 +80,15 @@ class tx_naworkuri_cache {
 	
 
 	/**
-	 * write a new uri param combination to the cache
+	 * Write a new URI-Parameter combination to the cache
 	 *
-	 * @param unknown_type $params
-	 * @param unknown_type $uri
+	 * @param int $id id Parameter
+	 * @param int $lang L Parameter
+	 * @param string $domain current Domain
+	 * @param string $parameters URI Paramters 
+	 * @param string $path Preferred URI Path
+	 * @param string $debug_info Debig Informations
+	 * @return string URI wich was stored for the params
 	 */
 	public function write($id, $lang, $domain, $parameters, $path, $debug_info = ''){
 

@@ -1,12 +1,18 @@
 <?php
 
+/*
+ * Helper functions
+ */
 
 class tx_naworkuri_helper {
 	
-	/*
-	 * Helper functions
-	 */
 	
+	/**
+	 * Explode URI Parameters
+	 *
+	 * @param string $param_string Parameter Part of URI
+	 * @return array Exploded Parameters 
+	 */
 	public function explode_parameters($param_string){
 		/*
 		$res = array();
@@ -23,6 +29,12 @@ class tx_naworkuri_helper {
 		return $result;
 	}
   
+	/**
+	 * Implode URI Parameters
+	 *
+	 * @param array $params_array Parameter Array
+	 * @return string Imploded Parameters
+	 */
 	public function implode_parameters($params_array){
 		ksort($params_array);
 		$result = '';
@@ -36,7 +48,7 @@ class tx_naworkuri_helper {
 	}
 	
 	/**
-	 * transliterate string to iso
+	 * Sanitize the Path 
 	 *
 	 * @TODO find a better transliteration solution
 	 * @param string $string
@@ -52,20 +64,7 @@ class tx_naworkuri_helper {
 	  	$uri = preg_replace( '/[\s-]+/u', '-', $uri);
 			// remove tags
 		$uri = strip_tags($uri);
-
-/*
-	 if(@function_exists('iconv'))
-    {
-        return iconv($from, $to, $str);
-    }
-    else if(@function_exists('recode_string'))
-    {
-        return recode_string($from . '..'  . $to, $str);
-    }
-
-// recode 
-*/
-		
+			// 
 	  	$sonderzeichen = array( 
 			'ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'ß' => 'ss',
 			'Ä' => 'ae', 'Ö' => 'oe', 'Ü' => 'ue',
@@ -94,8 +93,6 @@ class tx_naworkuri_helper {
 	 
 		$uri = strtr($uri, $sonderzeichen);
 	    
-	//	if ( !preg_match('/[\x80-\xff]/', $uri) )
-	//        return $uri;
 	  
         $chars = array(
 	        // Decompositions for Latin-1 Supplement

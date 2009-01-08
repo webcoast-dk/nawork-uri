@@ -85,7 +85,7 @@ class tx_naworkuri_transformer {
         	parse_str($row['params'], $cachedparams);
         	$cachedparams['id'] = $row['pid'];
         	$cachedparams['L'] = $row['sys_language_uid'];
-        		// params from get
+        		// classic url params 
         	$getparams = Array();
         	parse_str($params, $getparams);
         		// merged result

@@ -3,21 +3,47 @@
 require_once (t3lib_extMgm::extPath('nawork_uri').'/lib/class.tx_naworkuri_helper.php');
 
 class tx_naworkuri_cache {
-				
+	
+	private $helper;
+	
+	public function __construct (){
+		$this->helper = t3lib_div::makeInstance('tx_naworkuri_helper');
+	}
+	
+	public function read_params ($params, $domain){
+		$uid   = (int)$params['id'];
+		$lang  = (int)($params['L'])?$params['L']:0;
+		
+		unset($params['id']);
+		unset($params['L']);
+		 
+		$imploded_params = $this->implode_parameters($params);
+		
+		return $this->read($uid, $lang, $domain, $imploded_params);
+	}
+	
+	public function write_params ($params, $domain, $path, $debug_info=''){
+		$uid   = (int)$params['id'];
+		$lang  = (int)($params['L'])?$params['L']:0;
+		
+		unset($params['id']);
+		unset($params['L']);
+		 
+		$imploded_params = $this->implode_parameters($params);
+		
+		return $this->write($uid, $lang, $domain, $imploded_params, $path, $debug_info);
+	}
+	
 	/**
-	 * find the cached uri entry for the given parameters if any 
+	 * find the cached uri entry for the given parameters 
 	 * 
-	 * @param array $params
-	 * @return string : uri wich matches to these params otherwise false 
+	 * @param int $id        : the if param
+	 * @param int $lang      : the L param
+	 * @param string $domain : the current domain '' for not multidomain setups
+	 * @param array $params  : other  url parameters
+	 * @return string        : uri wich matches to these params otherwise false 
 	 */
 	public function read ($id, $lang, $domain, $parameters){
-
-			// sort parameters
-		$exploded_params = explode('&',$parameters);
-		sort($exploded_params);
-		$parameters = implode('&',$exploded_params);
-		
-		
 			// lookup in db
 		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 			'path', 
@@ -32,21 +58,15 @@ class tx_naworkuri_cache {
 		}
 	}
 	
+
 	/**
 	 * write a new uri param combination to the cache
 	 *
 	 * @param unknown_type $params
 	 * @param unknown_type $uri
 	 */
-	
-	// public function write($params, $uri){
 	public function write($id, $lang, $domain, $parameters, $path, $debug_info = ''){
 
-			// sort parameters
-		$exploded_params = explode('&',$parameters);
-		sort($exploded_params);
-		$parameters = implode('&',$exploded_params);
-		
 			// make uri unique
 		$path = $this->unique($path, $domain);
 		
@@ -94,6 +114,18 @@ class tx_naworkuri_cache {
 			} while ( $GLOBALS['TYPO3_DB']->sql_num_rows($dbres) > 0 && $append < 100);
 		}
 		return $tmp_uri;
+	}
+	
+	public function implode_parameters($params_array){
+		ksort($params_array);
+		$result = '';
+		$i = 0;
+		foreach ($params_array as $key => $value){
+			if ($i>0)  $result .= '&';
+			$result .= $key.'='.$value;
+			$i++;
+		}
+		return $result;
 	}
 }
 ?>

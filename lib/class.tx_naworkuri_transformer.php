@@ -80,9 +80,16 @@ class tx_naworkuri_transformer {
 		$hash_path = md5($path);
   		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('pid, sys_language_uid, params','tx_naworkuri_uri', 'deleted=0 AND hash_path="'.$hash_path.'" AND domain="'.$this->domain.'"' );
         if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
-        	$cachedparams = Array('id'=>$row['pid'],'L'=>$row['sys_language_uid']);
-        	$cachedparams = array_merge($cachedparams, $this->helper->explode_parameters($row['params']));
-        	return $cachedparams;
+        		// params from str
+        	$cachedparams = Array();
+        	parse_str($row['params'], $cachedparams);
+        	$cachedparams['id'] = $row['pid'];
+        	$cachedparams['L'] = $row['sys_language_uid'];
+        		// params from get
+        	$getparams = Array();
+        	parse_str($params, $getparams);
+        		// merged result
+        	return array_merge($cachedparams, $getparams);;
         }
 		return false;
 	}
@@ -96,18 +103,7 @@ class tx_naworkuri_transformer {
 	public function params2uri ($params){
 		
 			// find already created uri with exactly these parameters
-		$search = $params;
-		$search_uid   = (int)$search['id'];
-		$search_lang  = (int)($search['L'])?$search['L']:0;
-		
-		unset($search['id']);
-		unset($search['L']);
-		  
-		$search_params = $this->helper->implode_parameters($search);
-		$search_hash   = md5($search_params);
-		$search_domain = $this->domain;
-		
-		$cache_uri = $this->cache->read($search_uid, $search_lang, $search_domain, $search_params);	
+		$cache_uri = $this->cache->read_params($params, $this->domain);	
 		if ( $cache_uri !== false ) {
 			return $cache_uri;
 		}
@@ -119,18 +115,7 @@ class tx_naworkuri_transformer {
 		$encoded_uri      = $this->params2uri_process_parameters(&$original_params, &$unencoded_params, &$encoded_params);
 		 
   			// check for cache entry with these uri an create cache entry if needed 
-  		$cache_data  = $encoded_params;
-		$cache_uid   = (int)$cache_data['id'];
-		$cache_lang  = (int)($cache_data['L'])?$cache_data['L']:0;
-		
-		unset($cache_data['id']);
-		unset($cache_data['L']);
-		  
-		$cache_params = $this->helper->implode_parameters($cache_data);
-		$cache_path   = $this->helper->sanitize_uri($encoded_uri);
-		$cache_domain = $this->domain;
-
-		$cache_uri = $this->cache->read($cache_uid, $cache_lang, $cache_domain, $cache_params);
+		$cache_uri = $this->cache->read_params($encoded_params, $this->domain);
   		if ( $cache_uri !== false ) {
   			$uri = $cache_uri;
   		} else {
@@ -138,8 +123,9 @@ class tx_naworkuri_transformer {
   			$debug_info .= "original_params  : ".$this->helper->implode_parameters($original_params).chr(10);
   			$debug_info .= "encoded_params   : ".$this->helper->implode_parameters($encoded_params).chr(10);
   			$debug_info .= "unencoded_params : ".$this->helper->implode_parameters($unencoded_params).chr(10);
-  			  			
-  			$uri = $this->cache->write($cache_uid, $cache_lang, $cache_domain, $cache_params, $cache_path, $debug_info); 
+
+  			$cache_path   = $this->helper->sanitize_uri($encoded_uri);
+  			$uri = $this->cache->write_params($encoded_params, $this->domain, $cache_path, $debug_info);
   		}
   		
   			// read not encoded parameters

@@ -45,6 +45,7 @@ class tx_naworkuri_modfunc_info extends t3lib_extobjbase {
 						global $LANG;
 
 						return array (
+							/*
 							'pages' => array (
 								0 => $LANG->getLL('pages_0'),
 								2 => $LANG->getLL('pages_2'),
@@ -55,6 +56,7 @@ class tx_naworkuri_modfunc_info extends t3lib_extobjbase {
 								1 => $LANG->getLL('stat_type_1'),
 								2 => $LANG->getLL('stat_type_2'),
 							),
+							*/
 							'depth' => array(
 								0 => $LANG->getLL('depth_0'),
 								1 => $LANG->getLL('depth_1'),

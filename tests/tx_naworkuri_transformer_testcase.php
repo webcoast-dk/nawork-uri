@@ -149,7 +149,7 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 	}
 	
 	
-	public function provider_test_path_encoding(){
+	public function provider_test_params2uri(){
 		return array(
 			array( array('id'=>5),  'ueber-fielmann/'),
 			array( array('id'=>23), 'ueber-fielmann/die-geschichte-der-brille/' ),
@@ -162,27 +162,43 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 			array( array('id'=>1,'no_cache'=>1),  '1/'),		
 			array( array('no_cache'=>1,'id'=>1),  '1/'),		
 			array( array('no_cache'=>'1','id'=>"1"),  '1/'),		
-			
-			/*
-			array( array('id'=>9, 'L'=>1, 'type'=>50 ), 'en/glasses/' ) // translating of pagepath cannot be testet in BE
-			*/ 
 		);	
 	}
 	
 	/**
 	 * General Path encoding tests
 	 * 
-	 * @dataProvider provider_test_path_encoding
+	 * @dataProvider provider_test_params2uri
 	 * @param array $params Parameters to encode
 	 * @param string $uri Expected URI
 	 */
-	public function test_path_encoding($params, $uri){
+	public function test_params2uri($params, $uri){
 		$this->assertEquals( $this->test_subject->params2uri($params), $uri );
 	}
 	
+	/**
+	 * Test data for method test_uri2params
+	 *
+	 * @return array
+	 */
+	public function provider_test_uri2params(){
+		return array(
+		 	array('kontaktlinsen/bam/text/', array('id'=>20, 'type'=>50, "L"=>0 )),
+		 	array('kontaktlinsen/bam/text/?unknown_param=unknown_value', array('id'=>20, 'type'=>50, "L"=>0,"unknown_param"=>'unknown_value' )),
+		  	array('kontaktlinsen/bam/text/?type=0&L=1', array('id'=>20, 'type'=>0, "L"=>1 )),
+		 	
+		 );
+	}
 	
-	public function test_uri2params_works_ignores_extra_params() {
-		$this->assertEquals( array('id'=>20, 'type'=>50, "L"=>0 ), $this->test_subject->uri2params('kontaktlinsen/bam/text/?unknown_param=unknown_value') );
+	/**
+	 * General Path encoding tests
+	 * 
+	 * @dataProvider provider_test_uri2params
+	 * @param array $params Parameters to encode
+	 * @param string $uri Expected URI
+	 */	
+	public function test_uri2params($uri, $params, $error='') {
+		$this->assertEquals($params, $this->test_subject->uri2params($uri), $error );
 	}
 }
 ?>

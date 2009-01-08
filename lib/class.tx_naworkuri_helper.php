@@ -8,12 +8,23 @@ class tx_naworkuri_helper {
 	 */
 	
 	public function explode_parameters($param_string){
+		/*
 		$res = array();
 		parse_str($param_string, $res);
-		return $res; 
+		return $res;
+		*/ 
+		$result = array();
+		$tmp = explode('&',$param_string);
+		foreach ($tmp as $part){
+			list($key,$value) = explode('=',$part);
+			$result[$key] = $value;
+		}
+		ksort($result);
+		return $result;
 	}
   
 	public function implode_parameters($params_array){
+		ksort($params_array);
 		$result = '';
 		$i = 0;
 		foreach ($params_array as $key => $value){

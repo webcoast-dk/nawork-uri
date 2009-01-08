@@ -16,20 +16,49 @@ class tx_naworkuri_helper_testcase extends tx_phpunit_testcase {
 		unset($this->test_subject);
 	}
 	
-	/**
-	 * Enter description here...
-	 *
-	 */
-	public function test_param_implode_works_basically() {
-		$this->assertEquals( 'id=2&L=1&foo[bar]=123', $this->test_subject->implode_parameters(array('id'=>2,'L'=>1,'foo[bar]'=>123 ) ) );
+	public function provider_test_param_implode(){
+		return array(
+			array(array('foo[bar]'=>123,'id'=>2,'L'=>1 ), 'L=1&foo[bar]=123&id=2' ),
+			array(array('id'=>2,'foo[bar]'=>123,'L'=>1 ), 'L=1&foo[bar]=123&id=2' ),
+		);
 	}
 	
 	/**
 	 * Enter description here...
-	 *
+	 * 
+	 * @dataProvider provider_test_param_implode
 	 */
-	public function test_param_explode_works_basically() {
-		$this->assertEquals( array('id'=>2,'L'=>1,'foo'=>array('bar'=>123 ) ) , $this->test_subject->explode_parameters('id=2&L=1&foo[bar]=123') );
+	public function test_param_implode($array, $imploded_array, $error='') {
+		$this->assertEquals(
+			$imploded_array,
+			$this->test_subject->implode_parameters( $array),
+			$error
+		);
+	}
+	
+	/**
+	 * Test-Data for test_param_explode
+	 *
+	 * @return array
+	 */
+	public function provider_test_param_explode(){
+		return array(
+			array('L=1&foo[bar]=123&id=2', array('foo[bar]'=>123,'id'=>2,'L'=>1 ) ),
+			array('foo[bar]=123&L=1&id=2', array('foo[bar]'=>123,'id'=>2,'L'=>1 ) ),
+		);
+	}
+	 
+	/**
+	 * Enter description here...
+	 * 
+	 * @dataProvider provider_test_param_explode
+	 */
+	public function test_param_explode($path, $exploded_array, $error= '') {
+		$this->assertEquals( 
+			$exploded_array , 
+			$this->test_subject->explode_parameters($path),
+			$error
+		 );
 	}
 
 	/**

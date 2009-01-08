@@ -100,7 +100,9 @@ class tx_naworkuri_transformer {
 	 * @param array $params
 	 * @return string $uri encoded uri
 	 */
-	public function params2uri ($params){
+	public function params2uri ($param_str){
+		
+		$params = $this->helper->explode_parameters($param_str);
 		
 			// find already created uri with exactly these parameters
 		$cache_uri = $this->cache->read_params($params, $this->domain);	

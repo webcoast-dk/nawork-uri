@@ -151,17 +151,17 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 	
 	public function provider_test_params2uri(){
 		return array(
-			array( array('id'=>5),  'ueber-fielmann/'),
-			array( array('id'=>23), 'ueber-fielmann/die-geschichte-der-brille/' ),
-			array( array('id'=>23), 'ueber-fielmann/die-geschichte-der-brille/' ),
-			array( array('id'=>20, 'type'=>50, "L"=>0 ), 'kontaktlinsen/bam/text/'),
-			array( array('id'=>20, 'type'=>50, "L"=>0 , 'unknown_param'=>'unknown_value') , 'kontaktlinsen/bam/text/?unknown_param=unknown_value'),
-			array( array('id'=>23, 'type'=>99 ), 'ueber-fielmann/die-geschichte-der-brille/?type=99' ),
-			array( array('id'=>23, 'type'=>50 ), 'ueber-fielmann/die-geschichte-der-brille/text/' ),
-			array( array('id'=>1),  ''),		
-			array( array('id'=>1,'no_cache'=>1),  '1/'),		
-			array( array('no_cache'=>1,'id'=>1),  '1/'),		
-			array( array('no_cache'=>'1','id'=>"1"),  '1/'),		
+			array( 'id=5'  , 'ueber-fielmann/'),
+			array( 'id=23' , 'ueber-fielmann/die-geschichte-der-brille/' ),
+			array( 'id=23' , 'ueber-fielmann/die-geschichte-der-brille/' ),
+			array( 'id=20&type=50&L=0' , 'kontaktlinsen/bam/text/'),
+			array( 'id=20&type=50&L=0&unknown_param=unknown_value' , 'kontaktlinsen/bam/text/?unknown_param=unknown_value'),
+			array( 'id=23&type=99', 'ueber-fielmann/die-geschichte-der-brille/?type=99' ),
+			array( 'id=23&type=50', 'ueber-fielmann/die-geschichte-der-brille/text/' ),
+			array( 'id=1'  , ''),		
+			array( 'id=1&no_cache=1',  '1/'),		
+			array( 'no_cache=1&id=1',  '1/'),		
+			array( 'no_cache=1&id=1',  '1/'),		
 		);	
 	}
 	

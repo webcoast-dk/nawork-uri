@@ -60,18 +60,7 @@ class tx_naworkuri_helper_testcase extends tx_phpunit_testcase {
 			$error
 		 );
 	}
-
-	/**
-	 * General transliteration Tests 
-	 * 
-	 * @dataProvider provider_test_sanitizing_of_uri
-	 * @param unknown_type $utf_8_string
-	 * @param unknown_type $transliterated_string
-	 */
-	public function test_sanitizing_of_uri($utf_8_string, $transliterated_string) {
-		$this->assertEquals( $this->test_subject->sanitize_uri($utf_8_string), $transliterated_string );
-	}
-
+	
 	public function provider_test_sanitizing_of_uri(){
 		return array(
 			array('über/ß', 'ueber/ss'),
@@ -84,5 +73,82 @@ class tx_naworkuri_helper_testcase extends tx_phpunit_testcase {
 			array('Über Fielmann/', 'ueber-fielmann/'),
 		);
 	}
+	
+	/**
+	 * General transliteration Tests 
+	 * 
+	 * @dataProvider provider_test_sanitizing_of_uri
+	 * @param unknown_type $utf_8_string
+	 * @param unknown_type $transliterated_string
+	 */
+	public function test_sanitizing_of_uri($utf_uri, $sanitized_uri) {
+		$this->assertEquals( $this->test_subject->sanitize_uri($utf_uri), $sanitized_uri );
+	}
+
+
+	public function provider_test_uri_limit_allowed_chars(){
+		return array(
+			array('foo/bar/' ,'foo/bar/'),
+			array('fooä/bar/dasä/' ,'foo/bar/das/'),
+			array('A-Za-z0-9-_.~' ,'A-Za-z0-9-_.~'),
+			array('Расширенный/поиск', '/'),
+			array('fooРасширенныйbar/поискbaz', 'foobar/baz'),
+		);
+	}
+	
+	/**
+	 * Limit the path to the allowed chars
+	 * 
+	 * Allowed chars :: A-Za-z0-9 - _ . ~
+	 * 
+	 * @dataProvider provider_test_uri_limit_allowed_chars
+	 * @param unknown_type $uri
+	 * @param unknown_type $res
+	 * @param unknown_type $error
+	 */
+	public function test_uri_limit_allowed_chars($uri, $res, $error=''){
+		$this->assertEquals( $this->test_subject->uri_limit_allowed_chars($uri), $res,  $error);
+	}
+	
+	public function provider_test_uri_handle_punctuation(){
+		return array(
+			array('!"#$&\'()*+,:;<=>?@[\\]^`{|}' ,'-'),
+			array('!"#$&\'()*+,:.;<=>?@[\\]^`{|}' ,'-.-'),
+			array('!"#$foo&\'()*+,/bar.;<=>?@[\\]baz^`{|}' ,'-foo-/bar.-baz-'),
+		);
+	}
+	
+	/**
+	 * Limit the path to the allowed chars
+	 * 
+	 * @dataProvider provider_test_uri_handle_punctuation
+	 * @param unknown_type $uri
+	 * @param unknown_type $res
+	 * @param unknown_type $error
+	 */
+	public function test_uri_handle_punctuation($uri, $res, $error=''){
+		$this->assertEquals( $this->test_subject->uri_handle_punctuation($uri), $res,  $error);
+	}
+	
+	public function provider_test_uri_make_wellformed(){
+		return array(
+			array('/foo/bar/' ,'foo/bar/'),
+			array('foo//bar///baz' ,'foo/bar/baz'),
+			array('foo/-foo-bar-/-baz/', 'foo/foo-bar/baz/'),
+		);
+	}
+	
+	/**
+	 * Limit the path to the allowed chars
+	 * 
+	 * @dataProvider provider_test_uri_make_wellformed
+	 * @param unknown_type $uri
+	 * @param unknown_type $res
+	 * @param unknown_type $error
+	 */
+	public function test_uri_make_wellformed($uri, $res, $error=''){
+		$this->assertEquals( $this->test_subject->uri_make_wellformed($uri), $res,  $error);
+	}
+	
 }
 ?>

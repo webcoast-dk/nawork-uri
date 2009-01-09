@@ -12,7 +12,8 @@ class tx_naworkuri_utf8_to_ascii_testcase extends tx_phpunit_testcase {
 		return array(
 			array('foo', 'foo'),
 			array('éä', 'ea'),
-			array('Расширенный поиск', 'Rasshiriennyi poisk'),/*
+			array('Расширенный поиск', 'Rasshiriennyi poisk'),
+/*
 			array('欢迎来到汉堡-亲水时尚之都', ''),
 			array('الحجز في الفنادق عن طريق الإنترنت', ''),
 			array('宿泊オンライン予約', ''),

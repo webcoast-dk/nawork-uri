@@ -49,23 +49,80 @@ class tx_naworkuri_helper {
 	
 	/**
 	 * Sanitize the Path 
-	 *
-	 * @TODO find a better transliteration solution
+	 * 
 	 * @param string $string
 	 * @return string
 	 */
 	
-	public static function sanitize_uri($uri) {
+	public function sanitize_uri($uri) {
 		
-			// no punctuation and space
-		$uri = str_replace( '&', '-', $uri);
-		$uri = str_replace( '.', '-', $uri);
-			// no whitespace
-	  	$uri = preg_replace( '/[\s-]+/u', '-', $uri);
-			// remove tags
 		$uri = strip_tags($uri);
-			// 
-	  	$sonderzeichen = array( 
+		$uri = strtolower($uri); 
+		
+		$uri = $this->uri_handle_punctuation($uri);
+		$uri = $this->uri_handle_whitespace($uri);
+		$uri = $this->uri_transliterate($uri);
+		$uri = $this->uri_limit_allowed_chars($uri);
+ 		$uri = $this->uri_make_wellformed($uri);
+ 		
+	    return $uri;
+	}  
+	
+	/**
+	 * Remove whitespace characters from uri
+	 *
+	 * @param string $uri
+	 * @return string
+	 */
+	function uri_handle_whitespace($uri){
+		return preg_replace( '/[\s]+/u', '-', $uri);
+	}
+	
+	/**
+	 * Convert punctuation chars to -
+	 *  ! " # $ & ' ( ) * + , : ; < = > ? @ [ \ ] ^ ` { | }
+	 *
+	 * @param string $uri
+	 * @return string
+	 */
+	function uri_handle_punctuation($uri){
+		return preg_replace( '/[\!\"\#\$\&\'\(\)\*\+\,\:\;\<\=\>\?\@\[\\\\\]\^\`\{\|\}]+/u', '-', $uri);
+	}
+	
+	/**
+	 * remove not allowed chars from uri
+	 * allowed chars A-Za-z0-9 - _ . ~
+	 * 
+	 * @param unknown_type $uri
+	 * @return unknown
+	 */
+	function uri_limit_allowed_chars($uri){
+		return preg_replace( '/[^A-Za-z0-9\/\-\_\.\~]+/u', '', $uri);
+	}
+	
+	/**
+	 * Remove some ugly uri-formatings:
+	 * - slashes from the Start
+	 * - double slashes
+	 * - -/ /-
+	 *
+	 * @param string $uri
+	 * @return string
+	 */
+	function uri_make_wellformed($uri){
+		$uri = preg_replace( '/[-]*[\/]+[-]*/u', '/', $uri);
+		$uri = preg_replace( '/^[\\/]+/u', '', $uri);
+		return $uri;
+	}
+	
+	/**
+	 * Transliterate unknown chars 
+	 * 
+	 * @param string $uri
+	 * @return string
+	 */
+	function uri_transliterate($uri){
+		 $sonderzeichen = array( 
 			'ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'ß' => 'ss',
 			'Ä' => 'ae', 'Ö' => 'oe', 'Ü' => 'ue',
 			'è' => 'e' , 'é' => 'e', 'ê' => 'e',
@@ -194,17 +251,10 @@ class tx_naworkuri_helper {
 	        // GBP (Pound) Sign
 	        chr(194).chr(163) => ''
 	    );
-
-	    	// lowercase
-		$uri = strtolower($uri); 
         $uri = strtr($uri, $chars);
-
-        	// remove all still not alphanumeric chars
-       	$uri = preg_replace( '/[^A-Za-z0-9\/\-]+/u', '', $uri);
- 	
-	    return $uri;
-	}  
-	
+        
+        return $uri;
+	}
 }
 
 ?>

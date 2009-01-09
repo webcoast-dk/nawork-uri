@@ -212,7 +212,7 @@ class tx_naworkuri_transformer {
   					}
   				}
   			}
-  		} 
+  		}
   		return $parts;
 	}
 	
@@ -307,6 +307,15 @@ class tx_naworkuri_transformer {
 			if (!$limit) $limit=10;
 			$fields  = explode(',', 'tx_naworkuri_pathsegment,'.(string)$this->conf->pagepath->field );
 			
+				// determine language (system or link)
+			$lang = 0;
+			if ( $GLOBALS['TSFE'] && $GLOBALS['TSFE']->config['config']['sys_language_uid']){
+				$lang = (int)$GLOBALS['TSFE']->config['config']['sys_language_uid'];
+			}
+			if (isset($original_params['L'])) {
+				$lang = (int)$original_params['L'];
+			}
+				
 				// walk the pagepath
 			while ($limit && $id > 0){
   				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( implode(',',$fields).',uid,pid,hidden,tx_naworkuri_exclude' , 'pages', 'uid='.$id.' AND deleted=0', '', '' ,1 );
@@ -314,15 +323,7 @@ class tx_naworkuri_transformer {
 				if (!$row) break; // no page found
 				
 					// translate pagepath if needed
-					// @TODO some languages have to be excluded here
-				$lang = 0;
-				if ( $GLOBALS['TSFE'] && $GLOBALS['TSFE']->config['config']['sys_language_uid']){
-					$lang = (int)$GLOBALS['TSFE']->config['config']['sys_language_uid'];
-				}
-				if (isset($original_params['L'])) {
-					$lang = (int)$original_params['L'];
-				}
-				
+					// @TODO some languages have to be excluded here somehow
 				if ( $lang > 0 ){
 					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( '*' , 'pages_language_overlay', 'pid='.$id.' AND deleted=0 AND sys_language_uid='.$lang, '', '' ,1 );
 					$translated_row   = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);

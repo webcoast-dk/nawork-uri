@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<cooluri>
+<nawork_uri>
 	
 	<pagenotfound>
 		<status>HTTP/1.0 404 Not Found</status>
@@ -85,4 +85,4 @@
 		<param>type</param>
 	</paramorder>
   
-</cooluri>
+</nawork_uri>

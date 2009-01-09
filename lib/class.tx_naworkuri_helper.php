@@ -116,8 +116,9 @@ class tx_naworkuri_helper {
 	}
 	
 	/**
-	 * Transliterate unknown chars 
+	 * Transliterate of strange utf-8 chars 
 	 * 
+	 * @TODO make translitertaion better
 	 * @param string $uri
 	 * @return string
 	 */

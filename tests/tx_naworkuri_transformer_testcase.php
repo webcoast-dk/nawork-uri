@@ -5,7 +5,7 @@ require_once (t3lib_extMgm::extPath('nawork_uri').'/lib/class.tx_naworkuri_trans
 class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 	
 	protected function setUp() {
-		$this->test_subject = new tx_naworkuri_transformer();
+		$this->test_subject = new tx_naworkuri_transformer(false, true);
 	}
 	
 	/**

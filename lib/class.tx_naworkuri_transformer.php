@@ -20,7 +20,7 @@ class tx_naworkuri_transformer {
 	 *
 	 * @param SimpleXMLElement $configXML
 	 */
-	public function __construct ($configXML=false){
+	public function __construct ($configXML=false, $multidomain=false){
 			// read configuration
 		if ($configXML) {
 			$this->conf = $configXML;
@@ -28,7 +28,7 @@ class tx_naworkuri_transformer {
 			$this->conf = new SimpleXMLElement(file_get_contents( t3lib_extMgm::extPath('nawork_uri').'/lib/default_UriConf.xml'));
 		}
 			// check multidomain mode
-		if ( (string)$this->conf->multidomain == '1' ) {
+		if ( $multidomain ) {
 			$this->domain = t3lib_div::getIndpEnv('TYPO3_HOST_ONLY');
 		} else {
 			$this->domain = '';
@@ -57,7 +57,9 @@ class tx_naworkuri_transformer {
 				$config_xml = new SimpleXMLElement(file_get_contents( PATH_typo3conf.'NaworkUriConf.xml'));
 			}
 			
-			self::$instance = new tx_naworkuri_transformer($config_xml);
+			$multidomain = $confArray['MULTIDOMAIN'];
+			
+			self::$instance = new tx_naworkuri_transformer($config_xml, $multidomain);
 		}
 		return self::$instance;
 	}

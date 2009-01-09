@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cooluri>
 	
-		
-	<multidomain>1</multidomain>
-  
 	<pagenotfound>
 		<status>HTTP/1.0 404 Not Found</status>
 		<!--

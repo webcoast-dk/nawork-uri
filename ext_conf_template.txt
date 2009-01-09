@@ -1,3 +1,6 @@
 
 # cat=basic//01; type=string; label=XML path: Path to the CoolUriConf.xml file
 XMLPATH = typo3conf/ext/nawork_uri/lib/default_UriConf.xml
+
+# cat=basic//01; type=boolean; label=Multi domain site: Check if your site has multidomains
+MULTIDOMAIN = 1

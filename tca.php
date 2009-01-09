@@ -92,9 +92,18 @@ $TCA['tx_naworkuri_uri'] = Array (
         ),
         
     ),
-    'types' => Array (
-        '0' => Array('showitem' => 'sys_language_uid;;;;1-1-1, l18n_parent, l18n_diffsource,  path;;;;2-2-2, domain, params, hash_path;;;;3-3-3, hash_params, debug_info'),
-    ),
- 
 );
+
+// show domain only in Multidomain Setups
+$confArray = unserialize( $GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
+if ($confArray['MULTIDOMAIN']){
+	$TCA['tx_naworkuri_uri']['types'] = Array (
+        '0' => Array('showitem' => 'sys_language_uid;;;;1-1-1, l18n_parent, l18n_diffsource,  path;;;;2-2-2, domain, params, hash_path;;;;3-3-3, hash_params, debug_info'),
+    );
+} else {
+	$TCA['tx_naworkuri_uri']['types'] = Array (
+        '0' => Array('showitem' => 'sys_language_uid;;;;1-1-1, l18n_parent, l18n_diffsource,  path;;;;2-2-2, params, hash_path;;;;3-3-3, hash_params, debug_info'),
+    );
+}
+
 ?>

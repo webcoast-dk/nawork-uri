@@ -161,7 +161,7 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 			array( 'id=1'  , ''),		
 			array( 'id=1&no_cache=1',  '1/'),		
 			array( 'no_cache=1&id=1',  '1/'),		
-			array( 'no_cache=1&id=1',  '1/'),		
+			array( 'id=23&pages[uid]=20&L=0',  'ueber-fielmann/die-geschichte-der-brille/bam/'),		
 		);	
 	}
 	
@@ -186,6 +186,9 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 		 	array('kontaktlinsen/bam/text/', array('id'=>20, 'type'=>50, "L"=>0 )),
 		 	array('kontaktlinsen/bam/text/?unknown_param=unknown_value', array('id'=>20, 'type'=>50, "L"=>0,"unknown_param"=>'unknown_value' )),
 		  	array('kontaktlinsen/bam/text/?type=0&L=1', array('id'=>20, 'type'=>0, "L"=>1 )),
+		 	array('ueber-fielmann/die-geschichte-der-brille/bam/' , array( 'pages'=> array( 'uid' => 20) , 'id'=>23 , 'L'=> 0 ) ),
+		 	array('ueber-fielmann/die-geschichte-der-brille/bam/?pages[foo]=bar' , array( 'pages'=> array( 'uid' => 20, 'foo'=>'bar') , 'id'=>23 , 'L'=> 0 ) ),
+		 	array('ueber-fielmann/die-geschichte-der-brille/bam/?pages[uid]=23' , array( 'pages'=> array( 'uid' => 23 ) , 'id'=>23 , 'L'=> 0 ) )
 		 	
 		 );
 	}

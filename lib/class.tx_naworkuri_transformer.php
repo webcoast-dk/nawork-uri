@@ -97,7 +97,8 @@ class tx_naworkuri_transformer {
         	$getparams = Array();
         	parse_str($params, $getparams);
         		// merged result
-        	return array_merge($cachedparams, $getparams);;
+        	$res = t3lib_div::array_merge_recursive_overrule($cachedparams, $getparams);
+        	return array_merge($res);
         }
 		return false;
 	}

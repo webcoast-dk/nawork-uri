@@ -298,13 +298,21 @@ class tx_naworkuri_transformer {
 		$parts = array();
 		if ($this->conf->pagepath && $unencoded_params['id']){
 			 
-				// read alias and cast to int
-			if (is_numeric($unencoded_params['id']) ){
-				$id = (int)$unencoded_params['id'];
-			} else {
-				$id = (int)$GLOBALS['TSFE']->sys_page->getPageIdFromAlias($unencoded_params['id']);
+				// cast id to int and resolve aliases
+			if ($unencoded_params['id']){
+				if (is_numeric($unencoded_params['id']) ){
+					$id = (int)$unencoded_params['id'];
+				} else {
+					$str = $GLOBALS['TYPO3_DB']->fullQuoteStr($unencoded_params['id'], 'pages');
+					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( 'uid' , 'pages', 'alias='.$str.' AND deleted=0', '', '' ,1 );
+					if ( $row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
+						$id = $row['uid'];
+					} else {
+						return array();
+					}
+				}
 			}
-			
+		
 				// get setup
 			$limit  = (int)(string)$this->conf->pagepath->limit;
 			if (!$limit) $limit=10;
@@ -321,6 +329,7 @@ class tx_naworkuri_transformer {
 				
 				// walk the pagepath
 			while ($limit && $id > 0){
+
   				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( implode(',',$fields).',uid,pid,hidden,tx_naworkuri_exclude' , 'pages', 'uid='.$id.' AND deleted=0', '', '' ,1 );
 				$row   = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
 				if (!$row) break; // no page found

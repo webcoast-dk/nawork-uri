@@ -301,17 +301,19 @@ class tx_naworkuri_transformer {
 				// cast id to int and resolve aliases
 			if ($unencoded_params['id']){
 				if (is_numeric($unencoded_params['id']) ){
-					$id = (int)$unencoded_params['id'];
+					$unencoded_params['id'] = (int)$unencoded_params['id'];
 				} else {
 					$str = $GLOBALS['TYPO3_DB']->fullQuoteStr($unencoded_params['id'], 'pages');
 					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( 'uid' , 'pages', 'alias='.$str.' AND deleted=0', '', '' ,1 );
 					if ( $row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
-						$id = $row['uid'];
+						$unencoded_params['id'] = $row['uid'];
 					} else {
 						return array();
 					}
 				}
 			}
+			
+			$id = $unencoded_params['id'];
 		
 				// get setup
 			$limit  = (int)(string)$this->conf->pagepath->limit;

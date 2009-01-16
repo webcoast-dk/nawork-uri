@@ -48,10 +48,14 @@ $TCA['tx_naworkuri_uri'] = Array (
         'transOrigPointerField' => 'l18n_parent',    
         'transOrigDiffSourceField' => 'l18n_diffsource',    
         'sortby' => 'crdate',    
-        'delete' => 'deleted',    
+        'delete' => 'deleted', 
+		'enablecolumns' => Array (
+            'disabled' => 'hidden', 
+        ), 
 		'thumbnail' => 'image',
         'dynamicConfigFile' => t3lib_extMgm::extPath($_EXTKEY).'tca.php',
         'iconfile' => t3lib_extMgm::extRelPath($_EXTKEY).'icon_naworkuri_uri.gif',
+        'hideAtCopy' => true
     ),
     
 );	

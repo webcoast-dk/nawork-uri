@@ -28,6 +28,7 @@ CREATE TABLE tx_naworkuri_uri (
     l18n_parent int(11) DEFAULT '0' NOT NULL,
     l18n_diffsource mediumblob NOT NULL,
     deleted tinyint(4) DEFAULT '0' NOT NULL,
+	hidden  tinyint(4) DEFAULT '0' NOT NULL,
 	domain tinytext NOT NULL,
     path tinytext NOT NULL,
     params tinytext NOT NULL,

@@ -42,7 +42,12 @@ class tx_naworkuri_cache {
 	 */
 	public function read_path ($path, $domain){
 		$hash_path = md5($path);
-  		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('pid, sys_language_uid, params','tx_naworkuri_uri', 'deleted=0 AND hash_path="'.$hash_path.'" AND domain="'.$domain.'"' );
+  		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
+  			'pid, sys_language_uid, params',
+  			'tx_naworkuri_uri', 
+  			'deleted=0 AND hidden=0 AND hash_path="'.$hash_path.'" AND domain="'.$domain.'"' 
+  		);
+  		
         if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
         	return $row;
         }
@@ -64,7 +69,7 @@ class tx_naworkuri_cache {
 		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 			'path', 
 			'tx_naworkuri_uri',
-			'deleted=0 AND pid='.$id.' AND sys_language_uid='.$lang.' AND domain="'.$domain.'" AND hash_params LIKE "'.md5($parameters).'"' 
+			'deleted=0 AND hidden=0 AND pid='.$id.' AND sys_language_uid='.$lang.' AND domain="'.$domain.'" AND hash_params LIKE "'.md5($parameters).'"' 
 		);
 		
 		if ( $row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
@@ -143,7 +148,7 @@ class tx_naworkuri_cache {
 		$search_hash   = md5($tmp_uri);
 		$search_domain = $domain;
 
-		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND domain="'.$search_domain.'" AND hash_path LIKE "'.$search_hash.'"' );
+		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND domain="'.$search_domain.'" AND hash_path LIKE "'.$search_hash.'"' );
 		
 		if ( $GLOBALS['TYPO3_DB']->sql_num_rows($dbres) > 0 ){
 				// make the uri unique
@@ -152,7 +157,7 @@ class tx_naworkuri_cache {
 				$append ++;
 				$tmp_uri      = $uri.$append.'/' ;
 				$search_hash  = md5($tmp_uri);
-				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND domain="'.$search_domain.'" AND hash_path LIKE "'.$search_hash.'"' );
+				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND domain="'.$search_domain.'" AND hash_path LIKE "'.$search_hash.'"' );
 			} while ( $GLOBALS['TYPO3_DB']->sql_num_rows($dbres) > 0 && $append < 100);
 		}
 		return $tmp_uri;

@@ -125,6 +125,8 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 			array(array(id=>'31'), 'Brillenmode/folder/folder content', 'sysfolders are shown in path' ),
 			array(array(id=>'35'), 'Brillenmode/blubbbb', 'sysfolders are shown in path' ),
 			array(array(id=>'19','L'=>'1'), 'Glasses/foo_en', 'sysfolders are shown in path' ),
+			array(array(id=>'foobar'), 'foobar', 'alias id works' ),
+			array(array(id=>'foobarbaz'), '', 'unknown alias id works' ),
 		);
 	}
 	

@@ -140,8 +140,6 @@ class tx_naworkuri_cache {
 		$cache = $this->read ($id, $lang, $domain, $parameters, true);
 		if ($cache ){
 			
-			debug(array('update',$cache) );
-			
 				// protect sticky uris
 			if ( $cache['sticky'] || $cache['path'] == $path) return $cache['path'];
 			

@@ -162,19 +162,14 @@ class tx_naworkuri_transformer {
   			$encoded_uri = '';
   		}
 		
-  			// check for cache entry with these uri an create cache entry if needed 
-		$cache_uri = $this->cache->read_params($encoded_params, $this->domain);
-  		if ( $cache_uri !== false ) {
-  			$uri = $cache_uri;
-  		} else {
-  			$debug_info = '';
-  			$debug_info .= "original_params  : ".$this->helper->implode_parameters($original_params).chr(10);
-  			$debug_info .= "encoded_params   : ".$this->helper->implode_parameters($encoded_params).chr(10);
-  			$debug_info .= "unencoded_params : ".$this->helper->implode_parameters($unencoded_params).chr(10);
+  			// write cache entry with these uri an create cache entry if needed 
+  		$debug_info = '';
+  		$debug_info .= "original_params  : ".$this->helper->implode_parameters($original_params).chr(10);
+  		$debug_info .= "encoded_params   : ".$this->helper->implode_parameters($encoded_params).chr(10);
+  		$debug_info .= "unencoded_params : ".$this->helper->implode_parameters($unencoded_params).chr(10);
 
-  			$cache_path   = $this->helper->sanitize_uri($encoded_uri);
-  			$uri = $this->cache->write_params($encoded_params, $this->domain, $cache_path, $debug_info);
-  		}
+  		$cache_path   = $this->helper->sanitize_uri($encoded_uri);
+  		$uri = $this->cache->write_params($encoded_params, $this->domain, $cache_path, $debug_info);
   		
   			// read not encoded parameters
   		$i =0; 

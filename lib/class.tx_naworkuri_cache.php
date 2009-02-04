@@ -136,12 +136,15 @@ class tx_naworkuri_cache {
 	 */
 	public function write($id, $lang, $domain, $parameters, $path, $debug_info = ''){
 
-			// check for a record to update 
+			// check for a uri record to update 
 		$cache = $this->read ($id, $lang, $domain, $parameters, true);
 		if ($cache ){
 			
+			debug(array('update',$cache) );
+			
 				// protect sticky uris
 			if ( $cache['sticky'] || $cache['path'] == $path) return $cache['path'];
+			
 				// update other uris
 			$path = $this->unique($path, $domain, $cache['uid']);	
 

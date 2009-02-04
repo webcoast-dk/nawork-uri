@@ -71,6 +71,7 @@ class tx_naworkuri_helper_testcase extends tx_phpunit_testcase {
 			das/', 'foobar/das-das/'),
 			array('foo&bar/', 'foo-bar/'),
 			array('Über Fielmann/', 'ueber-fielmann/'),
+			array('Service & Beratung/', 'service-beratung/'),
 		);
 	}
 	

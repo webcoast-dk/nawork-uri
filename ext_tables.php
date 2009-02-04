@@ -55,7 +55,13 @@ $TCA['tx_naworkuri_uri'] = Array (
 		'thumbnail' => 'image',
         'dynamicConfigFile' => t3lib_extMgm::extPath($_EXTKEY).'tca.php',
         'iconfile' => t3lib_extMgm::extRelPath($_EXTKEY).'icon_naworkuri_uri.gif',
-        'hideAtCopy' => true
+        'hideAtCopy' => true,
+        'typeicon_column' => 'sticky',
+        'typeicons' => Array ( 
+            '0' => t3lib_extMgm::extRelPath($_EXTKEY).'icon_naworkuri_uri.gif',
+            '1' => t3lib_extMgm::extRelPath($_EXTKEY).'icon_naworkuri_uri_sticky.gif',
+        ), 
+        
     ),
     
 );	

@@ -4,6 +4,15 @@ require_once (PATH_t3lib.'class.t3lib_page.php');
 require_once (t3lib_extMgm::extPath('nawork_uri').'/lib/class.tx_naworkuri_cache.php');
 require_once (t3lib_extMgm::extPath('nawork_uri').'/lib/class.tx_naworkuri_helper.php');
 
+/**
+ * Class for creating path uris
+ * 
+ * @author Martin Ficzel
+ * @TODO make the Language Parameter configurable and optional 
+ * @TODO add proper handling domain records
+ * 
+ */
+
 class tx_naworkuri_transformer {
 	
 	private $conf;
@@ -35,6 +44,8 @@ class tx_naworkuri_transformer {
 		}
 		
 		$this->cache  = t3lib_div::makeInstance('tx_naworkuri_cache');
+		$this->cache->setTimeout(30);
+		
 		$this->helper = t3lib_div::makeInstance('tx_naworkuri_helper');
 		
 	}

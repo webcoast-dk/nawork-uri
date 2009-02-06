@@ -86,7 +86,7 @@ class tx_naworkuri_helper {
 	 * @return string
 	 */
 	function uri_handle_punctuation($uri){
-		return preg_replace( '/[\-\!\"\#\$\&\'\(\)\*\+\,\:\;\<\=\>\?\@\[\\\\\]\^\`\{\|\}]+/u', '-', $uri);
+		return preg_replace( '/[\.\-\!\"\#\$\&\'\(\)\*\+\,\:\;\<\=\>\?\@\[\\\\\]\^\`\{\|\}]+/u', '-', $uri);
 	}
 	
 	/**

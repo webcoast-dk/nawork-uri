@@ -30,8 +30,8 @@ $TCA['tx_naworkuri_uri'] = Array (
                 'items' => Array (
                     Array('', 0),
                 ),
-                'foreign_table' => 'tx_naworkteaser_teaser',
-                'foreign_table_where' => 'AND tx_naworkteaser_teaser.pid=###CURRENT_PID### AND tx_naworkteaser_teaser.sys_language_uid IN (-1,0)',
+                'foreign_table' => 'tx_naworkuri_uri',
+                'foreign_table_where' => 'AND tx_naworkuri_uri.pid=###CURRENT_PID### AND tx_naworkuri_uri.sys_language_uid IN (-1,0)',
             )
         ),
         'l18n_diffsource' => Array (        

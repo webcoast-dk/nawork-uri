@@ -50,17 +50,30 @@
 			<where>uid=###</where>
 		</part>
 		<part>
-			<parameter>pages[uid]</parameter>
-			<field>subtitle,title</field>
+			<parameter>pages[test]</parameter>
+			<field>subtitle//title</field>
 			<table>pages</table>
 			<where>uid=###</where>
 		</part>
 		<part>
+			<parameter>pages[test2]</parameter>
+			<field>{subtitle//title}-{uid}--{pid}</field>
+			<table>pages</table>
+			<where>uid=###</where>
+		</part>		
+		<part>
+			<parameter>pages[test3]</parameter>
+			<field>{title}</field>
+			<table>pages</table>
+			<where>uid=###</where>
+		</part>	
+		<part>
 			<parameter>tx_standocuments_pi_details[doc]</parameter>
-			<field>number,title</field>
+			<field>number//title</field>
 			<table>tx_standocuments_documents</table>
 			<where>uid=###</where>
 		</part>
+
 	</uriparts>
  
 	<!-- remap parameters to constant values -->  

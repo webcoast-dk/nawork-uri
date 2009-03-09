@@ -272,20 +272,46 @@ class tx_naworkuri_transformer {
 			
 			$param_name = (string)$uripart->parameter;
   			if ( $param_name && isset($unencoded_params[$param_name]) ) {
+  				
   				$table  = (string)$uripart->table;
   				$field  = (string)$uripart->field;
-  				$where  = str_replace('###',$unencoded_params[$param_name], (string)$uripart->where);
-  				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery($field, $table, $where, '', '' ,1 );
-  				if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
-  					foreach ($row as $key=>$value){
-  						if ($value){
-  							$parts[$param_name] = $value;
-							$encoded_params[$param_name]=$unencoded_params[$param_name];
-							unset($unencoded_params[$param_name]); 
-							break;	
-  						}
-  					}
+  				$where  = (string)$uripart->where;
+  				
+  				$matches      = array(); 
+  				$fieldmap     = array();
+  				$fieldpattern = $field;
+  				
+  				if (!preg_match_all( '/\{(.*?)\}/' , $field , $matches)){
+  					// single fields access
+  					$fieldmap     = array($field);
+  					$fieldpattern = '###0###';
+  				} else {
+  					// multi field access
+  					list($found,$fields) = $matches;
+  					for ($i = 0 ; $i<count($found) ; $i++){
+  						$fieldmap[]= $fields[$i];
+  						$fieldpattern = str_replace($found[$i],'###'.$i.'###', $fieldpattern);
+  					}  					
   				}
+  				
+  					// find fields
+  				$where_part  = str_replace('###',$unencoded_params[$param_name],$where);
+ 				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $table, $where_part, '', '' ,1 );
+  				if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
+  					$value = $fieldpattern;
+  					foreach($fieldmap as $map_key=>$map_value){
+						$mapfields = explode('//',$map_value);
+						foreach($mapfields as $mapfield){
+						  	if ($row[$mapfield]){
+						  		$value = str_replace('###'.$map_key.'###', $row[$mapfield], $value);
+						  		break;
+							}
+						} 
+  					} 
+    				$parts[$param_name] = $value;
+					$encoded_params[$param_name]=$unencoded_params[$param_name];
+					unset($unencoded_params[$param_name]); 
+	  			}
   			}
 		}
 

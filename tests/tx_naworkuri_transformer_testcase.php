@@ -88,12 +88,20 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 	public function provider_test_params2uri_uriparts_works(){
 		return array(
 			array( 
-				array('pages[uid]'=>20,'not_encoded_params' => 'not_encoded_value'),
-				array('pages[uid]'=>'bam'),
+				array('pages[test]'=>20,'not_encoded_params' => 'not_encoded_value'),
+				array('pages[test]'=>'bam'),
 			),
 			array(
-				array('pages[uid]'=>32),
-				array('pages[uid]'=>'blub'),
+				array('pages[test]'=>32),
+				array('pages[test]'=>'blub'),
+			),
+			array(
+				array('pages[test2]'=>32),
+				array('pages[test2]'=>'blub-32--8'),
+			),
+			array(
+				array('pages[test3]'=>32),
+				array('pages[test3]'=>'baz'),
 			)
 		);
 	}
@@ -127,6 +135,7 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 			array(array(id=>'19','L'=>'1'), 'Glasses/foo_en', 'sysfolders are shown in path' ),
 			array(array(id=>'foobar'), 'foobar', 'alias id works' ),
 			array(array(id=>'foobarbaz'), '', 'unknown alias id works' ),
+			array(array(id=>'50'), 'Kontaktlinsen/Shortcut', 'shotcut pages are working' ),
 		);
 	}
 	
@@ -163,7 +172,8 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 			array( 'id=1'  , ''),		
 			array( 'id=1&no_cache=1',  '1/'),		
 			array( 'no_cache=1&id=1',  '1/'),		
-			array( 'id=23&pages[uid]=20&L=0',  'ueber-fielmann/die-geschichte-der-brille/bam/'),		
+			array( 'id=23&pages[test]=20&L=0',  'ueber-fielmann/die-geschichte-der-brille/bam/'),	
+			array( 'id=50',  'kontaktlinsen/shortcut/'),		
 		);	
 	}
 	
@@ -188,9 +198,9 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 		 	array('kontaktlinsen/bam/text/', array('id'=>20, 'type'=>50, "L"=>0 )),
 		 	array('kontaktlinsen/bam/text/?unknown_param=unknown_value', array('id'=>20, 'type'=>50, "L"=>0,"unknown_param"=>'unknown_value' )),
 		  	array('kontaktlinsen/bam/text/?type=0&L=1', array('id'=>20, 'type'=>0, "L"=>1 )),
-		 	array('ueber-fielmann/die-geschichte-der-brille/bam/' , array( 'pages'=> array( 'uid' => 20) , 'id'=>23 , 'L'=> 0 ) ),
-		 	array('ueber-fielmann/die-geschichte-der-brille/bam/?pages[foo]=bar' , array( 'pages'=> array( 'uid' => 20, 'foo'=>'bar') , 'id'=>23 , 'L'=> 0 ) ),
-		 	array('ueber-fielmann/die-geschichte-der-brille/bam/?pages[uid]=23' , array( 'pages'=> array( 'uid' => 23 ) , 'id'=>23 , 'L'=> 0 ) )
+		 	array('ueber-fielmann/die-geschichte-der-brille/bam/' , array( 'pages'=> array( 'test' => 20) , 'id'=>23 , 'L'=> 0 ) ),
+		 	array('ueber-fielmann/die-geschichte-der-brille/bam/?pages[foo]=bar' , array( 'pages'=> array( 'test' => 20, 'foo'=>'bar') , 'id'=>23 , 'L'=> 0 ) ),
+		 	array('ueber-fielmann/die-geschichte-der-brille/bam/?pages[test]=23' , array( 'pages'=> array( 'test' => 23 ) , 'id'=>23 , 'L'=> 0 ) )
 		 	
 		 );
 	}

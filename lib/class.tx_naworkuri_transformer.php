@@ -122,11 +122,16 @@ class tx_naworkuri_transformer {
 	 */
 	public function params2uri ($param_str){
 		
-		$params = $this->helper->explode_parameters($param_str);
+		list($parameters, $anchor) = explode('#', $param_str, 2);
+		$params = $this->helper->explode_parameters($parameters);
 		
 			// find already created uri with exactly these parameters
 		$cache_uri = $this->cache->read_params($params, $this->domain);	
 		if ( $cache_uri !== false ) {
+				// append stored anchor
+	  		if ($anchor){
+	  			$cache_uri .= '#'.$anchor;
+	  		} 
 			return $cache_uri;
 		}
 		
@@ -178,8 +183,12 @@ class tx_naworkuri_transformer {
   			$i++;
   		}
   		
-  		return($uri);
-  				
+  			// append stored anchor
+  		if ($anchor){
+  			$uri .= '#'.$anchor;
+  		} 
+  			
+  		return($uri);		
 	}	
 	
 

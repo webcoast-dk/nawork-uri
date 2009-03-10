@@ -163,11 +163,13 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 	public function provider_test_params2uri(){
 		return array(
 			array( 'id=5'  , 'ueber-fielmann/'),
+			array( 'id=5#foo'  , 'ueber-fielmann/#foo'),
 			array( 'id=23' , 'ueber-fielmann/die-geschichte-der-brille/' ),
 			array( 'id=23' , 'ueber-fielmann/die-geschichte-der-brille/' ),
 			array( 'id=20&type=50&L=0' , 'kontaktlinsen/bam/text/'),
 			array( 'id=20&type=50&L=0&unknown_param=unknown_value' , 'kontaktlinsen/bam/text/?unknown_param=unknown_value'),
 			array( 'id=23&type=99', 'ueber-fielmann/die-geschichte-der-brille/?type=99' ),
+			array( 'id=23&type=99#foo', 'ueber-fielmann/die-geschichte-der-brille/?type=99#foo' ),
 			array( 'id=23&type=50', 'ueber-fielmann/die-geschichte-der-brille/text/' ),
 			array( 'id=1'  , ''),		
 			array( 'id=1&no_cache=1',  '1/'),		

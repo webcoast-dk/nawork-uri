@@ -286,7 +286,7 @@ class tx_naworkuri_transformer {
   				$field  = (string)$uripart->field;
   				$where  = (string)$uripart->where;
   				
-  				$matches      = array(); 
+  				$matches      = array();
   				$fieldmap     = array();
   				$fieldpattern = $field;
   				

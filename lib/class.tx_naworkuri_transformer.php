@@ -163,8 +163,7 @@ class tx_naworkuri_transformer {
   		
   			// return 
   		if (count($ordered_params)){
-  			$append = (string)$this->conf->append ? (string)$this->conf->append : '/';
-  			$encoded_uri = implode('/',$ordered_params).$append;
+  			$encoded_uri = implode('/',$ordered_params);
   		} else {
   			$encoded_uri = '';
   		}
@@ -175,8 +174,15 @@ class tx_naworkuri_transformer {
   		$debug_info .= "encoded_params   : ".$this->helper->implode_parameters($encoded_params).chr(10);
   		$debug_info .= "unencoded_params : ".$this->helper->implode_parameters($unencoded_params).chr(10);
 
-  		$cache_path   = $this->helper->sanitize_uri($encoded_uri);
-  		$uri = $this->cache->write_params($encoded_params, $this->domain, $cache_path, $debug_info);
+  		$result_path   = $this->helper->sanitize_uri($encoded_uri);
+  		
+  			// append
+  		if ($result_path){
+  			$append = (string)$this->conf->append ? (string)$this->conf->append : '/';
+  			$result_path = $result_path.$append;
+  		} 
+  		
+  		$uri = $this->cache->write_params($encoded_params, $this->domain, $result_path, $debug_info);
   		
   			// read not encoded parameters
   		$i =0; 

@@ -359,7 +359,10 @@ class tx_naworkuri_transformer {
 				// get setup
 			$limit  = (int)(string)$this->conf->pagepath->limit;
 			if (!$limit) $limit=10;
-			$fields  = explode(',', 'tx_naworkuri_pathsegment,'.(string)$this->conf->pagepath->field );
+			
+			$field_conf = (string)$this->conf->pagepath->field;
+			$field_conf = str_replace('//',',',$field_conf);
+			$fields     = explode(',', 'tx_naworkuri_pathsegment,'.(string)$this->conf->pagepath->field );
 			
 				// determine language (system or link)
 			$lang = 0;

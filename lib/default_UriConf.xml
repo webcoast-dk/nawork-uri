@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <nawork_uri>
 	
+	<append>/</append>
+	
 	<pagenotfound>
 		<status>HTTP/1.0 404 Not Found</status>
 		<!--
@@ -59,14 +61,20 @@
 			<parameter>pages[test2]</parameter>
 			<field>{subtitle//title}-{uid}--{pid}</field>
 			<table>pages</table>
-			<where>uid=###</where>
+			<where>uid='###'</where>
 		</part>		
 		<part>
 			<parameter>pages[test3]</parameter>
 			<field>{title}</field>
 			<table>pages</table>
-			<where>uid=###</where>
-		</part>	
+			<where>uid='###'</where>
+		</part>
+		<part>
+			<parameter>pages[title]</parameter>
+			<field>title-{uid}</field>
+			<table>pages</table>
+			<where>title="###"</where>
+		</part>		
 		<part>
 			<parameter>tx_standocuments_pi_details[doc]</parameter>
 			<field>number//title</field>

@@ -160,9 +160,11 @@ class tx_naworkuri_transformer {
   		foreach ($path as $param=>$path_segment) {
   			if ($path_segment) $ordered_params[]=$path_segment;
   		}
+  		
   			// return 
   		if (count($ordered_params)){
-  			$encoded_uri = implode('/',$ordered_params).'/';
+  			$append = (string)$this->conf->append ? (string)$this->conf->append : '/';
+  			$encoded_uri = implode('/',$ordered_params).$append;
   		} else {
   			$encoded_uri = '';
   		}

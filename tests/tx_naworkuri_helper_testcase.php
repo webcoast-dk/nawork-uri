@@ -72,7 +72,7 @@ class tx_naworkuri_helper_testcase extends tx_phpunit_testcase {
 			array('foo&bar/', 'foo-bar/'),
 			array('Über Fielmann/', 'ueber-fielmann/'),
 			array('Service & Beratung/', 'service-beratung/'),
-			array('Statistik Informiert ... 11/94/', 'statistik-informiert-11/94/'),
+			array('Statistik Informiert ... 11/94/', 'statistik-informiert-...-11/94/'),
 			
 		);
 	}
@@ -120,8 +120,8 @@ class tx_naworkuri_helper_testcase extends tx_phpunit_testcase {
 			array('"#&\'<>?@[\\]^`{|}%' ,'-'),
 			array('"#&\'<>?@[\\]^`{|}%' ,'-'),
 			array('!$()*,=:.;+','!$()*,=:.;+'),
-			array('!"#$foo&\'()*+,/bar.;<=>?@[\\]baz^`{|}' ,'!$foo-()*+,/bar.;-=-baz-'),
-			array('statistik informiert ... 11/94/', 'statistik informiert - 11/94/'),
+			array('!"#$foo&\'()*+,/bar.;<=>?@[\\]baz^`{|}' ,'!-$foo-()*+,/bar.;-=-baz-'),
+			array('statistik informiert ... 11/94/', 'statistik informiert ... 11/94/'),
 		);
 	}
 	

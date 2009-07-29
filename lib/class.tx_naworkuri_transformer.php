@@ -178,7 +178,8 @@ class tx_naworkuri_transformer {
   		
   			// append
   		if ($result_path){
-  			$append = (string)$this->conf->append ? (string)$this->conf->append : '/';
+  			//debug((string)$this->conf->append);
+  			$append = (string)$this->conf->append ? (string)$this->conf->append : '';
   			$result_path = $result_path.$append;
   		} 
   		

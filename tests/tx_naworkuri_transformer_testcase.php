@@ -199,7 +199,7 @@ class tx_naworkuri_transformer_testcase extends tx_phpunit_testcase {
 		return array(
 		 	array('kontaktlinsen/bam/text/', array('id'=>20, 'type'=>50, "L"=>0 )),
 		 	array('kontaktlinsen/bam/text/?unknown_param=unknown_value', array('id'=>20, 'type'=>50, "L"=>0,"unknown_param"=>'unknown_value' )),
-		  	array('kontaktlinsen/bam/text/?type=0&L=1', array('id'=>20, 'type'=>0, "L"=>1 )),
+		  array('kontaktlinsen/bam/text/?type=0&L=1', array('id'=>20, 'type'=>0, "L"=>1 )),
 		 	array('ueber-fielmann/die-geschichte-der-brille/bam/' , array( 'pages'=> array( 'test' => 20) , 'id'=>23 , 'L'=> 0 ) ),
 		 	array('ueber-fielmann/die-geschichte-der-brille/bam/?pages[foo]=bar' , array( 'pages'=> array( 'test' => 20, 'foo'=>'bar') , 'id'=>23 , 'L'=> 0 ) ),
 		 	array('ueber-fielmann/die-geschichte-der-brille/bam/?pages[test]=23' , array( 'pages'=> array( 'test' => 23 ) , 'id'=>23 , 'L'=> 0 ) )

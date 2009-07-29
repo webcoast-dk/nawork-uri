@@ -80,24 +80,27 @@ class tx_naworkuri_helper {
 	
 	/**
 	 * Convert punctuation chars to -
-	 *  ! " # $ & ' ( ) * + , : ; < = > ? @ [ \ ] ^ ` { | }
+	 *  ! " # $ & ' ( ) * + , : ; < = > ? @ [ \ ] ^ ` { | } <-- Old
+	 *  
+	 *  	" #   & '               <   > ? @ [ \ ] ^ ` { | } %   < -- New
+
 	 *
 	 * @param string $uri
 	 * @return string
 	 */
 	function uri_handle_punctuation($uri){
-		return preg_replace( '/[\.\-\!\"\#\$\&\'\(\)\*\+\,\:\;\<\=\>\?\@\[\\\\\]\^\`\{\|\}]+/u', '-', $uri);
+		return preg_replace( '/[\"\#\&\'\?\@\[\\\\\]\^\`\{\|\}\%\<\>]+/u', '-', $uri);
 	}
 	
 	/**
 	 * remove not allowed chars from uri
-	 * allowed chars A-Za-z0-9 - _ . ~
+	 * allowed chars A-Za-z0-9 - _ . ~ ! ( ) * + , : ; =
 	 * 
 	 * @param unknown_type $uri
 	 * @return unknown
 	 */
 	function uri_limit_allowed_chars($uri){
-		return preg_replace( '/[^A-Za-z0-9\/\-\_\.\~]+/u', '', $uri);
+		return preg_replace( '/[^A-Za-z0-9\/\-\_\.\~\!\(\)\*\+\,\:\;\=]+/u', '', $uri);
 	}
 	
 	/**

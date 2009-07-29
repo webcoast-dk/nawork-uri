@@ -113,11 +113,14 @@ class tx_naworkuri_helper_testcase extends tx_phpunit_testcase {
 		$this->assertEquals( $this->test_subject->uri_limit_allowed_chars($uri), $res,  $error);
 	}
 	
+	//" #   & '               <   > ? @ [ \ ] ^ ` { | } %
+	
 	public function provider_test_uri_handle_punctuation(){
 		return array(
-			array('!"#$&\'()*+,:;<=>?@[\\]^`{|}' ,'-'),
-			array('!"#$&\'()*+,:.;<=>?@[\\]^`{|}' ,'-'),
-			array('!"#$foo&\'()*+,/bar.;<=>?@[\\]baz^`{|}' ,'-foo-/bar-baz-'),
+			array('"#&\'<>?@[\\]^`{|}%' ,'-'),
+			array('"#&\'<>?@[\\]^`{|}%' ,'-'),
+			array('!$()*,=:.;+','!$()*,=:.;+'),
+			array('!"#$foo&\'()*+,/bar.;<=>?@[\\]baz^`{|}' ,'!$foo-()*+,/bar.;-=-baz-'),
 			array('statistik informiert ... 11/94/', 'statistik informiert - 11/94/'),
 		);
 	}

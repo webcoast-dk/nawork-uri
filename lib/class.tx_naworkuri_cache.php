@@ -91,7 +91,7 @@ class tx_naworkuri_cache {
 		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 			'uid, path, sticky', 
 			'tx_naworkuri_uri',
-			'deleted=0 AND hidden=0 AND pid='.$id.' AND sys_language_uid='.$lang.' AND domain="'.$domain.'" AND hash_params LIKE "'.md5($parameters).'" '.$timeout_condition 
+			'deleted=0 AND hidden=0 AND pid='.$id.' AND sys_language_uid='.$lang.' AND domain="'.$domain.'" AND hash_params = "'.md5($parameters).'" '.$timeout_condition 
 		);
 		
 		if ( $row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
@@ -200,9 +200,9 @@ class tx_naworkuri_cache {
 		$search_domain = $domain;
 
 		if ($exclude_uid) {
-			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND uid !='.(int)$exclude_uid.' AND domain="'.$search_domain.'" AND hash_path LIKE "'.$search_hash.'"' );
+			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND uid !='.(int)$exclude_uid.' AND domain="'.$search_domain.'" AND hash_path = "'.$search_hash.'"' );
 		} else {
-			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND domain="'.$search_domain.'" AND hash_path LIKE "'.$search_hash.'"' );
+			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND domain="'.$search_domain.'" AND hash_path = "'.$search_hash.'"' );
 		}	
 			
 		
@@ -213,7 +213,7 @@ class tx_naworkuri_cache {
 				$append ++;
 				$tmp_uri      = $uri.$append.'/' ;
 				$search_hash  = md5($tmp_uri);
-				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND domain="'.$search_domain.'" AND hash_path LIKE "'.$search_hash.'"' );
+				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND domain="'.$search_domain.'" AND hash_path = "'.$search_hash.'"' );
 			} while ( $GLOBALS['TYPO3_DB']->sql_num_rows($dbres) > 0 && $append < 100);
 		}
 		return $tmp_uri;

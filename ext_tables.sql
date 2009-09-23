@@ -29,16 +29,17 @@ CREATE TABLE tx_naworkuri_uri (
     l18n_diffsource mediumblob NOT NULL,
     deleted tinyint(4) DEFAULT '0' NOT NULL,
 	hidden  tinyint(4) DEFAULT '0' NOT NULL,
-	domain tinytext NOT NULL,
-    path tinytext NOT NULL,
+	domain varchar(255) NOT NULL,
+    path varchar(255) NOT NULL,
     params tinytext NOT NULL,
-	hash_path tinytext NOT NULL,
-	hash_params tinytext NOT NULL,
+	hash_path char(32) NOT NULL,
+	hash_params char(32) NOT NULL,
 	debug_info text NOT NULL,
 	sticky tinyint(4) DEFAULT '0' NOT NULL,
 	
     PRIMARY KEY (uid),
-    KEY parent (pid)
-	
+    KEY parent (pid),
+    KEY domain_path (domain, hash_path)
+    
 );
 

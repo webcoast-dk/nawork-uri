@@ -26,6 +26,7 @@ class tx_naworkuri {
 			    $params['pObj']->mergingWithGetVars($uri_params);
 			} else { // handle 404
 				$conf = $translator->getConfiguration();
+                                var_dump($conf);
 				if (!empty($conf->pagenotfound)) {
 					header('Content-Type: text/html; charset=utf-8');
 				  	header((string)$conf->pagenotfound->status);

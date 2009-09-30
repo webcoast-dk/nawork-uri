@@ -35,6 +35,7 @@ class tx_naworkuri {
 			  				break;
 			  			case 'page':	
 			  				//$res = implode('', file((string)$conf->pagenotfound->behavior));
+                                                        var_dump((string)$conf->pagenotfound->behavior);
                                                         $res = file_get_contents((string)$conf->pagenotfound->behavior);
                                                         var_dump($res);
 			  				break;

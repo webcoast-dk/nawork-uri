@@ -34,8 +34,8 @@ class tx_naworkuri {
 			  				$res = (string)$conf->pagenotfound->behavior; 
 			  				break;
 			  			case 'page':	
-			  				//$res = implode('', file((string)$conf->pagenotfound->behavior));
-                                                        $res = file_get_contents((string)$conf->pagenotfound->behavior);
+			  				$res = implode('', file((string)$conf->pagenotfound->behavior));
+                                                        //$res = file_get_contents((string)$conf->pagenotfound->behavior);
 			  				break;
 			  			case 'redirect': 
 			  				$path = html_entity_decode((string)$conf->pagenotfound->behavior);

@@ -33,7 +33,8 @@ class tx_naworkuri {
 			  			case 'message': 
 			  				$res = (string)$conf->pagenotfound->behavior; 
 			  				break;
-			  			case 'page':	
+			  			case 'page':
+                                                        var_dump((string)$conf->pagenotfound->behavior);
 			  				$res = implode('', file((string)$conf->pagenotfound->behavior));
                                                         //$res = file_get_contents((string)$conf->pagenotfound->behavior);
 			  				break;

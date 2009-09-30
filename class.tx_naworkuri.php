@@ -27,6 +27,7 @@ class tx_naworkuri {
 			} else { // handle 404
 				$conf = $translator->getConfiguration();
                                 var_dump($conf);
+                                die();
 				if (!empty($conf->pagenotfound)) {
 					header('Content-Type: text/html; charset=utf-8');
 				  	header((string)$conf->pagenotfound->status);

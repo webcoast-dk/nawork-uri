@@ -93,7 +93,14 @@ class tx_naworkuri_transformer {
 	public function uri2params ($uri = ''){
 			// remove opening slash
 		if (empty($uri)) return;
-      
+
+			// handle absRefPrefix
+        if ( $GLOBALS['TSFE']->absRefPrefix && strpos( $uri, $GLOBALS['TSFE']->absRefPrefix )===0 ){
+			$uri = substr( $uri, count( $GLOBALS['TSFE']->absRefPrefix ) );
+		} else {
+			return; //uri not in correct path
+		}
+		
 			// look into the db
 		list($path,$params) = explode('?',$uri);
 

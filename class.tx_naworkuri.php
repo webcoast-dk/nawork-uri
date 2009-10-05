@@ -16,9 +16,17 @@ class tx_naworkuri {
 			&& substr($params['pObj']->siteScript,0,9)!='index.php' 
 			&& substr($params['pObj']->siteScript,0,1)!='?'
 		){
+			
+			$uri = $params['pObj']->siteScript;
+
+				// handle absRefPrefix
+			if ( $GLOBALS['TSFE']->absRefPrefix && strpos( $uri, $GLOBALS['TSFE']->absRefPrefix )===0 ){
+				$uri = substr( $uri, count( $GLOBALS['TSFE']->absRefPrefix ) );
+			}
+
 				// translate uri
 			$translator = tx_naworkuri_transformer::getInstance($translator);
-			$uri_params = $translator->uri2params($params['pObj']->siteScript);
+			$uri_params = $translator->uri2params($uri);
 			
 			if ($uri_params){ // uri found
 				$params['pObj']->id = $uri_params['id'];
@@ -67,7 +75,7 @@ class tx_naworkuri {
 			list($path,$params) = explode ('?',$link['LD']['totalURL']);
 
 			$translator = tx_naworkuri_transformer::getInstance($translator);
-			$link['LD']['totalURL'] = $translator->params2uri($params);
+			$link['LD']['totalURL'] =  $GLOBALS['TSFE']->absRefPrefix.$translator->params2uri($params);
 		}
 	}
 

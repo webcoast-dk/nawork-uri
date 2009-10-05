@@ -94,13 +94,6 @@ class tx_naworkuri_transformer {
 			// remove opening slash
 		if (empty($uri)) return;
 
-			// handle absRefPrefix
-        if ( $GLOBALS['TSFE']->absRefPrefix && strpos( $uri, $GLOBALS['TSFE']->absRefPrefix )===0 ){
-			$uri = substr( $uri, count( $GLOBALS['TSFE']->absRefPrefix ) );
-		} else {
-			return; //uri not in correct path
-		}
-		
 			// look into the db
 		list($path,$params) = explode('?',$uri);
 
@@ -203,11 +196,6 @@ class tx_naworkuri_transformer {
   		if ($anchor){
   			$uri .= '#'.$anchor;
   		}
-
-			// handle ts config.absRefPrefix
-		if ($GLOBALS['TSFE']->absRefPrefix){
-			$uri = $GLOBALS['TSFE']->absRefPrefix.$uri;
-		}
   			
   		return($uri);		
 	}	

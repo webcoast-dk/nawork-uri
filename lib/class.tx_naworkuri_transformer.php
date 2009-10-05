@@ -195,7 +195,12 @@ class tx_naworkuri_transformer {
   			// append stored anchor
   		if ($anchor){
   			$uri .= '#'.$anchor;
-  		} 
+  		}
+
+			// handle ts config.absRefPrefix
+		if ($GLOBALS['TSFE']->absRefPrefix){
+			$uri = $GLOBALS['TSFE']->absRefPrefix.$uri;
+		}
   			
   		return($uri);		
 	}	

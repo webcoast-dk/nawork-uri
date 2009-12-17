@@ -214,7 +214,7 @@ class tx_naworkuri_cache {
 				$tmp_uri      = $uri.$append.'/' ;
 				$search_hash  = md5($tmp_uri);
 				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND domain="'.$search_domain.'" AND hash_path = "'.$search_hash.'"' );
-			} while ( $GLOBALS['TYPO3_DB']->sql_num_rows($dbres) > 0 && $append < 200);
+			} while ( $GLOBALS['TYPO3_DB']->sql_num_rows($dbres) > 0 && $append < 9999);
 		}
 		return $tmp_uri;
 	}

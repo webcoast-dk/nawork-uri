@@ -52,7 +52,7 @@ $TCA['tx_naworkuri_uri'] = Array (
             'label' => 'URI Path',        
             'config' => Array (
                 'type' => 'input',    
-                'size' => '30',
+                'size' => '60',
             )
         ),
 		'params' => Array (        

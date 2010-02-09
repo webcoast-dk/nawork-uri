@@ -2,7 +2,7 @@
 # Modifying pages table
 #
 CREATE TABLE pages (
-	tx_naworkuri_pathsegment varchar(30) default '',
+	tx_naworkuri_pathsegment varchar(64) default '',
 	tx_naworkuri_exclude tinyint(1) unsigned default '0'
 ); 
 

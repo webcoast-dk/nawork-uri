@@ -13,8 +13,8 @@ $tempColumns = Array(
 		'label' => 'LLL:EXT:nawork_uri/locallang_db.xml:pages.tx_naworkuri_pathsegment',
 		'config' => Array (
 			'type' => 'input',
-			'size' => '30',
-			'max' => '30',
+			'size' => '60',
+			'max' => '60',
 		),
 	),
 	'tx_naworkuri_exclude' => array(

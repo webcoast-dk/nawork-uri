@@ -1,0 +1,15 @@
+.x-toolbar .x-btn-pressed .x-btn-mc {
+	background-position: 0 -2168px;
+	color: #212424;
+}
+.x-toolbar .x-btn-pressed.x-btn-over .x-btn-mc {
+	background-position: 0 -2168px;
+	color: #333;
+}
+
+.x-btn-pressed .x-btn-text {
+	color: #212424;
+}
+.x-btn-pressed.x-btn-over .x-btn-text {
+	color: #333;
+}

@@ -56,6 +56,7 @@ $TCA['tx_naworkuri_uri'] = Array (
         'dynamicConfigFile' => t3lib_extMgm::extPath($_EXTKEY).'tca.php',
         'iconfile' => t3lib_extMgm::extRelPath($_EXTKEY).'icon_naworkuri_uri.gif',
         'hideAtCopy' => true,
+		'hideTable' => true,
         'typeicon_column' => 'sticky',
         'typeicons' => Array ( 
             '0' => t3lib_extMgm::extRelPath($_EXTKEY).'icon_naworkuri_uri.gif',
@@ -67,12 +68,9 @@ $TCA['tx_naworkuri_uri'] = Array (
 );	
 
 if (TYPO3_MODE=="BE")	{
-	t3lib_extMgm::insertModuleFunction(
-		"web_info",		
-		"tx_naworkuri_modfunc_info",
-		t3lib_extMgm::extPath($_EXTKEY)."modfunc_info/class.tx_naworkuri_modfunc_info.php",
-		"LLL:EXT:nawork_uri/locallang_db.xml:moduleFunction.tx_naworkuri_modfunc_info"
-	);
+	if (TYPO3_MODE=='BE')	{
+		t3lib_extMgm::addModule('web','txnaworkuriM1','',t3lib_extMgm::extPath($_EXTKEY).'mod1/');
+	}
 }
 
 

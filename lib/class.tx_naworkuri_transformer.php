@@ -142,10 +142,10 @@ class tx_naworkuri_transformer {
 		 
 	 		// transform the parameters to path segments
   		$path = array();		 
-		$path = array_merge($path, $this->params2uri_predefinedparts(&$original_params, &$unencoded_params, &$encoded_params) );
- 		$path = array_merge($path, $this->params2uri_valuemaps(&$original_params, &$unencoded_params, &$encoded_params) );
-		$path = array_merge($path, $this->params2uri_uriparts(&$original_params, &$unencoded_params, &$encoded_params) );
- 		$path = array_merge($path, $this->params2uri_pagepath(&$original_params, &$unencoded_params, &$encoded_params) );
+		$path = array_merge($path, $this->params2uri_predefinedparts($original_params, $unencoded_params, $encoded_params) );
+ 		$path = array_merge($path, $this->params2uri_valuemaps($original_params, $unencoded_params, $encoded_params) );
+		$path = array_merge($path, $this->params2uri_uriparts($original_params, $unencoded_params, $encoded_params) );
+ 		$path = array_merge($path, $this->params2uri_pagepath($original_params, $unencoded_params, $encoded_params) );
  		
   			// order the params like configured 
   		$ordered_params = array();
@@ -314,19 +314,21 @@ class tx_naworkuri_transformer {
   				
   					// find fields
   				$where_part  = str_replace('###',$unencoded_params[$param_name],$where);
- 				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $table, $where_part, '', '' ,1 );
-  				if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
-  					$value = $fieldpattern;
-  					foreach($fieldmap as $map_key=>$map_value){
-						$mapfields = explode('//',$map_value);
-						foreach($mapfields as $mapfield){
-						  	if ($row[$mapfield]){
-						  		$value = str_replace('###'.$map_key.'###', $row[$mapfield], $value);
-						  		break;
-							}
-						} 
-  					} 
-    				$parts[$param_name] = $value;
+				if(!empty($table)) {
+	 				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $table, $where_part, '', '' ,1 );
+  					if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
+  						$value = $fieldpattern;
+  						foreach($fieldmap as $map_key=>$map_value){
+							$mapfields = explode('//',$map_value);
+							foreach($mapfields as $mapfield){
+							  	if ($row[$mapfield]){
+							  		$value = str_replace('###'.$map_key.'###', $row[$mapfield], $value);
+							  		break;
+								}
+							} 
+	  					} 
+					}
+	    				$parts[$param_name] = $value;
 					$encoded_params[$param_name]=$unencoded_params[$param_name];
 					unset($unencoded_params[$param_name]); 
 	  			}

@@ -35,8 +35,8 @@ class tx_naworkuri_cache {
 		$uid   = (int)$params['id'];
 		$lang  = (int)($params['L'])?$params['L']:0;
 		
-		unset($params['id']);
-		unset($params['L']);
+//		unset($params['id']);
+//		unset($params['L']);
 		 
 		$imploded_params =$this->helper->implode_parameters($params);
 		
@@ -115,8 +115,8 @@ class tx_naworkuri_cache {
 		$uid   = (int)$params['id'];
 		$lang  = (int)($params['L'])?$params['L']:0;
 		
-		unset($params['id']);
-		unset($params['L']);
+//		unset($params['id']);
+//		unset($params['L']);
 		 
 		$imploded_params = $this->helper->implode_parameters($params);
 		
@@ -138,7 +138,7 @@ class tx_naworkuri_cache {
 
 			// check for a uri record to update 
 		$cache = $this->read ($id, $lang, $domain, $parameters, true);
-		if ($cache ){
+		if (is_array($cache)){
 			
 				// protect sticky uris
 			if ( $cache['sticky'] || $cache['path'] == $path) return $cache['path'];
@@ -193,28 +193,36 @@ class tx_naworkuri_cache {
 		 * @param string $uri URI
 		 * @return string unique URI 
 		 */
-	public function unique($uri, $domain, $exclude_uid=false){
+	public function unique($uri, $domain, $uid=0){
 		
 		$tmp_uri       = $uri;
 		$search_hash   = md5($tmp_uri);
 		$search_domain = $domain;
-
-		if ($exclude_uid) {
-			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND uid !='.(int)$exclude_uid.' AND domain="'.$search_domain.'" AND hash_path = "'.$search_hash.'"' );
-		} else {
-			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND domain="'.$search_domain.'" AND hash_path = "'.$search_hash.'"' );
+		$additionalWhere = '';
+		if(!empty($domain)) {
+			$additionalWhere .= ' AND domain LIKE \''.$domain.'\'';
 		}	
+		if($uid > 0) {
+			$additionalWhere .= ' AND uid!='.intval($uid);
+		}
 			
+//		if ($exclude_uid) {
+//			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND uid !='.(int)$exclude_uid.' AND domain="'.$search_domain.'" AND hash_path = "'.$search_hash.'"' );
+//		} else {
+		$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
+			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND hash_path = "'.$search_hash.'"'.$additionalWhere );
+//		}
 		
-		if ( $GLOBALS['TYPO3_DB']->sql_num_rows($dbres) > 0 ){
+
+		if($dbres > 0){
 				// make the uri unique
 			$append = 0;
 			do {
 				$append ++;
 				$tmp_uri      = $uri.$append.'/' ;
 				$search_hash  = md5($tmp_uri);
-				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND domain="'.$search_domain.'" AND hash_path = "'.$search_hash.'"' );
-			} while ( $GLOBALS['TYPO3_DB']->sql_num_rows($dbres) > 0 && $append < 9999);
+				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND hash_path = "'.$search_hash.'"'.$additionalWhere );
+			} while ($dbres > 0);
 		}
 		return $tmp_uri;
 	}

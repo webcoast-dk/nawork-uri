@@ -35,8 +35,8 @@ class tx_naworkuri_cache {
 		$uid   = (int)$params['id'];
 		$lang  = (int)($params['L'])?$params['L']:0;
 		
-//		unset($params['id']);
-//		unset($params['L']);
+		unset($params['id']);
+		unset($params['L']);
 		 
 		$imploded_params =$this->helper->implode_parameters($params);
 		
@@ -115,8 +115,8 @@ class tx_naworkuri_cache {
 		$uid   = (int)$params['id'];
 		$lang  = (int)($params['L'])?$params['L']:0;
 		
-//		unset($params['id']);
-//		unset($params['L']);
+		unset($params['id']);
+		unset($params['L']);
 		 
 		$imploded_params = $this->helper->implode_parameters($params);
 		

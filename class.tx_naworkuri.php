@@ -10,6 +10,7 @@ class tx_naworkuri {
 	 * @param unknown_type $ref
 	 */
 	function uri2params($params, $ref) {
+		global $TYPO3_CONF_VARS;
 
 		if ( 
 			$params['pObj']->siteScript 
@@ -25,7 +26,9 @@ class tx_naworkuri {
 			}
 
 				// translate uri
-			$translator = tx_naworkuri_transformer::getInstance($translator);
+			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
+			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
+			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader);
 			$uri_params = $translator->uri2params($uri);
 			
 			if ($uri_params){ // uri found
@@ -33,7 +36,7 @@ class tx_naworkuri {
 			    unset($uri_params['id']);
 			    $params['pObj']->mergingWithGetVars($uri_params);
 			} else { // handle 404
-				$conf = $translator->getConfiguration();
+				$conf = $configReader->getConfig();
 				if (!empty($conf->pagenotfound)) {
 					header('Content-Type: text/html; charset=utf-8');
 				  	header((string)$conf->pagenotfound->status);
@@ -68,13 +71,16 @@ class tx_naworkuri {
 	 * @param array $ref
 	 */
 	function params2uri(&$link, $ref) {
+		global $TYPO3_CONF_VARS;
+		
 		if ( 
 			$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable']==1 
 			&& $link['LD']['url']
 		){
 			list($path,$params) = explode ('?',$link['LD']['totalURL']);
-
-			$translator = tx_naworkuri_transformer::getInstance($translator);
+			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
+			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
+			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader);
 			$link['LD']['totalURL'] =  $GLOBALS['TSFE']->absRefPrefix.$translator->params2uri($params);
 		}
 	}
@@ -86,6 +92,7 @@ class tx_naworkuri {
 	 * @param unknown_type $ref
 	 */
 	function redirect2uri($params, $ref) {
+		global $TYPO3_CONF_VARS;
 		if ( 
 			$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable']==1 
 			&& empty($_GET['ADMCMD_prev']) 
@@ -95,7 +102,9 @@ class tx_naworkuri {
 			|| substr($GLOBALS['TSFE']->siteScript,0,1)=='?')
 		){
 			list($path,$params) = explode('?',$GLOBALS['TSFE']->siteScript);
-			$translator = tx_naworkuri_transformer::getInstance($translator);
+			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
+			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
+			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader);
 			
 			$uri = $translator->params2uri($params);
 			if( !($_SERVER['REQUEST_METHOD']=='POST') && $path == 'index.php' ) {

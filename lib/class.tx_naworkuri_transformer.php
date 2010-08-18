@@ -13,11 +13,23 @@ require_once (t3lib_extMgm::extPath('nawork_uri').'/lib/class.tx_naworkuri_helpe
  * 
  */
 
-class tx_naworkuri_transformer {
-	
-	private $conf;
+class tx_naworkuri_transformer implements t3lib_Singleton {
+	/**
+	 *
+	 * @var tx_naworkuri_configReader
+	 */
+	private $config;
+
+	/**
+	 *
+	 * @var string
+	 */
 	private $domain;
-	private static $instance = null;
+	/**
+	 *
+	 * @var t3lib_db
+	 */
+	private $db;
 	
 	/*
 	 * @var tx_naworkuri_cache
@@ -27,52 +39,34 @@ class tx_naworkuri_transformer {
 	/**
 	 * Constructor
 	 *
-	 * @param SimpleXMLElement $configXML
+	 * @param tx_naworkuri_configReader
 	 */
-	public function __construct ($configXML=false, $multidomain=false){
+	public function __construct ($config, $multidomain=false, $domain = ''){
+		$this->db = $GLOBALS['TYPO3_DB'];
 			// read configuration
-		if ($configXML) {
-			$this->conf = $configXML;
-		} else {
-			$this->conf = new SimpleXMLElement(file_get_contents( t3lib_extMgm::extPath('nawork_uri').'/lib/default_UriConf.xml'));
-		}
+		$this->config = $config;
 			// check multidomain mode
 		if ( $multidomain ) {
 			$this->domain = t3lib_div::getIndpEnv('TYPO3_HOST_ONLY');
+			if(!empty($domain)) {
+				$this->domain = $domain;
+			}
+			$domainRes = $this->db->exec_SELECTgetRows('domainMaster', (string)$this->config->getConfig()->domaintable, 'domainName LIKE \''.$this->domain.'\'');
+			if($domainRes) {
+				$uid = $domainRes[0]['domainMaster'];
+				$domainRes = $this->db->exec_SELECTgetRows('domainName', (string)$this->config->getConfig()->domaintable, 'uid='.intval($uid));
+				if(is_array($domainRes) && count($domainRes) > 0) {
+					$this->domain = $domainRes[0]['domainName'];
+				}
+			}
 		} else {
 			$this->domain = '';
 		}
 		
-		$this->cache  = t3lib_div::makeInstance('tx_naworkuri_cache');
+		$this->cache  = t3lib_div::makeInstance('tx_naworkuri_cache', $this->config);
 		$this->cache->setTimeout(30);
 		
 		$this->helper = t3lib_div::makeInstance('tx_naworkuri_helper');
-		
-	}
-	
-	/**
-	 * Create a singleton instance of tx_naworkuri_transformer
-	 *
-	 * @param SimpleXMLElement $xml_config_file
-	 * @return tx_naworkuri_transformer
-	 */
-	public static function getInstance( $xml_config_file ) {
-		if (!self::$instance) {
-				 
-			$confArray = unserialize( $GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
-			$config_xml = false;
-			
-			if (file_exists( PATH_site.$confArray['XMLPATH'] )){
-				$config_xml = new SimpleXMLElement(file_get_contents( PATH_site.$confArray['XMLPATH']));
-			} elseif (file_exists(PATH_typo3conf.'NaworkUriConf.xml')){
-				$config_xml = new SimpleXMLElement(file_get_contents( PATH_typo3conf.'NaworkUriConf.xml'));
-			}
-			
-			$multidomain = $confArray['MULTIDOMAIN'];
-			
-			self::$instance = new tx_naworkuri_transformer($config_xml, $multidomain);
-		}
-		return self::$instance;
 	}
 	
 	/**
@@ -81,7 +75,7 @@ class tx_naworkuri_transformer {
 	 * @return SimpleXMLElement Configuration
 	 */
 	public function getConfiguration(){
-		return $this->conf;
+		return $this->config->getConfig();
 	}
   
 	/**
@@ -93,6 +87,10 @@ class tx_naworkuri_transformer {
 	public function uri2params ($uri = ''){
 			// remove opening slash
 		if (empty($uri)) return;
+		$append = (string)$this->config->getConfig()->append;
+		if(!empty($uri) && $append == '/' && substr($uri, -strlen($append)) != $append && !preg_match('/\.\w{3,5}\d?$/', $uri))  {
+			$uri .= (string)$this->config->getConfig()->append;
+		}
 
 			// look into the db
 		list($path,$params) = explode('?',$uri);
@@ -124,9 +122,18 @@ class tx_naworkuri_transformer {
 		
 		list($parameters, $anchor) = explode('#', $param_str, 2);
 		$params = $this->helper->explode_parameters($parameters);
+		if(!isset($params['L'])) {
+			$params['L'] = 0;
+			if(isset($params['cHash'])) {
+				$cHashParams = $params;
+				unset($cHashParams['cHash']);
+				ksort($cHashParams);
+				$params['cHash'] = t3lib_div::calculateCHash($cHashParams);
+			}
+		}
 		
 			// find already created uri with exactly these parameters
-		$cache_uri = $this->cache->read_params($params, $this->domain);	
+		$cache_uri = $this->cache->read_params($params, $this->domain);
 		if ( $cache_uri !== false ) {
 				// append stored anchor
 	  		if ($anchor){
@@ -149,7 +156,7 @@ class tx_naworkuri_transformer {
  		
   			// order the params like configured 
   		$ordered_params = array();
-  		foreach ($this->conf->paramorder->param as $param) {
+  		foreach ($this->config->getConfig()->paramorder->param as $param) {
   			$param_name = (string)$param;
   			if (isset($path[$param_name]) && $segment = $path[$param_name]){
   				if ($segment) $ordered_params[]=$segment;
@@ -178,9 +185,11 @@ class tx_naworkuri_transformer {
   		
   			// append
   		if ($result_path){
-  			//debug((string)$this->conf->append);
-  			$append = (string)$this->conf->append ? (string)$this->conf->append : '';
-  			$result_path = $result_path.$append;
+  			//debug((string)$this->config->getConfig()->append);
+  			$append = (string)$this->config->getConfig()->append ? (string)$this->config->getConfig()->append : '';
+			if(substr($result_path, -strlen($append)) != $append) {
+				$result_path = $result_path.$append;
+			}
   		} 
   		
   		$uri = $this->cache->write_params($encoded_params, $this->domain, $result_path, $debug_info);
@@ -212,7 +221,7 @@ class tx_naworkuri_transformer {
 	public function params2uri_predefinedparts(&$original_params, &$unencoded_params, &$encoded_params ){
 		
 		$parts = array();
-  		foreach ($this->conf->predefinedparts->part as $part) {
+  		foreach ($this->config->getConfig()->predefinedparts->part as $part) {
 
 			$param_name = (string)$part->parameter;
   			if ( $param_name && isset($unencoded_params[$param_name]) ) {
@@ -231,9 +240,9 @@ class tx_naworkuri_transformer {
   					if ($value && $unencoded_params[$param_name] == $value ){
   						$encoded_params[$param_name]=$unencoded_params[$param_name];
 	  					unset($unencoded_params[$param_name]);
-	  					$parts[$param_name] = $key;
+	  					$parts[$param_name] = trim($key);
   					} else if (!$value) {
-  						$parts[$param_name] = str_replace('###', $unencoded_params[$param_name], $key);
+  						$parts[$param_name] = str_replace('###', $unencoded_params[$param_name], trim($key));
   						$encoded_params[$param_name]=$unencoded_params[$param_name];
 						unset($unencoded_params[$param_name]);  						
   					}
@@ -253,7 +262,7 @@ class tx_naworkuri_transformer {
 	 */
 	public function params2uri_valuemaps (&$original_params, &$unencoded_params, &$encoded_params ){
 		$parts = array();
-		foreach ($this->conf->valuemaps->valuemap as $valuemap) {
+		foreach ($this->config->getConfig()->valuemaps->valuemap as $valuemap) {
 			$param_name = (string)$valuemap->parameter;
   			if ( $param_name && isset($unencoded_params[$param_name]) ) {
 				foreach($valuemap->value as $value){
@@ -262,7 +271,7 @@ class tx_naworkuri_transformer {
 						$remove = (string)$value->attributes()->remove;
 						if (!$remove){
 							if ($key) {
-								$parts[$param_name] = $key;
+								$parts[$param_name] = trim($key);
 							}
 							$encoded_params[$param_name]=$unencoded_params[$param_name];
 							unset($unencoded_params[$param_name]);  
@@ -270,7 +279,7 @@ class tx_naworkuri_transformer {
 							unset($unencoded_params[$param_name]);
 						}	
 					}  	
-				}			
+				}
   			}
 		}
 		return $parts;
@@ -286,7 +295,7 @@ class tx_naworkuri_transformer {
 	 */
 	public function params2uri_uriparts (&$original_params, &$unencoded_params, &$encoded_params){
 		$parts = array();
-		foreach ($this->conf->uriparts->part as $uripart) {
+		foreach ($this->config->getConfig()->uriparts->part as $uripart) {
 			
 			$param_name = (string)$uripart->parameter;
   			if ( $param_name && isset($unencoded_params[$param_name]) ) {
@@ -328,7 +337,7 @@ class tx_naworkuri_transformer {
 							} 
 	  					} 
 					}
-	    				$parts[$param_name] = $value;
+					$parts[$param_name] = trim($value);
 					$encoded_params[$param_name]=$unencoded_params[$param_name];
 					unset($unencoded_params[$param_name]); 
 	  			}
@@ -348,15 +357,15 @@ class tx_naworkuri_transformer {
 	 */
 	public function params2uri_pagepath (&$original_params, &$unencoded_params, &$encoded_params) {
 		$parts = array();
-		if ($this->conf->pagepath && $unencoded_params['id']){
+		if ($this->config->getConfig()->pagepath && $unencoded_params['id']){
 			 
 				// cast id to int and resolve aliases
 			if ($unencoded_params['id']){
 				if (is_numeric($unencoded_params['id']) ){
 					$unencoded_params['id'] = (int)$unencoded_params['id'];
 				} else {
-					$str = $GLOBALS['TYPO3_DB']->fullQuoteStr($unencoded_params['id'], 'pages');
-					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( 'uid' , 'pages', 'alias='.$str.' AND deleted=0', '', '' ,1 );
+					$str = $GLOBALS['TYPO3_DB']->fullQuoteStr($unencoded_params['id'], (string)$this->config->getConfig()->pagepath->table);
+					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( 'uid' , (string)$this->config->getConfig()->pagepath->table, 'alias='.$str.' AND deleted=0', '', '' ,1 );
 					if ( $row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
 						$unencoded_params['id'] = $row['uid'];
 					} else {
@@ -368,12 +377,12 @@ class tx_naworkuri_transformer {
 			$id = $unencoded_params['id'];
 		
 				// get setup
-			$limit  = (int)(string)$this->conf->pagepath->limit;
+			$limit  = (int)(string)$this->config->getConfig()->pagepath->limit;
 			if (!$limit) $limit=10;
 			
-			$field_conf = (string)$this->conf->pagepath->field;
+			$field_conf = (string)$this->config->getConfig()->pagepath->field;
 			$field_conf = str_replace('//',',',$field_conf);
-			$fields     = explode(',', 'tx_naworkuri_pathsegment,'.(string)$this->conf->pagepath->field );
+			$fields     = explode(',', 'tx_naworkuri_pathsegment,'.(string)$this->config->getConfig()->pagepath->field );
 			
 				// determine language (system or link)
 			$lang = 0;
@@ -387,7 +396,7 @@ class tx_naworkuri_transformer {
 				// walk the pagepath
 			while ($limit && $id > 0){
 
-  				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( implode(',',$fields).',uid,pid,hidden,tx_naworkuri_exclude' , 'pages', 'uid='.$id.' AND deleted=0', '', '' ,1 );
+  				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( implode(',',$fields).',uid,pid,hidden,tx_naworkuri_exclude' , (string)$this->config->getConfig()->pagepath->table, 'uid='.$id.' AND deleted=0', '', '' ,1 );
 				$row   = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
 				if (!$row) break; // no page found
 				

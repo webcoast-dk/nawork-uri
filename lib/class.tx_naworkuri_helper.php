@@ -66,8 +66,8 @@ class tx_naworkuri_helper {
  		$uri = $this->uri_make_wellformed($uri);
  		
 	    return $uri;
-	}  
-	
+	}
+
 	/**
 	 * Remove whitespace characters from uri
 	 *
@@ -75,7 +75,8 @@ class tx_naworkuri_helper {
 	 * @return string
 	 */
 	function uri_handle_whitespace($uri){
-		return preg_replace( '/[\s\-]+/u', '-', $uri);
+		$uri = preg_replace( '/[\s\-]+/u', '-', $uri);
+		return $uri;
 	}
 	
 	/**
@@ -89,7 +90,8 @@ class tx_naworkuri_helper {
 	 * @return string
 	 */
 	function uri_handle_punctuation($uri){
-		return preg_replace( '/[\"\#\&\'\?\@\[\\\\\]\^\`\{\|\}\%\<\>]+/u', '-', $uri);
+		$uri = preg_replace( '/[\!\"\#\&\'\?\@\[\\\\\]\^\`\{\|\}\%\<\>]+/u', '-', $uri);
+		return $uri;
 	}
 	
 	/**
@@ -113,8 +115,9 @@ class tx_naworkuri_helper {
 	 * @return string
 	 */
 	function uri_make_wellformed($uri){
-		$uri = preg_replace( '/[-]*[\/]+[-]*/u', '/', $uri);
-		$uri = preg_replace( '/^[\\/]+/u', '', $uri);
+		$uri = preg_replace( '/[\-]*[\/]+[\-]*/u', '/', $uri);
+		$uri = preg_replace( '/^[\/]+/u', '', $uri);
+		$uri = preg_replace('/\-$/','', $uri);
 		return $uri;
 	}
 	

@@ -119,8 +119,8 @@ class tx_naworkuri_helper_testcase extends tx_phpunit_testcase {
 		return array(
 			array('"#&\'<>?@[\\]^`{|}%' ,'-'),
 			array('"#&\'<>?@[\\]^`{|}%' ,'-'),
-			array('!$()*,=:.;+','!$()*,=:.;+'),
-			array('!"#$foo&\'()*+,/bar.;<=>?@[\\]baz^`{|}' ,'!-$foo-()*+,/bar.;-=-baz-'),
+			array('!$()*,=:.;+','-$()*,=:.;+'),
+			array('!"#$foo&\'()*+,/bar.;<=>?@[\\]baz^`{|}' ,'-$foo-()*+,/bar.;-=-baz-'),
 			array('statistik informiert ... 11/94/', 'statistik informiert ... 11/94/'),
 		);
 	}

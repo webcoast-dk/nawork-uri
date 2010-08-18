@@ -34,6 +34,23 @@ t3lib_div::loadTCA('pages_language_overlay');
 t3lib_extMgm::addTCAcolumns('pages_language_overlay',$tempColumns,1);
 t3lib_extMgm::addToAllTCAtypes('pages_language_overlay','tx_naworkuri_pathsegment,tx_naworkuri_exclude','','after:title');
 
+$tempColumns = array(
+	'tx_naworkuri_masterDomain' => array(
+		'label' => 'LLL:EXT:nawork_uri/locallang_db.xml:sys_domain.tx_naworkuri_masterDomain',
+		'config' => array(
+			'type' => 'group',
+			'internal_type' => 'db',
+			'allowed' => 'sys_domain',
+			'size' => '1',
+			'minitems' => '0',
+			'maxitems' => '1',
+		),
+	),
+);
+t3lib_div::loadTCA('sys_domain');
+t3lib_extMgm::addTCAcolumns('sys_domain', $tempColumns, 1);
+t3lib_extMgm::addToAllTCAtypes('sys_domain', 'tx_naworkuri_masterDomain');
+
 	// add URI-Records
 t3lib_extMgm::allowTableOnStandardPages('tx_naworkuri_uri');
 $TCA['tx_naworkuri_uri'] = Array (

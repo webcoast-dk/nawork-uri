@@ -8,6 +8,7 @@
 		<languageKey index="default" type="array">
 			<label index="pages.tx_naworkuri_pathsegment">Speaking URL path segment</label>
 			<label index="pages.tx_naworkuri_exclude">Exclude this page from URI path</label>
+			<label index="sys_domain.tx_naworkuri_masterDomain">Domain alias master record</label>
 			<label index="moduleFunction.tx_naworkuri_modfunc_info">n@work URI Management</label>
 		</languageKey>
 	</data>

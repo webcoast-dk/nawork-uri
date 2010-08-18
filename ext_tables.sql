@@ -17,6 +17,14 @@ CREATE TABLE pages_language_overlay (
 );
 
 #
+# Modify sys_domain
+#
+
+CREATE TABLE sys_domain (
+	tx_naworkuri_masterDomain int(11) DEFAULT '0'
+);
+
+#
 # Table structure for table 'tx_naworkuri_uri'
 #
 
@@ -45,4 +53,3 @@ CREATE TABLE tx_naworkuri_uri (
     KEY domain_path (domain, hash_path)
     
 );
-

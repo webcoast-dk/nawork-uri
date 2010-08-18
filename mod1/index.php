@@ -43,6 +43,7 @@ $GLOBALS['BE_USER']->modAccess($MCONF, 1);
 class tx_naworkuri_module1 extends t3lib_SCbase {
 	var $pageinfo;
 	var $uriRepository;
+	var $extPath;
 	/**
 	 *
 	 * @var template
@@ -60,6 +61,7 @@ class tx_naworkuri_module1 extends t3lib_SCbase {
 	 */
 	function init()	{
 		global $BE_USER,$LANG,$BACK_PATH,$TCA_DESCR,$TCA,$TYPO3_CONF_VARS;
+		$this->extPath = $BACK_PATH.'../typo3conf/ext/nawork_uri/';
 		
 		parent::init();
 	}
@@ -75,17 +77,19 @@ class tx_naworkuri_module1 extends t3lib_SCbase {
 		$this->doc->backPath = $BACK_PATH;
 
 		$this->pageRenderer = $this->doc->getPageRenderer();
+//		$this->pageRenderer->disableCompressJavascript();
+//		$this->pageRenderer->enableConcatenateFiles();
 		$this->pageRenderer->loadExtJS();
 		$this->pageRenderer->enableExtJSQuickTips();
-		$this->pageRenderer->addJsFile('../resources/javascript/Ext.grid.ObservableColumn.js');
-		$this->pageRenderer->addJsFile('../resources/javascript/Ext.grid.CheckColumn.js');
-		$this->pageRenderer->addJsFile('../resources/javascript/Ext.grid.ButtonColumn.js');
-		$this->pageRenderer->addJsFile('../resources/javascript/Ext.ux.grid.RowActions.js');
-		$this->pageRenderer->addJsFile('../resources/javascript/tx.naworkuri.js');
-		$this->pageRenderer->addJsFile('../resources/javascript/tx.naworkuri.pageinfo.js');
-		$this->pageRenderer->addJsFile('../resources/javascript/tx.naworkuri.urisearch.js');
-		$this->pageRenderer->addJsFile('../resources/javascript/tx.naworkuri.pageuris.js');
-		$this->pageRenderer->addCssFile('../resources/css/naworkuri_be.css');
+		$this->pageRenderer->addJsFile($this->extPath.'resources/javascript/Ext.grid.ObservableColumn.js');
+		$this->pageRenderer->addJsFile($this->extPath.'resources/javascript/Ext.grid.CheckColumn.js');
+		$this->pageRenderer->addJsFile($this->extPath.'resources/javascript/Ext.grid.ButtonColumn.js');
+		$this->pageRenderer->addJsFile($this->extPath.'resources/javascript/Ext.ux.grid.RowActions.js');
+		$this->pageRenderer->addJsFile($this->extPath.'resources/javascript/tx.naworkuri.js', 'text/javascript', false);
+		$this->pageRenderer->addJsFile($this->extPath.'resources/javascript/tx.naworkuri.pageinfo.js');
+		$this->pageRenderer->addJsFile($this->extPath.'resources/javascript/tx.naworkuri.urisearch.js');
+		$this->pageRenderer->addJsFile($this->extPath.'resources/javascript/tx.naworkuri.pageuris.js');
+		$this->pageRenderer->addCssFile($this->extPath.'resources/css/naworkuri_be.css');
 
 		$this->pageRenderer->addJsInlineCode('nawork_uri',
 			'

@@ -41,27 +41,90 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 		$this->validateConfig();
 	}
 
-	public function getConfig() {
-		return $this->config;
+//	public function getConfig() {
+//		return $this->config;
+//	}
+
+//	public function getConfigValue($element, $attribute = 'element', $type = 'string') {
+//		if($element instanceof SimpleXMLElement) {
+//			$value;
+//			if($attribute == 'element') {
+//				$value = $element->__toString();
+//			} else {
+//				$value = $element->attributes()->$attribute;
+//			}
+//			switch ($type) {
+//				case 'int':
+//					return intval($value);
+//				case 'boolean':
+//					return (boolean)(int)$value;
+//				default:
+//					return (string)$value;
+//			}
+//		}
+//	}
+
+	public function getPagePathTableName() {
+		return (string)$this->config->pagepath->table;
 	}
 
-	public function getConfigValue($element, $attribute = 'element', $type = 'string') {
-		if($element instanceof SimpleXMLElement) {
-			$value;
-			if($attribute == 'element') {
-				$value = $element->__toString();
-			} else {
-				$value = $element->attributes()->$attribute;
-			}
-			switch ($type) {
-				case 'int':
-					return intval($value);
-				case 'boolean':
-					return (boolean)(int)$value;
-				default:
-					return (string)$value;
-			}
+	public function getPagePathField() {
+		return (string)$this->config->pagepath->field;
+	}
+
+	public function getPagePathLimit() {
+		return (int)$this->config->pagepath->limit;
+	}
+
+	public function hasPagePathConfig() {
+		return is_a($this->config->pagepath, 'SimpleXMLElement') ? true : false;
+	}
+
+	public function getPageNotFoundConfigStatus() {
+		return (string)$this->config->pagenotfound->status;
+	}
+
+	public function getPageNotFoundConfigBehaviorType() {
+		return (string)$this->config->pagenotfound->behavior->attributes()->type;
+	}
+
+	public function getPageNotFoundConfigBehaviorValue() {
+		return (string)$this->config->pagenotfound->behavior;
+	}
+
+	public function hasPageNotFoundConfig() {
+		if(is_a($this->config->pagenotfound, 'SimpleXMLElement')) {
+			return true;
 		}
+		return false;
+	}
+
+	public function getDomainTable() {
+		return (string)$this->config->domaintable;
+	}
+
+	public function getUriTable() {
+		return (string)$this->config->uritable;
+	}
+
+	public function getParamOrder() {
+		return $this->config->paramorder->children();
+	}
+
+	public function getAppend() {
+		return is_a($this->config->append, 'SimpleXMLElement') ? (string)$this->config->append : '';
+	}
+
+	public function getPredefinedParts() {
+		return $this->config->predefinedparts->children();
+	}
+
+	public function getValueMaps() {
+		return $this->config->valuemaps->children();
+	}
+
+	public function getUriParts() {
+		return $this->config->uriparts->children();
 	}
 
 	private function validateConfig() {

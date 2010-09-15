@@ -12,6 +12,7 @@ class tx_naworkuri {
 	function uri2params($params, $ref) {
 		global $TYPO3_CONF_VARS;
 
+
 		if ( 
 			$params['pObj']->siteScript 
 			&& substr($params['pObj']->siteScript,0,9)!='index.php' 
@@ -27,6 +28,7 @@ class tx_naworkuri {
 
 				// translate uri
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
+			/* @var $configReader tx_naworkuri_configReader */
 			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader);
 			$uri_params = $translator->uri2params($uri);
@@ -36,20 +38,29 @@ class tx_naworkuri {
 			    unset($uri_params['id']);
 			    $params['pObj']->mergingWithGetVars($uri_params);
 			} else { // handle 404
-				$conf = $configReader->getConfig();
-				if (!empty($conf->pagenotfound)) {
+				if ($configReader->hasPageNotFoundConfig()) {
 					header('Content-Type: text/html; charset=utf-8');
-				  	header((string)$conf->pagenotfound->status);
-	  				switch ((string)$conf->pagenotfound->behavior['type']) {
+				  	header($configReader->getPageNotFoundConfigStatus());
+	  				switch ($configReader->getPageNotFoundConfigBehaviorType()) {
 			  			case 'message': 
-			  				$res = (string)$conf->pagenotfound->behavior; 
+			  				$res = $configReader->getPageNotFoundConfigBehaviorValue();
 			  				break;
 			  			case 'page':
-			  				$res = implode('', file((string)$conf->pagenotfound->behavior));
-                                                        //$res = file_get_contents((string)$conf->pagenotfound->behavior);
+							if ( t3lib_div::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri' ){
+			  					$curl = curl_init();
+								curl_setopt($curl, CURLOPT_URL, $configReader->getPageNotFoundConfigBehaviorValue());
+								curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+								curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
+								curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+								curl_setopt($curl, CURLOPT_USERAGENT, 'nawork_uri' );
+								curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+								$res = curl_exec($curl);
+			  				} else {
+			  					$res = '404 not found! The 404 Page URL '.$configReader->getPageNotFoundConfigBehaviorValue(). ' seems to cause a redirect loop.';
+			  				}
 			  				break;
 			  			case 'redirect': 
-			  				$path = html_entity_decode((string)$conf->pagenotfound->behavior);
+			  				$path = html_entity_decode($configReader->getPageNotFoundConfigBehaviorValue());
 						    if( !($_SERVER['REQUEST_METHOD']=='POST' && preg_match('/index.php/', $_SERVER['SCRIPT_NAME'])) ) {
 						      header('Location: '.$path,true,301);
 						      exit;

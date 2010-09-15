@@ -5,6 +5,10 @@ require_once (t3lib_extMgm::extPath('nawork_uri').'/lib/class.tx_naworkuri_helpe
 class tx_naworkuri_cache {
 	
 	private $helper;
+	/**
+	 *
+	 * @var tx_naworkuri_configReader
+	 */
 	private $config;
 	private $timeout = false;
 	
@@ -62,7 +66,7 @@ class tx_naworkuri_cache {
 		$hash_path = md5($path);
   		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
   			'pid, sys_language_uid, params',
-  			(string)$this->config->getConfig()->uritable,
+			$this->config->getUriTable(),
   			'deleted=0 AND hidden=0 AND hash_path="'.$hash_path.'" AND domain="'.$domain.'"' 
   		);
   		
@@ -92,7 +96,7 @@ class tx_naworkuri_cache {
 				// lookup in db
 		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 			'uid, path, sticky', 
-			(string)$this->config->getConfig()->uritable,
+			$this->config->getUriTable(),
 			'deleted=0 AND hidden=0 AND pid='.$id.' AND sys_language_uid='.$lang.' AND domain="'.$domain.'" AND hash_params = "'.md5($parameters).'" '.$timeout_condition 
 		);
 		
@@ -157,7 +161,7 @@ class tx_naworkuri_cache {
 			$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
 			$GLOBALS['TYPO3_DB']->debugOutput = 1;
 			
-			$dbres = $GLOBALS['TYPO3_DB']->exec_UPDATEquery((string)$this->config->getConfig()->uritable, 'uid='.(int)$cache['uid'] , $save_record );
+			$dbres = $GLOBALS['TYPO3_DB']->exec_UPDATEquery($this->config->getUriTable(), 'uid='.(int)$cache['uid'] , $save_record );
 			return ($path);
 			
 			
@@ -184,7 +188,7 @@ class tx_naworkuri_cache {
 			$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
 			$GLOBALS['TYPO3_DB']->debugOutput = 1;
 			
-			$dbres = $GLOBALS['TYPO3_DB']->exec_INSERTquery((string)$this->config->getConfig()->uritable, $save_record );
+			$dbres = $GLOBALS['TYPO3_DB']->exec_INSERTquery($this->config->getUriTable(), $save_record );
 			return ($path);
 		}
 	}
@@ -196,7 +200,7 @@ class tx_naworkuri_cache {
 		 * @return string unique URI 
 		 */
 	public function unique($uri, $domain, $uid=0){
-		$uriAppend = (string)$this->config->getConfig()->append;
+		$uriAppend = $this->config->getAppend();
 		$baseUri = '';
 		/*
 		 * if the append is at the end of the uri then remove it for adding the unique part
@@ -219,7 +223,7 @@ class tx_naworkuri_cache {
 //			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND uid !='.(int)$exclude_uid.' AND domain="'.$search_domain.'" AND hash_path = "'.$search_hash.'"' );
 //		} else {
 		$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
-			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', (string)$this->config->getConfig()->uritable, 'deleted=0 AND hidden=0 AND hash_path = "'.$search_hash.'"'.$additionalWhere );
+			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', $this->config->getUriTable(), 'deleted=0 AND hidden=0 AND hash_path = "'.$search_hash.'"'.$additionalWhere );
 //		}
 		
 
@@ -234,7 +238,7 @@ class tx_naworkuri_cache {
 					$tmp_uri = $append.$uriAppend;
 				}
 				$search_hash  = md5($tmp_uri);
-				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', (string)$this->config->getConfig()->uritable, 'deleted=0 AND hidden=0 AND hash_path = "'.$search_hash.'"'.$additionalWhere );
+				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', $this->config->getUriTable(), 'deleted=0 AND hidden=0 AND hash_path = "'.$search_hash.'"'.$additionalWhere );
 			} while ($dbres > 0);
 		}
 		return $tmp_uri;

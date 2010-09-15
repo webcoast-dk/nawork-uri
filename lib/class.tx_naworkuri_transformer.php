@@ -51,10 +51,10 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			if(!empty($domain)) {
 				$this->domain = $domain;
 			}
-			$domainRes = $this->db->exec_SELECTgetRows('domainMaster', (string)$this->config->getConfig()->domaintable, 'domainName LIKE \''.$this->domain.'\'');
+			$domainRes = $this->db->exec_SELECTgetRows('domainMaster', $this->config->getDomainTable(), 'domainName LIKE \''.$this->domain.'\'');
 			if($domainRes) {
 				$uid = $domainRes[0]['domainMaster'];
-				$domainRes = $this->db->exec_SELECTgetRows('domainName', (string)$this->config->getConfig()->domaintable, 'uid='.intval($uid));
+				$domainRes = $this->db->exec_SELECTgetRows('domainName', $this->config->getDomainTable(), 'uid='.intval($uid));
 				if(is_array($domainRes) && count($domainRes) > 0) {
 					$this->domain = $domainRes[0]['domainName'];
 				}
@@ -87,9 +87,9 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	public function uri2params ($uri = ''){
 			// remove opening slash
 		if (empty($uri)) return;
-		$append = (string)$this->config->getConfig()->append;
+		$append = (string)$this->config->getAppend();
 		if(!empty($uri) && $append == '/' && substr($uri, -strlen($append)) != $append && !preg_match('/\.\w{3,5}\d?$/', $uri))  {
-			$uri .= (string)$this->config->getConfig()->append;
+			$uri .= (string)$this->config->getAppend();
 		}
 
 			// look into the db
@@ -156,7 +156,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
  		
   			// order the params like configured 
   		$ordered_params = array();
-  		foreach ($this->config->getConfig()->paramorder->param as $param) {
+  		foreach ($this->config->getParamOrder() as $param) {
   			$param_name = (string)$param;
   			if (isset($path[$param_name]) && $segment = $path[$param_name]){
   				if ($segment) $ordered_params[]=$segment;
@@ -186,7 +186,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
   			// append
   		if ($result_path){
   			//debug((string)$this->config->getConfig()->append);
-  			$append = (string)$this->config->getConfig()->append ? (string)$this->config->getConfig()->append : '';
+  			$append = $this->config->getAppend();
 			if(substr($result_path, -strlen($append)) != $append) {
 				$result_path = $result_path.$append;
 			}
@@ -221,7 +221,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	public function params2uri_predefinedparts(&$original_params, &$unencoded_params, &$encoded_params ){
 		
 		$parts = array();
-  		foreach ($this->config->getConfig()->predefinedparts->part as $part) {
+  		foreach ($this->config->getPredefinedParts() as $part) {
 
 			$param_name = (string)$part->parameter;
   			if ( $param_name && isset($unencoded_params[$param_name]) ) {
@@ -262,7 +262,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	 */
 	public function params2uri_valuemaps (&$original_params, &$unencoded_params, &$encoded_params ){
 		$parts = array();
-		foreach ($this->config->getConfig()->valuemaps->valuemap as $valuemap) {
+		foreach ($this->config->getValueMaps() as $valuemap) {
 			$param_name = (string)$valuemap->parameter;
   			if ( $param_name && isset($unencoded_params[$param_name]) ) {
 				foreach($valuemap->value as $value){
@@ -295,7 +295,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	 */
 	public function params2uri_uriparts (&$original_params, &$unencoded_params, &$encoded_params){
 		$parts = array();
-		foreach ($this->config->getConfig()->uriparts->part as $uripart) {
+		foreach ($this->config->getUriParts() as $uripart) {
 			
 			$param_name = (string)$uripart->parameter;
   			if ( $param_name && isset($unencoded_params[$param_name]) ) {
@@ -357,15 +357,15 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	 */
 	public function params2uri_pagepath (&$original_params, &$unencoded_params, &$encoded_params) {
 		$parts = array();
-		if ($this->config->getConfig()->pagepath && $unencoded_params['id']){
+		if ($this->config->hasPagePathConfig() && $unencoded_params['id']){
 			 
 				// cast id to int and resolve aliases
 			if ($unencoded_params['id']){
 				if (is_numeric($unencoded_params['id']) ){
 					$unencoded_params['id'] = (int)$unencoded_params['id'];
 				} else {
-					$str = $GLOBALS['TYPO3_DB']->fullQuoteStr($unencoded_params['id'], (string)$this->config->getConfig()->pagepath->table);
-					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( 'uid' , (string)$this->config->getConfig()->pagepath->table, 'alias='.$str.' AND deleted=0', '', '' ,1 );
+					$str = $GLOBALS['TYPO3_DB']->fullQuoteStr($unencoded_params['id'], $this->config->getPagePathTableName());
+					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( 'uid' , $this->config->getPagePathTableName(), 'alias='.$str.' AND deleted=0', '', '' ,1 );
 					if ( $row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
 						$unencoded_params['id'] = $row['uid'];
 					} else {
@@ -377,12 +377,12 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			$id = $unencoded_params['id'];
 		
 				// get setup
-			$limit  = (int)(string)$this->config->getConfig()->pagepath->limit;
+			$limit  = $this->config->getPagePathLimit();
 			if (!$limit) $limit=10;
 			
-			$field_conf = (string)$this->config->getConfig()->pagepath->field;
+			$field_conf = $this->config->getPagePathField();
 			$field_conf = str_replace('//',',',$field_conf);
-			$fields     = explode(',', 'tx_naworkuri_pathsegment,'.(string)$this->config->getConfig()->pagepath->field );
+			$fields     = explode(',', 'tx_naworkuri_pathsegment,'.$this->config->getPagePathField() );
 			
 				// determine language (system or link)
 			$lang = 0;
@@ -396,7 +396,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 				// walk the pagepath
 			while ($limit && $id > 0){
 
-  				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( implode(',',$fields).',uid,pid,hidden,tx_naworkuri_exclude' , (string)$this->config->getConfig()->pagepath->table, 'uid='.$id.' AND deleted=0', '', '' ,1 );
+  				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( implode(',',$fields).',uid,pid,hidden,tx_naworkuri_exclude' , $this->config->getPagePathTableName(), 'uid='.$id.' AND deleted=0', '', '' ,1 );
 				$row   = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
 				if (!$row) break; // no page found
 				

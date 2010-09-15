@@ -382,7 +382,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			
 			$field_conf = $this->config->getPagePathField();
 			$field_conf = str_replace('//',',',$field_conf);
-			$fields     = explode(',', 'tx_naworkuri_pathsegment,'.$this->config->getPagePathField() );
+			$fields     = explode(',', 'tx_naworkuri_pathsegment,'.$field_conf );
 			
 				// determine language (system or link)
 			$lang = 0;

@@ -207,6 +207,8 @@ class tx_naworkuri_cache {
 		 */
 		if(!empty($uriAppend) && substr($uri, -strlen($uriAppend)) == $uriAppend) {
 			$baseUri = substr($uri, 0, strlen($uri) - strlen($uriAppend));
+		} else {
+			$baseUri = $uri;
 		}
 		$tmp_uri       = $uri;
 		$search_hash   = md5($tmp_uri);

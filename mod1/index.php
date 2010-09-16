@@ -42,10 +42,10 @@ $GLOBALS['BE_USER']->modAccess($MCONF, 1);
 
 class tx_naworkuri_module1 extends t3lib_SCbase {
 	var $pageinfo;
+	protected $isAccessibleForCurrentUser = false;
 	var $uriRepository;
 	var $extPath;
 	/**
-	 *
 	 * @var template
 	 */
 	var $doc;
@@ -73,12 +73,16 @@ class tx_naworkuri_module1 extends t3lib_SCbase {
 	function main()	{
 		global $BE_USER,$LANG,$BACK_PATH,$TCA_DESCR,$TCA,$HTTP_GET_VARS,$HTTP_POST_VARS,$CLIENT,$TYPO3_CONF_VARS,$scriptfile;
 
+		$this->pageinfo = t3lib_BEfunc::readPageAccess($this->id, $this->perms_clause);
+		$this->isAccessibleForCurrentUser = (
+			$this->id && is_array($this->pageinfo) || !$this->id && (bool)$GLOBALS['BE_USER']->user['admin']
+		);
+
 		$this->doc = t3lib_div::makeInstance('template');
+		$this->doc->setModuleTemplate(t3lib_extMgm::extPath('nawork_uri').'mod1/mod_template.html');
 		$this->doc->backPath = $BACK_PATH;
 
 		$this->pageRenderer = $this->doc->getPageRenderer();
-//		$this->pageRenderer->disableCompressJavascript();
-//		$this->pageRenderer->enableConcatenateFiles();
 		$this->pageRenderer->loadExtJS();
 		$this->pageRenderer->enableExtJSQuickTips();
 		$this->pageRenderer->addJsFile($this->extPath.'resources/javascript/Ext.grid.ObservableColumn.js');
@@ -109,40 +113,27 @@ class tx_naworkuri_module1 extends t3lib_SCbase {
 					border: false,
 					page: "'.$this->id.'"
 				});
-//				searchPanel.addListener("beforecollapse", function() {
-//					uriPanel.collapse();
-//				});
-//				uriPanel.addListener("beforecollapse", function() {
-//					searchPanel.collapse();
-//				});
 
-				tx.naworkuri.view = new Ext.Viewport({
+				tx.naworkuri.view = new Ext.Panel({
 					layout: "fit",
 					title: "n@work URI Management",
-					items: {
-						id: "naworkuri-management",
-						xtype: "panel",
-                        autoScroll: true,
-						title: "'.$LANG->getLL('title').'",
-//						autoScroll: true,
-						items: [
-//							{
-//								id: "naworkuri-pageinfo",
-//								xtype: "naworkuri-pageinfo",
-//								title: "'.$LANG->getLL('pageInfo').'",
-//								page: "'.$this->id.'",
-//								backPath: "'.$this->doc->backPath.'",
-//								border: false
-//							},
-							uriPanel,
-							searchPanel
-						]
-					}
+					id: "naworkuri-management",
+					xtype: "panel",
+					autoScroll: true,
+					title: "'.$LANG->getLL('title').'",
+					autoScroll: true,
+					renderTo: "nawork-uri-content",
+					items: [
+						uriPanel,
+						searchPanel
+					]
 				});
 			});
 			');
 
-		$this->content .= $this->doc->startPage($GLOBALS['LANG']->getLL('title'));
+		if($this->isAccessibleForCurrentUser) {
+			$this->content .= '<div id="nawork-uri-content"></div>';
+		}
 		$this->doc->form = '';
 
 		/*
@@ -208,8 +199,19 @@ class tx_naworkuri_module1 extends t3lib_SCbase {
 		}*/
 	}
 	function printContent()	{
-		$this->content.= $this->doc->endPage();
-		echo $this->content;
+		global $BACK_PATH;
+		$content = $this->doc->startPage($GLOBALS['LANG']->getLL('title'));
+		$content .= $this->doc->moduleBody($this->pageinfo ,
+				array(
+					'view' => '<a href="#" onclick="' . htmlspecialchars(t3lib_BEfunc::viewOnClick($this->pageinfo['uid'], $BACK_PATH, t3lib_BEfunc::BEgetRootLine($this->pageinfo['uid']))) . '">' .
+				'<img' . t3lib_iconWorks::skinImg($BACK_PATH, 'gfx/zoom.gif', 'width="12" height="12"') . ' title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showPage', 1) . '" hspace="3" alt="" />' .
+				'</a>'),
+				array(
+					'CONTENT' => $this->content,
+				));
+		$content.= $this->doc->endPage();
+		$this->content = null;
+		echo $content;
 	}
 }
 

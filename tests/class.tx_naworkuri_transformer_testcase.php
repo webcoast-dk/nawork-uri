@@ -273,8 +273,16 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 					'L' => 0,
 				),
 			),
-			'three encoded(id,L,cHash) and two unencoded(foo,blub) paramters' => array(
+			'three encoded(id,L,cHash) and two unencoded(foo,blub) parameters: remove cHash on unencoded params' => array(
 				'id=8&foo=bar&cHash=123&blub=bla&L=0',
+				'sub-2/sub-2-2/',
+				array(
+					'id' => 8,
+					'L' => 0,
+				),
+			),
+			'three encoded(id,L,cHash) and no unencoded parameters' => array(
+				'id=8&cHash=123&L=0',
 				'sub-2/sub-2-2/',
 				array(
 					'id' => 8,

@@ -148,13 +148,28 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		$unencoded_params = $original_params;
 		 
 	 		// transform the parameters to path segments
-  		$path = array();		 
+  		$path = array();
 		$path = array_merge($path, $this->params2uri_predefinedparts($original_params, $unencoded_params, $encoded_params) );
- 		$path = array_merge($path, $this->params2uri_valuemaps($original_params, $unencoded_params, $encoded_params) );
+		$path = array_merge($path, $this->params2uri_valuemaps($original_params, $unencoded_params, $encoded_params) );
 		$path = array_merge($path, $this->params2uri_uriparts($original_params, $unencoded_params, $encoded_params) );
- 		$path = array_merge($path, $this->params2uri_pagepath($original_params, $unencoded_params, $encoded_params) );
- 		
-  			// order the params like configured 
+		$path = array_merge($path, $this->params2uri_pagepath($original_params, $unencoded_params, $encoded_params) );
+		
+			// write cache entry with these uri an create cache entry if needed
+  		$debug_info = '';
+  		$debug_info .= "original_params  : ".$this->helper->implode_parameters($original_params).chr(10);
+  		$debug_info .= "encoded_params   : ".$this->helper->implode_parameters($encoded_params).chr(10);
+  		$debug_info .= "unencoded_params : ".$this->helper->implode_parameters($unencoded_params).chr(10);
+
+		/*
+		 * if any parameter is not encoded and the cHash is encoded, remove it from the encoded parameters
+		 * and put it into the unencoded parameters to avoid unnecessary uris
+		 */
+		if(count($unencoded_params) > 0 && isset($encoded_params['cHash'])) {
+			$unencoded_params['cHash'] = $encoded_params['cHash'];
+			unset($encoded_params['cHash']);
+		}
+
+  		// order the params like configured
   		$ordered_params = array();
   		foreach ($this->config->getParamOrder() as $param) {
   			$param_name = (string)$param;
@@ -163,27 +178,21 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
   				unset($path[$param_name]);
   			}
   		}
-  			// add params with not specified order
+		// add params with not specified order
   		foreach ($path as $param=>$path_segment) {
   			if ($path_segment) $ordered_params[]=$path_segment;
   		}
-  		
-  			// return 
+
+  			// return
   		if (count($ordered_params)){
   			$encoded_uri = implode('/',$ordered_params);
   		} else {
   			$encoded_uri = '';
   		}
-		
-  			// write cache entry with these uri an create cache entry if needed 
-  		$debug_info = '';
-  		$debug_info .= "original_params  : ".$this->helper->implode_parameters($original_params).chr(10);
-  		$debug_info .= "encoded_params   : ".$this->helper->implode_parameters($encoded_params).chr(10);
-  		$debug_info .= "unencoded_params : ".$this->helper->implode_parameters($unencoded_params).chr(10);
 
   		$result_path   = $this->helper->sanitize_uri($encoded_uri);
-  		
-  			// append
+
+		// append
   		if ($result_path){
   			//debug((string)$this->config->getConfig()->append);
   			$append = $this->config->getAppend();
@@ -392,7 +401,6 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			if (isset($original_params['L'])) {
 				$lang = (int)$original_params['L'];
 			}
-				
 				// walk the pagepath
 			while ($limit && $id > 0){
 
@@ -433,7 +441,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			
 			
 			$encoded_params['id']=$unencoded_params['id'];
-			unset($unencoded_params['id']);  
+			unset($unencoded_params['id']);
 		}
 		
 		return array('id'=>implode('/',$parts));

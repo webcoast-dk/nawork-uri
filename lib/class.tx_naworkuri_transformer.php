@@ -88,13 +88,12 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			// remove opening slash
 		if (empty($uri)) return;
 		$append = (string)$this->config->getAppend();
-		if(!empty($uri) && $append == '/' && substr($uri, -strlen($append)) != $append && !preg_match('/\.\w{3,5}\d?$/', $uri))  {
-			$uri .= (string)$this->config->getAppend();
+		list($path, $params) = t3lib_div::trimExplode('?', $uri);
+		if(!empty($path) && $append == '/' && substr($path, -strlen($append)) != $append && !preg_match('/\.\w{3,5}\d?$/', $path))  {
+			$path .= (string)$this->config->getAppend();
 		}
 
-			// look into the db
-		list($path,$params) = explode('?',$uri);
-
+		// look into the db
 		$cache = $this->cache->read_path($path, $this->domain);
         if ($cache){
         		// cachedparams

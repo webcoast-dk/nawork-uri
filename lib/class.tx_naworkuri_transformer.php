@@ -204,10 +204,10 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
   		
   			// read not encoded parameters
   		$i =0; 
-  		foreach ($unencoded_params as $key => $value){
-  			$uri.= ( ($i>0)?'&':'?' ).$key.'='.$value;
-  			$i++;
-  		}
+		foreach ($unencoded_params as $key => $value){
+  			$uri.= ( ($i>0)?'&':'?' ).rawurlencode($key).'='.rawurlencode($value);
+   			$i++;
+   		}
   		
   			// append stored anchor
   		if ($anchor){

@@ -21,11 +21,6 @@ class tx_naworkuri {
 			
 			$uri = $params['pObj']->siteScript;
 
-				// handle absRefPrefix
-			if ( $GLOBALS['TSFE']->absRefPrefix && strpos( $uri, $GLOBALS['TSFE']->absRefPrefix )===0 ){
-				$uri = substr( $uri, count( $GLOBALS['TSFE']->absRefPrefix ) );
-			}
-
 				// translate uri
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 			/* @var $configReader tx_naworkuri_configReader */
@@ -92,7 +87,7 @@ class tx_naworkuri {
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader);
-			$link['LD']['totalURL'] =  $GLOBALS['TSFE']->absRefPrefix.$translator->params2uri($params);
+			$link['LD']['totalURL'] =  $GLOBALS['TSFE']->config['config']['absRefPrefix'].$translator->params2uri($params);
 		}
 	}
 

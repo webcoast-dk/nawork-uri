@@ -92,6 +92,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		if(!empty($path) && $append == '/' && substr($path, -strlen($append)) != $append && !preg_match('/\.\w{3,5}\d?$/', $path))  {
 			$path .= (string)$this->config->getAppend();
 		}
+		$path = urldecode($path);
 
 		// look into the db
 		$cache = $this->cache->read_path($path, $this->domain);

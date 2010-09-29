@@ -52,7 +52,6 @@ t3lib_extMgm::addTCAcolumns('sys_domain', $tempColumns, 1);
 t3lib_extMgm::addToAllTCAtypes('sys_domain', 'tx_naworkuri_masterDomain');
 
 	// add URI-Records
-t3lib_extMgm::allowTableOnStandardPages('tx_naworkuri_uri');
 $TCA['tx_naworkuri_uri'] = Array (
     'ctrl' => Array (
         'title' => 'URI',      

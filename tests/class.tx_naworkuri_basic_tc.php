@@ -262,6 +262,11 @@ class tx_naworkuri_basic_tc extends tx_phpunit_testcase {
 			'pid' => 11,
 			'title' => 'Sub !# 3 1 5',
 		));
+		$this->db->exec_INSERTquery('test_pages', array(
+			'uid' => 17,
+			'pid' => 11,
+			'title' => 'Test-, Foo-, Bar-, und Blafasel'
+		));
 	}
 
 	protected function setupNews() {

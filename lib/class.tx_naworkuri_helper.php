@@ -90,7 +90,7 @@ class tx_naworkuri_helper {
 	 * @return string
 	 */
 	function uri_handle_punctuation($uri){
-		$uri = preg_replace( '/[\!\"\#\&\'\?\@\[\\\\\]\^\`\{\|\}\%\<\>]+/u', '-', $uri);
+		$uri = preg_replace( '/[\!\"\#\&\'\?\@\[\\\\\]\^\`\{\|\}\%\<\>\,]+/u', '-', $uri);
 		return $uri;
 	}
 	
@@ -102,7 +102,7 @@ class tx_naworkuri_helper {
 	 * @return unknown
 	 */
 	function uri_limit_allowed_chars($uri){
-		return preg_replace( '/[^A-Za-z0-9\/\-\_\.\~\!\(\)\*\+\,\:\;\=]+/u', '', $uri);
+		return preg_replace( '/[^A-Za-z0-9\/\-\_\.\~\!\(\)\*\+\:\;\=]+/u', '', $uri);
 	}
 	
 	/**

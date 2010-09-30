@@ -133,6 +133,11 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 				'id=10&cHash=456&L=0',
 				'sub-2/sub-2-4-2/',
 			),
+			'page title with comma' => array(
+				array(),
+				'id=17',
+				'sub-3/sub-3-1/test-foo-bar-und-blafasel/'
+			)
 		);
 	}
 

@@ -114,7 +114,7 @@ class tx_naworkuri {
             $translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader);
 
             $uri = $translator->params2uri($params, true);
-            if (!($_SERVER['REQUEST_METHOD'] == 'POST') && $path == 'index.php' && $uri !== false) {
+            if (!($_SERVER['REQUEST_METHOD'] == 'POST') && ($path == 'index.php' || $path == '') && $uri !== false) {
                 header('Location: ' . $GLOBALS['TSFE']->config['config']['baseURL'] . $uri, true, 301);
                 exit;
             }

@@ -40,12 +40,12 @@ class tx_naworkuri_cache {
 	public function read_params ($params, $domain){
 		$uid   = (int)$params['id'];
 		$lang  = (int)($params['L'])?$params['L']:0;
-		
+
 		unset($params['id']);
 		unset($params['L']);
-		 
+
 		$imploded_params =$this->helper->implode_parameters($params);
-		
+
 		$row = $this->read($uid, $lang, $domain, $imploded_params);
 		if ($row){
 			return $row['path'];
@@ -89,11 +89,12 @@ class tx_naworkuri_cache {
 	public function read ($id, $lang, $domain, $parameters, $ignoreTimeout = false ){
 		
 		$timeout_condition = '';
-		if ($this->timeout>0 && $ignoreTimeout == false){
-			$timeout_condition = 'AND ( tstamp > "'.(time()-$this->timeout).'" OR sticky="1" )'; 		
-		} 
+//		if ($this->timeout>0 && $ignoreTimeout == false){
+//			$timeout_condition = 'AND ( tstamp > "'.(time()-$this->timeout).'" OR sticky="1" )'; 		
+//		} 
 		
 				// lookup in db
+				$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
 		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 			'uid, path, sticky', 
 			$this->config->getUriTable(),

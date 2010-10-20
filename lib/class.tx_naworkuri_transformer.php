@@ -118,7 +118,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	 * @param str $param_str Parameter string
 	 * @return string $uri encoded uri
 	 */
-	public function params2uri ($param_str){
+	public function params2uri ($param_str, $redirect = false){
 		
 		list($parameters, $anchor) = explode('#', $param_str, 2);
 		$params = $this->helper->explode_parameters($parameters);
@@ -140,7 +140,9 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	  			$cache_uri .= '#'.$anchor;
 	  		} 
 			return $cache_uri;
-		}
+		} elseif($redirect && $cache_uri === false) {
+                    return false;
+                }
 		
 			// create new uri because no exact match was found in cache
 		$original_params  = $params;

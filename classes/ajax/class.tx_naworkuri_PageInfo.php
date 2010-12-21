@@ -111,37 +111,32 @@ class tx_naworkuri_PageInfo {
 	public function modPageUris($params, &$ajaxObj) {
 		$mode = t3lib_div::GPvar('mode');
 		$uid = t3lib_div::GPvar('uid');
-
 		switch($mode) {
 			case 'delete':
 				/* @var $tceMain t3lib_TCEmain */
 				$tceMain = t3lib_div::makeInstance('t3lib_TCEmain');
 				$tceMain->start(array(), array('tx_naworkuri_uri' => array(intval($uid) => array('delete' => 1))));
-				$tceMain->process_cmdmap();
+				$tceMain->deleteRecord('tx_naworkuri_uri', intval($uid));
 				break;
 			case 'sticky':
 				/* @var $tceMain t3lib_TCEmain */
 				$tceMain = t3lib_div::makeInstance('t3lib_TCEmain');
-				$tceMain->start(array('tx_naworkuri_uri' => array(intval($uid) => array('sticky' => 1))), array());
+				$tceMain->updateDB('tx_naworkuri_uri', intval($uid), array('sticky' => 1));
 				$tceMain->process_datamap();
-				break;
 			case 'unsticky':
 				/* @var $tceMain t3lib_TCEmain */
 				$tceMain = t3lib_div::makeInstance('t3lib_TCEmain');
-				$tceMain->start(array('tx_naworkuri_uri' => array(intval($uid) => array('sticky' => 0))), array());
-				$tceMain->process_datamap();
+				$tceMain->updateDB('tx_naworkuri_uri', intval($uid), array('sticky' => 0));
 				break;
 			case 'hide':
 				/* @var $tceMain t3lib_TCEmain */
 				$tceMain = t3lib_div::makeInstance('t3lib_TCEmain');
-				$tceMain->start(array('tx_naworkuri_uri' => array(intval($uid) => array('hidden' => 1))), array());
-				$tceMain->process_datamap();
-				break;
+				$tceMain->updateDB('tx_naworkuri_uri', intval($uid), array('hidden' => 1));
+			break;
 			case 'unhide':
 				/* @var $tceMain t3lib_TCEmain */
 				$tceMain = t3lib_div::makeInstance('t3lib_TCEmain');
-				$tceMain->start(array('tx_naworkuri_uri' => array(intval($uid) => array('hidden' => 0))), array());
-				$tceMain->process_datamap();
+				$tceMain->updateDB('tx_naworkuri_uri', intval($uid), array('hidden' => 0));
 				break;
 		}
 	}

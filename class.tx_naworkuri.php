@@ -87,7 +87,7 @@ class tx_naworkuri {
             list($path, $params) = explode('?', $link['LD']['totalURL']);
             $extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
             $configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
-            $translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader);
+            $translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, (boolean)$extConf['MULTIDOMAIN']);
             $link['LD']['totalURL'] = $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $translator->params2uri($params);
         }
     }

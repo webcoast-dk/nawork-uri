@@ -116,6 +116,7 @@ class tx_naworkuri_PageInfo {
 			case 'delete':
 				/* @var $tceMain t3lib_TCEmain */
 				$tceMain = t3lib_div::makeInstance('t3lib_TCEmain');
+				$tceMain->start(array(), array('tx_naworkuri_uri' => array(intval($uid) => array('delete' => 1))));
 				$tceMain->process_cmdmap();
 				break;
 			case 'sticky':

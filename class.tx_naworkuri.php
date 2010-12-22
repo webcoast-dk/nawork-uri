@@ -26,7 +26,7 @@ class tx_naworkuri {
             $extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
             /* @var $configReader tx_naworkuri_configReader */
             $configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
-            $translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader);
+            $translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, $extPath['MULTIDOMAIN']);
             $uri_params = $translator->uri2params($uri);
 
             if ($uri_params) { // uri found

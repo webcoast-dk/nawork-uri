@@ -51,9 +51,9 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			if(!empty($domain)) {
 				$this->domain = $domain;
 			}
-			$domainRes = $this->db->exec_SELECTgetRows('domainMaster', $this->config->getDomainTable(), 'domainName LIKE \''.$this->domain.'\'');
+			$domainRes = $this->db->exec_SELECTgetRows('tx_naworkuri_masterDomain', $this->config->getDomainTable(), 'domainName LIKE \''.$this->domain.'\'');
 			if($domainRes) {
-				$uid = $domainRes[0]['domainMaster'];
+				$uid = $domainRes[0]['tx_naworkuri_masterDomain'];
 				$domainRes = $this->db->exec_SELECTgetRows('domainName', $this->config->getDomainTable(), 'uid='.intval($uid));
 				if(is_array($domainRes) && count($domainRes) > 0) {
 					$this->domain = $domainRes[0]['domainName'];

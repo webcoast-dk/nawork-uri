@@ -5,20 +5,20 @@
  */
 
 class tx_naworkuri_helper {
-	
-	
+
+
 	/**
 	 * Explode URI Parameters
 	 *
 	 * @param string $param_string Parameter Part of URI
-	 * @return array Exploded Parameters 
+	 * @return array Exploded Parameters
 	 */
 	public function explode_parameters($param_string){
 		/*
 		$res = array();
 		parse_str($param_string, $res);
 		return $res;
-		*/ 
+		*/
 		$result = array();
 		$tmp = explode('&',$param_string);
 		foreach ($tmp as $part){
@@ -28,7 +28,7 @@ class tx_naworkuri_helper {
 		ksort($result);
 		return $result;
 	}
-  
+
 	/**
 	 * Implode URI Parameters
 	 *
@@ -46,25 +46,25 @@ class tx_naworkuri_helper {
 		}
 		return $result;
 	}
-	
+
 	/**
-	 * Sanitize the Path 
-	 * 
+	 * Sanitize the Path
+	 *
 	 * @param string $string
 	 * @return string
 	 */
-	
+
 	public function sanitize_uri($uri) {
-		
+
 		$uri = strip_tags($uri);
-		$uri = strtolower($uri); 
-		
+		$uri = strtolower($uri);
+
 		$uri = $this->uri_handle_punctuation($uri);
 		$uri = $this->uri_handle_whitespace($uri);
 		$uri = $this->uri_transliterate($uri);
 		$uri = $this->uri_limit_allowed_chars($uri);
  		$uri = $this->uri_make_wellformed($uri);
- 		
+
 	    return $uri;
 	}
 
@@ -78,11 +78,11 @@ class tx_naworkuri_helper {
 		$uri = preg_replace( '/[\s\-]+/u', '-', $uri);
 		return $uri;
 	}
-	
+
 	/**
 	 * Convert punctuation chars to -
 	 *  ! " # $ & ' ( ) * + , : ; < = > ? @ [ \ ] ^ ` { | } <-- Old
-	 *  
+	 *
 	 *  	" #   & '               <   > ? @ [ \ ] ^ ` { | } %   < -- New
 
 	 *
@@ -93,18 +93,18 @@ class tx_naworkuri_helper {
 		$uri = preg_replace( '/[\!\"\#\&\'\?\@\[\\\\\]\^\`\{\|\}\%\<\>\,]+/u', '-', $uri);
 		return $uri;
 	}
-	
+
 	/**
 	 * remove not allowed chars from uri
 	 * allowed chars A-Za-z0-9 - _ . ~ ! ( ) * + , : ; =
-	 * 
+	 *
 	 * @param unknown_type $uri
 	 * @return unknown
 	 */
 	function uri_limit_allowed_chars($uri){
 		return preg_replace( '/[^A-Za-z0-9\/\-\_\.\~\!\(\)\*\+\:\;\=]+/u', '', $uri);
 	}
-	
+
 	/**
 	 * Remove some ugly uri-formatings:
 	 * - slashes from the Start
@@ -120,16 +120,16 @@ class tx_naworkuri_helper {
 		$uri = preg_replace('/\-$/','', $uri);
 		return $uri;
 	}
-	
+
 	/**
-	 * Transliterate of strange utf-8 chars 
-	 * 
+	 * Transliterate of strange utf-8 chars
+	 *
 	 * @TODO make translitertaion better
 	 * @param string $uri
 	 * @return string
 	 */
 	function uri_transliterate($uri){
-		 $sonderzeichen = array( 
+		 $sonderzeichen = array(
 			'ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'ß' => 'ss',
 			'Ä' => 'ae', 'Ö' => 'oe', 'Ü' => 'ue',
 			'è' => 'e' , 'é' => 'e', 'ê' => 'e',
@@ -154,10 +154,10 @@ class tx_naworkuri_helper {
 			'ù' => 'u', 'ú' => 'u', 'û' => 'u',
 			'ý' => 'y', 'ÿ' => 'y'
 		 );
-	 
+
 		$uri = strtr($uri, $sonderzeichen);
-	    
-	  
+
+
         $chars = array(
 	        // Decompositions for Latin-1 Supplement
 	        chr(195).chr(128) => 'A', chr(195).chr(129) => 'A',
@@ -259,13 +259,12 @@ class tx_naworkuri_helper {
 	        chr(194).chr(163) => ''
 	    );
         $uri = strtr($uri, $chars);
-        
+
         return $uri;
 	}
-	
+
 	public static function isActiveBeUserSession() {
 		if(array_key_exists('be_typo_user', $_COOKIE) && !empty($_COOKIE['be_typo_user'])) {
-			$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
 			$tstamp = time() - $GLOBALS['TYPO3_CONF_VARS']['BE']['sessionTimeout'];
 			$beSessionResult = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', 'be_sessions', 'ses_id=\''.$GLOBALS['TYPO3_DB']->quoteStr($_COOKIE['be_typo_user'], 'be_sessions').'\' AND ses_tstamp>'.$tstamp);
 			if(count($beSessionResult) == 1) {

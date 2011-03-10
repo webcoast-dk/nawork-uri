@@ -116,7 +116,9 @@ class tx_naworkuri {
 			$dontCreateNewUrls = true;
 			$tempParams = tx_naworkuri_helper::explode_parameters($params);
 			if((count($tempParams) < 3 && array_key_exists('L', $tempParams) && array_key_exists('id', $tempParams)) || (count($tempParams) < 2 && array_key_exists('id', $tempParams))) {
-
+				if(tx_naworkuri_helper::isActiveBeUserSession()) {
+					$dontCreateNewUrls = false;
+				}
 			}
             $uri = $translator->params2uri($params, $dontCreateNewUrls);
             if (!($_SERVER['REQUEST_METHOD'] == 'POST') && ($path == 'index.php' || $path == '') && $uri !== false) {

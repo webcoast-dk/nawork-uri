@@ -262,6 +262,18 @@ class tx_naworkuri_helper {
         
         return $uri;
 	}
+	
+	public static function isActiveBeUserSession() {
+		if(array_key_exists('be_typo_user', $_COOKIE) && !empty($_COOKIE['be_typo_user'])) {
+			$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
+			$tstamp = time() - $GLOBALS['TYPO3_CONF_VARS']['BE']['sessionTimeout'];
+			$beSessionResult = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', 'be_sessions', 'ses_id=\''.$GLOBALS['TYPO3_DB']->quoteStr($_COOKIE['be_typo_user'], 'be_sessions').'\' AND ses_tstamp>'.$tstamp);
+			if(count($beSessionResult) == 1) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
 
 ?>

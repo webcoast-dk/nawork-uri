@@ -5,7 +5,7 @@
 CREATE TABLE pages (
 	tx_naworkuri_pathsegment varchar(64) default '',
 	tx_naworkuri_exclude tinyint(1) unsigned default '0'
-); 
+);
 
 #
 # Modifying pages_language_overlay table
@@ -47,9 +47,9 @@ CREATE TABLE tx_naworkuri_uri (
 	hash_params varchar(32) DEFAULT '' NOT NULL,
 	debug_info text NOT NULL,
 	sticky tinyint(4) DEFAULT '0' NOT NULL,
-	
+
     PRIMARY KEY (uid),
     KEY parent (pid),
-    KEY domain_path (domain, hash_path)
-    
+    KEY domain_path (domain,hash_path)
+
 );

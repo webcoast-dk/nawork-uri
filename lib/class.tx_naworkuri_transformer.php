@@ -6,11 +6,11 @@ require_once (t3lib_extMgm::extPath('nawork_uri').'/lib/class.tx_naworkuri_helpe
 
 /**
  * Class for creating path uris
- * 
+ *
  * @author Martin Ficzel
- * @TODO make the Language Parameter configurable and optional 
+ * @TODO make the Language Parameter configurable and optional
  * @TODO add proper handling domain records
- * 
+ *
  */
 
 class tx_naworkuri_transformer implements t3lib_Singleton {
@@ -30,7 +30,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	 * @var t3lib_db
 	 */
 	private $db;
-	
+
 	/*
 	 * @var tx_naworkuri_cache
 	 */
@@ -62,13 +62,13 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		} else {
 			$this->domain = '';
 		}
-		
+
 		$this->cache  = t3lib_div::makeInstance('tx_naworkuri_cache', $this->config);
 		$this->cache->setTimeout(30);
-		
+
 		$this->helper = t3lib_div::makeInstance('tx_naworkuri_helper');
 	}
-	
+
 	/**
 	 * get Current Configuration
 	 *
@@ -77,7 +77,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	public function getConfiguration(){
 		return $this->config->getConfig();
 	}
-  
+
 	/**
 	 * Convert the uri path to the request parameters
 	 *
@@ -102,7 +102,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
         	parse_str($cache['params'], $cachedparams);
         	$cachedparams['id'] = $cache['pid'];
         	$cachedparams['L']  = $cache['sys_language_uid'];
-        		// classic url params 
+        		// classic url params
         	$getparams = Array();
         	parse_str($params, $getparams);
         		// merged result
@@ -111,15 +111,15 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
         }
 		return false;
 	}
-		
+
 	/**
 	 * Encode Parameters as URI-Path
 	 *
 	 * @param str $param_str Parameter string
 	 * @return string $uri encoded uri
 	 */
-	public function params2uri ($param_str, $redirect = false){
-		
+	public function params2uri ($param_str, $dontCreateNewUrls = false){
+
 		list($parameters, $anchor) = explode('#', $param_str, 2);
 		$params = $this->helper->explode_parameters($parameters);
 		if(!isset($params['L'])) {
@@ -131,31 +131,31 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 				$params['cHash'] = t3lib_div::calculateCHash($cHashParams);
 			}
 		}
-		
+
 			// find already created uri with exactly these parameters
 		$cache_uri = $this->cache->read_params($params, $this->domain);
 		if ( $cache_uri !== false ) {
 				// append stored anchor
 	  		if ($anchor){
 	  			$cache_uri .= '#'.$anchor;
-	  		} 
+	  		}
 			return $cache_uri;
-		} elseif($redirect && $cache_uri === false) {
+		} elseif($dontCreateNewUrls && $cache_uri === false) {
                     return false;
                 }
-		
+
 			// create new uri because no exact match was found in cache
 		$original_params  = $params;
 		$encoded_params   = array();
 		$unencoded_params = $original_params;
-		 
+
 	 		// transform the parameters to path segments
   		$path = array();
 		$path = array_merge($path, $this->params2uri_predefinedparts($original_params, $unencoded_params, $encoded_params) );
 		$path = array_merge($path, $this->params2uri_valuemaps($original_params, $unencoded_params, $encoded_params) );
 		$path = array_merge($path, $this->params2uri_uriparts($original_params, $unencoded_params, $encoded_params) );
 		$path = array_merge($path, $this->params2uri_pagepath($original_params, $unencoded_params, $encoded_params) );
-		
+
 			// write cache entry with these uri an create cache entry if needed
   		$debug_info = '';
   		$debug_info .= "original_params  : ".$this->helper->implode_parameters($original_params).chr(10);
@@ -201,36 +201,36 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			if(substr($result_path, -strlen($append)) != $append) {
 				$result_path = $result_path.$append;
 			}
-  		} 
-  		
+  		}
+
   		$uri = $this->cache->write_params($encoded_params, $this->domain, $result_path, $debug_info);
-  		
+
   			// read not encoded parameters
-  		$i =0; 
+  		$i =0;
 		foreach ($unencoded_params as $key => $value){
   			$uri.= ( ($i>0)?'&':'?' ).rawurlencode($key).'='.rawurlencode($value);
    			$i++;
    		}
-  		
+
   			// append stored anchor
   		if ($anchor){
   			$uri .= '#'.$anchor;
   		}
-  			
-  		return($uri);		
-	}	
-	
+
+  		return($uri);
+	}
+
 
 	/**
 	 * Encode the predifined parts
-	 * 
+	 *
 	 * @param array $original_params  : original Parameters
 	 * @param array $unencoded_params : unencoded Parameters
 	 * @param array $encoded_params   : encoded Parameters
-	 * @return array : Path Elements for final URI 
+	 * @return array : Path Elements for final URI
 	 */
 	public function params2uri_predefinedparts(&$original_params, &$unencoded_params, &$encoded_params ){
-		
+
 		$parts = array();
   		foreach ($this->config->getPredefinedParts() as $part) {
 
@@ -238,7 +238,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
   			if ( $param_name && isset($unencoded_params[$param_name]) ) {
   				$value  = (string)$part->value;
   				$key    = (string)$part->attributes()->key;
-			
+
   				if (!$key) {
   					if (!$value && $value!=='0' ) {
 	  					$encoded_params[$param_name]=$unencoded_params[$param_name];
@@ -255,21 +255,21 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
   					} else if (!$value) {
   						$parts[$param_name] = str_replace('###', $unencoded_params[$param_name], trim($key));
   						$encoded_params[$param_name]=$unencoded_params[$param_name];
-						unset($unencoded_params[$param_name]);  						
+						unset($unencoded_params[$param_name]);
   					}
   				}
   			}
   		}
   		return $parts;
 	}
-	
+
 	/**
-	 * Encode tha Valuemaps 
-	 * 
+	 * Encode tha Valuemaps
+	 *
 	 * @param array $original_params  : original Parameters
 	 * @param array $unencoded_params : unencoded Parameters
 	 * @param array $encoded_params   : encoded Parameters
-	 * @return array : Path Elements for final URI 
+	 * @return array : Path Elements for final URI
 	 */
 	public function params2uri_valuemaps (&$original_params, &$unencoded_params, &$encoded_params ){
 		$parts = array();
@@ -285,40 +285,40 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 								$parts[$param_name] = trim($key);
 							}
 							$encoded_params[$param_name]=$unencoded_params[$param_name];
-							unset($unencoded_params[$param_name]);  
+							unset($unencoded_params[$param_name]);
 						} else {
 							unset($unencoded_params[$param_name]);
-						}	
-					}  	
+						}
+					}
 				}
   			}
 		}
 		return $parts;
 	}
-	
+
 	/**
 	 * Encode the Uriparts
-	 * 
+	 *
 	 * @param array $original_params  : original Parameters
 	 * @param array $unencoded_params : unencoded Parameters
 	 * @param array $encoded_params   : encoded Parameters
-	 * @return array : Path Elements for final URI 
+	 * @return array : Path Elements for final URI
 	 */
 	public function params2uri_uriparts (&$original_params, &$unencoded_params, &$encoded_params){
 		$parts = array();
 		foreach ($this->config->getUriParts() as $uripart) {
-			
+
 			$param_name = (string)$uripart->parameter;
   			if ( $param_name && isset($unencoded_params[$param_name]) ) {
-  				
+
   				$table  = (string)$uripart->table;
   				$field  = (string)$uripart->field;
   				$where  = (string)$uripart->where;
-  				
+
   				$matches      = array();
   				$fieldmap     = array();
   				$fieldpattern = $field;
-  				
+
   				if (!preg_match_all( '/\{(.*?)\}/' , $field , $matches)){
   					// single fields access
   					$fieldmap     = array($field);
@@ -329,9 +329,9 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
   					for ($i = 0 ; $i<count($found) ; $i++){
   						$fieldmap[]= $fields[$i];
   						$fieldpattern = str_replace($found[$i],'###'.$i.'###', $fieldpattern);
-  					}  					
+  					}
   				}
-  				
+
   					// find fields
   				$where_part  = str_replace('###',$unencoded_params[$param_name],$where);
 				if(!empty($table)) {
@@ -345,31 +345,31 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 							  		$value = str_replace('###'.$map_key.'###', $row[$mapfield], $value);
 							  		break;
 								}
-							} 
-	  					} 
+							}
+	  					}
 					}
 					$parts[$param_name] = trim($value);
 					$encoded_params[$param_name]=$unencoded_params[$param_name];
-					unset($unencoded_params[$param_name]); 
+					unset($unencoded_params[$param_name]);
 	  			}
   			}
 		}
 
 		return $parts;
 	}
-	
+
 	/**
 	 * Encode the Pagepath
 	 *
 	 * @param array $original_params  : original Parameters
 	 * @param array $unencoded_params : unencoded Parameters
 	 * @param array $encoded_params   : encoded Parameters
-	 * @return array : Path Elements for final URI 
+	 * @return array : Path Elements for final URI
 	 */
 	public function params2uri_pagepath (&$original_params, &$unencoded_params, &$encoded_params) {
 		$parts = array();
 		if ($this->config->hasPagePathConfig() && $unencoded_params['id']){
-			 
+
 				// cast id to int and resolve aliases
 			if ($unencoded_params['id']){
 				if (is_numeric($unencoded_params['id']) ){
@@ -384,17 +384,17 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 					}
 				}
 			}
-			
+
 			$id = $unencoded_params['id'];
-		
+
 				// get setup
 			$limit  = $this->config->getPagePathLimit();
 			if (!$limit) $limit=10;
-			
+
 			$field_conf = $this->config->getPagePathField();
 			$field_conf = str_replace('//',',',$field_conf);
 			$fields     = explode(',', 'tx_naworkuri_pathsegment,'.$field_conf );
-			
+
 				// determine language (system or link)
 			$lang = 0;
 			if ( $GLOBALS['TSFE'] && $GLOBALS['TSFE']->config['config']['sys_language_uid']){
@@ -409,7 +409,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
   				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery( implode(',',$fields).',uid,pid,hidden,tx_naworkuri_exclude' , $this->config->getPagePathTableName(), 'uid='.$id.' AND deleted=0', '', '' ,1 );
 				$row   = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
 				if (!$row) break; // no page found
-				
+
 					// translate pagepath if needed
 					// @TODO some languages have to be excluded here somehow
 				if ( $lang > 0 ){
@@ -434,22 +434,22 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 					} elseif ( $row['pid']==0 && $row['tx_naworkuri_pathsegment'] ){
 						$segment = trim($row['tx_naworkuri_pathsegment']);
 						array_unshift($parts,$segment);
-					}  
+					}
 				}
 					// continue fetching the path
 				$id = $row['pid'];
 				$limit--;
-			} 
-			
-			
+			}
+
+
 			$encoded_params['id']=$unencoded_params['id'];
 			unset($unencoded_params['id']);
 		}
-		
+
 		return array('id'=>implode('/',$parts));
 	}
-	
-	
-	
+
+
+
 }
 ?>

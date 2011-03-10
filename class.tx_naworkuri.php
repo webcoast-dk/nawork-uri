@@ -113,7 +113,12 @@ class tx_naworkuri {
             $configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
             $translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader);
 
-            $uri = $translator->params2uri($params, true);
+			$dontCreateNewUrls = true;
+			$tempParams = tx_naworkuri_helper::explode_parameters($params);
+			if((count($tempParams) < 3 && array_key_exists('L', $tempParams) && array_key_exists('id', $tempParams)) || (count($tempParams) < 2 && array_key_exists('id', $tempParams))) {
+
+			}
+            $uri = $translator->params2uri($params, $dontCreateNewUrls);
             if (!($_SERVER['REQUEST_METHOD'] == 'POST') && ($path == 'index.php' || $path == '') && $uri !== false) {
                 header('Location: ' . $GLOBALS['TSFE']->config['config']['baseURL'] . $uri, true, 301);
                 exit;

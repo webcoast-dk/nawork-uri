@@ -149,7 +149,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 		}
 		
 		if(!$this->config->castTypeToInt instanceof SimpleXMLElement) {
-			$this->config->addChild('castTypeToInt', 1);
+			$this->config->addChild('castTypeToInt', 0);
 		} else {
 			$castTypeToInt = (int)$this->config->castTypeToInt;
 			if(empty($castTypeToInt)) {
@@ -158,7 +158,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 		}
 		
 		if(!$this->config->castLToInt instanceof SimpleXMLElement) {
-			$this->config->addChild('castLToInt', 1);
+			$this->config->addChild('castLToInt', 0);
 		} else {
 			$castLToInt = (int)$this->config->castLToInt;
 			if(empty($castLToInt)) {
@@ -176,7 +176,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 		}
 		
 		if(!$this->config->redirectStatus instanceof SimpleXMLElement) {
-			$this->config->addChild('redirectStatus', 1);
+			$this->config->addChild('redirectStatus', '301');
 		} else {
 			$redirectStatus = (int)$this->config->redirectStatus;
 			if(empty($redirectStatus)) {

@@ -119,6 +119,7 @@ class tx_naworkuri {
 			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader);
 			$tempParams = tx_naworkuri_helper::explode_parameters($params);
+			
 			/* check if type should be casted to int to avoid strange behavior when creating links */
 			if ($configReader->getCastTypeToInt()) {
 				$type = !empty($tempParams['type']) ? $tempParams['type'] : t3lib_div::_GP('type');
@@ -152,6 +153,8 @@ class tx_naworkuri {
 					}
 				}
 			}
+			
+			/* if the page is called via parameterized form look for a path to redirect to */
 			if ((substr($GLOBALS['TSFE']->siteScript, 0, 9) == 'index.php' || substr($GLOBALS['TSFE']->siteScript, 0, 1) == '?')) {
 				$dontCreateNewUrls = true;
 				$tempParams = tx_naworkuri_helper::explode_parameters($params);

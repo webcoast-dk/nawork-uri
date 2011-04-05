@@ -100,6 +100,7 @@ class tx_naworkuri {
 	 */
 	function redirect2uri($params, $ref) {
 		global $TYPO3_CONF_VARS;
+		t3lib_div::debug();
 		if (
 				$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1
 				&& empty($_GET['ADMCMD_prev'])
@@ -135,17 +136,21 @@ class tx_naworkuri {
 					}
 				}
 			}
-			$dontCreateNewUrls = true;
-			$tempParams = tx_naworkuri_helper::explode_parameters($params);
-			if ((count($tempParams) < 3 && array_key_exists('L', $tempParams) && array_key_exists('id', $tempParams)) || (count($tempParams) < 2 && array_key_exists('id', $tempParams))) {
-				if (tx_naworkuri_helper::isActiveBeUserSession()) {
-					$dontCreateNewUrls = false;
+			if((substr($GLOBALS['TSFE']->siteScript, 0, 9) == 'index.php' || substr($GLOBALS['TSFE']->siteScript, 0, 1) == '?')) {
+				$dontCreateNewUrls = true;
+				$tempParams = tx_naworkuri_helper::explode_parameters($params);
+				if ((count($tempParams) < 3 && array_key_exists('L', $tempParams) && array_key_exists('id', $tempParams)) || (count($tempParams) < 2 && array_key_exists('id', $tempParams))) {
+					if (tx_naworkuri_helper::isActiveBeUserSession()) {
+						$dontCreateNewUrls = false;
+					}
 				}
-			}
-			$uri = $translator->params2uri($params, $dontCreateNewUrls);
-			if (!($_SERVER['REQUEST_METHOD'] == 'POST') && ($path == 'index.php' || $path == '') && $uri !== false) {
-				header('Location: ' . $GLOBALS['TSFE']->config['config']['baseURL'] . $uri, true, 301);
-				exit;
+				$uri = $translator->params2uri($params, $dontCreateNewUrls);
+				if (!($_SERVER['REQUEST_METHOD'] == 'POST') && ($path == 'index.php' || $path == '') && $uri !== false) {
+					header('Location: ' . $GLOBALS['TSFE']->config['config']['baseURL'] . $uri, true, 301);
+					exit;
+				}
+			} elseif(strpos($GLOBALS['TSFE']->siteScript, '?') !== false) {
+				
 			}
 		}
 	}

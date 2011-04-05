@@ -72,10 +72,11 @@ class tx_naworkuri {
 	}
 
 	/**
-	 * convert typolink parameters 2 uri
+	 * This function takes the link config and the tsfe as arguments and initializes the conversion of
+	 * the totalURL to a path
 	 *
-	 * @param array $params
-	 * @param array $ref
+	 * @param array $link
+	 * @param tslib_fe $ref
 	 */
 	function params2uri(&$link, $ref) {
 		global $TYPO3_CONF_VARS;
@@ -93,21 +94,26 @@ class tx_naworkuri {
 	}
 
 	/**
-	 * Enter description here...
+	 * This function is used for two purposes. The first purpose is to redirect if the page is called via parameterized
+	 * form, like "index.php?id=...", to the path form. The second purpose is to redirect if the type or L parameter
+	 * are not valid, e.g. the type parameter contains "%25252525252523header" or something other non useful content.
+	 * 
+	 * The first type only happens if the site is called via 'index.php?id=...' or '?id=...'
+	 * The second type of redirect is sent if the parameters are checked and not seen as valid.
+	 * 
+	 * Whatever redirect is sent, the state of enable and redirect option of nawork_uri in config are checked. Additionally
+	 * it is checked that the page is not called as preview from admin panel and there is a sitescript at all.
 	 *
 	 * @param unknown_type $params
-	 * @param unknown_type $ref
+	 * @param tslib_fe $ref
 	 */
 	function redirect2uri($params, $ref) {
 		global $TYPO3_CONF_VARS;
-		t3lib_div::debug();
 		if (
 				$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1
 				&& empty($_GET['ADMCMD_prev'])
 				&& $GLOBALS['TSFE']->config['config']['tx_naworkuri.']['redirect'] == 1
 				&& $GLOBALS['TSFE']->siteScript
-				&& (substr($GLOBALS['TSFE']->siteScript, 0, 9) == 'index.php'
-				|| substr($GLOBALS['TSFE']->siteScript, 0, 1) == '?')
 		) {
 			list($path, $params) = explode('?', $GLOBALS['TSFE']->siteScript);
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
@@ -115,24 +121,24 @@ class tx_naworkuri {
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader);
 			/* check if type should be casted to int to avoid strange behavior when creating links */
 			if ($configReader->getCastTypeToInt()) {
-				$type = !empty($res['type']) ? $res['type'] : t3lib_div::_GP('type');
+				$type = !empty($params['type']) ? $params['type'] : t3lib_div::_GP('type');
 				if (!empty($type) && !t3lib_div::testInt($type)) { // if there is a difference set correct it
-					$res['type'] = intval($type);
+					unset($params['type']); // unset type param to use system default
 					/* should we redirect if the parameter is wrong */
 					if ($configReader->getRedirectOnParameterDiff()) {
-						header('Location: ' . $GLOBALS['TSFE']->config['config']['baseURL'] . $this->params2uri($res), true, $configReader->getRedirectStatus());
+						header('Location: ' . $GLOBALS['TSFE']->config['config']['baseURL'] . $this->params2uri($params), true, $configReader->getRedirectStatus());
 					}
 				}
 			}
 
 			/* check if L should be casted to int to avoid strange behavior when creating links */
 			if ($configReader->getCastLToInt()) {
-				$L = !empty($res['L']) ? $res['L'] : t3lib_div::_GP('L');
+				$L = !empty($params['L']) ? $params['L'] : t3lib_div::_GP('L');
 				if (!empty($L) && !t3lib_div::testInt($L)) { // if there is a difference set correct it
-					$res['L'] = intval($L);
+					unset($params['L']); // unset L param to use system default
 					/* should we redirect if the parameter is wrong */
 					if ($configReader->getRedirectOnParameterDiff()) {
-						header('Location: /' . $GLOBALS['TSFE']->config['config']['baseURL'] . $this->params2uri($res), true, $configReader->getRedirectStatus());
+						header('Location: /' . $GLOBALS['TSFE']->config['config']['baseURL'] . $this->params2uri($params), true, $configReader->getRedirectStatus());
 					}
 				}
 			}
@@ -149,8 +155,6 @@ class tx_naworkuri {
 					header('Location: ' . $GLOBALS['TSFE']->config['config']['baseURL'] . $uri, true, 301);
 					exit;
 				}
-			} elseif(strpos($GLOBALS['TSFE']->siteScript, '?') !== false) {
-				
 			}
 		}
 	}

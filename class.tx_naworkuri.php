@@ -28,8 +28,8 @@ class tx_naworkuri {
             $configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
             $translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, $extConf['MULTIDOMAIN']);
             $uri_params = $translator->uri2params($uri);
-
-            if ($uri_params) { // uri found
+			
+			if ($uri_params) { // uri found
                 $params['pObj']->id = $uri_params['id'];
                 unset($uri_params['id']);
                 $params['pObj']->mergingWithGetVars($uri_params);

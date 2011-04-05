@@ -40,29 +40,22 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 		$this->config = new SimpleXMLElement(PATH_site.$configFile, null, true);
 		$this->validateConfig();
 	}
-
-//	public function getConfig() {
-//		return $this->config;
-//	}
-
-//	public function getConfigValue($element, $attribute = 'element', $type = 'string') {
-//		if($element instanceof SimpleXMLElement) {
-//			$value;
-//			if($attribute == 'element') {
-//				$value = $element->__toString();
-//			} else {
-//				$value = $element->attributes()->$attribute;
-//			}
-//			switch ($type) {
-//				case 'int':
-//					return intval($value);
-//				case 'boolean':
-//					return (boolean)(int)$value;
-//				default:
-//					return (string)$value;
-//			}
-//		}
-//	}
+	
+	public function getCastTypeToInt() {
+		return (boolean)(int)$this->config->castTypeToInt;
+	}
+	
+	public function getCastLToInt() {
+		return (boolean)(int)$this->config->castLToInt;
+	}
+	
+	public function getRedirectOnParameterDiff() {
+		return (boolean)(int)$this->config->redirectOnParameterDiff;
+	}
+	
+	public function getRedirectStatus() {
+		return (int)$this->config->redirectStatus;
+	}
 
 	public function getPagePathTableName() {
 		return (string)$this->config->pagepath->table;
@@ -152,6 +145,42 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 			$pagepath->table = (string)$this->config->pagepath->table;
 			if(empty($pagepath->table)) {
 				$this->config->pagepath->table = 'pages';
+			}
+		}
+		
+		if(!$this->config->castTypeToInt instanceof SimpleXMLElement) {
+			$this->config->addChild('castTypeToInt', 1);
+		} else {
+			$castTypeToInt = (int)$this->config->castTypeToInt;
+			if(empty($castTypeToInt)) {
+				$this->config->castTypeToInt = 1;
+			}
+		}
+		
+		if(!$this->config->castLToInt instanceof SimpleXMLElement) {
+			$this->config->addChild('castLToInt', 1);
+		} else {
+			$castLToInt = (int)$this->config->castLToInt;
+			if(empty($castLToInt)) {
+				$this->config->castLToInt = 1;
+			}
+		}
+		
+		if(!$this->config->redirectOnParameterDiff instanceof SimpleXMLElement) {
+			$this->config->addChild('redirectOnParameterDiff', 1);
+		} else {
+			$redirectOnParameterDiff = (int)$this->config->redirectOnParameterDiff;
+			if(empty($redirectOnParameterDiff)) {
+				$this->config->redirectOnParameterDiff = 1;
+			}
+		}
+		
+		if(!$this->config->redirectStatus instanceof SimpleXMLElement) {
+			$this->config->addChild('redirectStatus', 1);
+		} else {
+			$redirectStatus = (int)$this->config->redirectStatus;
+			if(empty($redirectStatus)) {
+				$this->config->redirectStatus = 1;
 			}
 		}
 	}

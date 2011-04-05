@@ -80,7 +80,6 @@ class tx_naworkuri {
 	 */
 	function params2uri(&$link, $ref) {
 		global $TYPO3_CONF_VARS;
-
 		if (
 				$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1
 				&& $link['LD']['url']
@@ -119,26 +118,27 @@ class tx_naworkuri {
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader);
+			$tempParams = tx_naworkuri_helper::explode_parameters($params);
 			/* check if type should be casted to int to avoid strange behavior when creating links */
 			if ($configReader->getCastTypeToInt()) {
-				$type = !empty($params['type']) ? $params['type'] : t3lib_div::_GP('type');
+				$type = !empty($temParams['type']) ? $tempParams['type'] : t3lib_div::_GP('type');
 				if (!empty($type) && !t3lib_div::testInt($type)) { // if there is a difference set correct it
-					unset($params['type']); // unset type param to use system default
+					unset($tempParams['type']); // unset type param to use system default
 					/* should we redirect if the parameter is wrong */
 					if ($configReader->getRedirectOnParameterDiff()) {
-						header('Location: ' . $GLOBALS['TSFE']->config['config']['baseURL'] . $this->params2uri($params), true, $configReader->getRedirectStatus());
+						header('Location: ' . $GLOBALS['TSFE']->config['config']['baseURL'] . $translator->params2uri($params), true, $configReader->getRedirectStatus());
 					}
 				}
 			}
 
 			/* check if L should be casted to int to avoid strange behavior when creating links */
 			if ($configReader->getCastLToInt()) {
-				$L = !empty($params['L']) ? $params['L'] : t3lib_div::_GP('L');
+				$L = !empty($tempParams['L']) ? $tempParams['L'] : t3lib_div::_GP('L');
 				if (!empty($L) && !t3lib_div::testInt($L)) { // if there is a difference set correct it
-					unset($params['L']); // unset L param to use system default
+					unset($tempParams['L']); // unset L param to use system default
 					/* should we redirect if the parameter is wrong */
 					if ($configReader->getRedirectOnParameterDiff()) {
-						header('Location: /' . $GLOBALS['TSFE']->config['config']['baseURL'] . $this->params2uri($params), true, $configReader->getRedirectStatus());
+						header('Location: /' . $GLOBALS['TSFE']->config['config']['baseURL'] . $translator->params2uri($params), true, $configReader->getRedirectStatus());
 					}
 				}
 			}

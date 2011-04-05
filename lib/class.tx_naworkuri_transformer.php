@@ -102,25 +102,25 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			// merged result
 			$res = t3lib_div::array_merge_recursive_overrule($cachedparams, $getparams);
 			/* check if type should be casted to int to avoid strange behavior when creating links */
-			if ($this->configReader->getCastTypeToInt()) {
+			if ($this->config->getCastTypeToInt()) {
 				$type = !empty($res['type']) ? $res['type'] : t3lib_div::_GP('type');
-				if (!empty($type) && $type != intval($type)) { // if there is a difference set correct it
+				if (!empty($type) && !t3lib_div::testInt($type)) { // if there is a difference set correct it
 					$res['type'] = intval($type);
 					/* should we redirect if the parameter is wrong */
-					if ($configReader->getRedirectOnParameterDiff()) {
-						header('Location: ' . $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $this->params2uri($res), true, $configReader->getRedirectStatus());
+					if ($this->config->getRedirectOnParameterDiff()) {
+						header('Location: ' . $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $this->params2uri($res), true, $this->config->getRedirectStatus());
 					}
 				}
 			}
 
 			/* check if L should be casted to int to avoid strange behavior when creating links */
-			if ($this->configReader->getCastLToInt()) {
+			if ($this->config->getCastLToInt()) {
 				$L = !empty($res['L']) ? $res['L'] : t3lib_div::_GP('L');
-				if (!empty($L) && $L != intval($L)) { // if there is a difference set correct it
+				if (!empty($L) && !t3lib_div::testInt($L)) { // if there is a difference set correct it
 					$res['L'] = intval($L);
 					/* should we redirect if the parameter is wrong */
-					if ($configReader->getRedirectOnParameterDiff()) {
-						header('Location: ' . $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $this->params2uri($res), true, $configReader->getRedirectStatus());
+					if ($this->config->getRedirectOnParameterDiff()) {
+						header('Location: ' . $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $this->params2uri($res), true, $this->config->getRedirectStatus());
 					}
 				}
 			}
@@ -148,17 +148,16 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 				$params['cHash'] = t3lib_div::calculateCHash($cHashParams);
 			}
 		}
-
 		/* check if type should be casted to int to avoid strange behavior when creating links */
-		if ($this->configReader->getCastTypeToInt()) {
+		if ($this->config->getCastTypeToInt()) {
 			$type = !empty($params['type']) ? $params['type'] : t3lib_div::_GP('type');
-			if (!empty($type) && $type != intval($type)) { // if there is a difference set correct it
+			if (!empty($type) && !t3lib_div::testInt($type)) { // if there is a difference set correct it
 				$params['type'] = intval($type);
 			}
 		}
 
 		/* check if L should be casted to int to avoid strange behavior when creating links */
-		if ($this->configReader->getCastLToInt()) {
+		if ($this->config->getCastLToInt()) {
 			$L = !empty($params['L']) ? $params['L'] : t3lib_div::_GP('L');
 			if (!empty($L) && $L != intval($L)) { // if there is a difference set correct it
 				$params['L'] = intval($L);

@@ -28,7 +28,7 @@ class tx_naworkuri {
 			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, $extConf['MULTIDOMAIN']);
 			$uri_params = $translator->uri2params($uri);
-			
+
 			if ($uri_params) { // uri found
 				$params['pObj']->id = $uri_params['id'];
 				unset($uri_params['id']);
@@ -121,12 +121,16 @@ class tx_naworkuri {
 			$tempParams = tx_naworkuri_helper::explode_parameters($params);
 			/* check if type should be casted to int to avoid strange behavior when creating links */
 			if ($configReader->getCastTypeToInt()) {
-				$type = !empty($temParams['type']) ? $tempParams['type'] : t3lib_div::_GP('type');
+				$type = !empty($tempParams['type']) ? $tempParams['type'] : t3lib_div::_GP('type');
 				if (!empty($type) && !t3lib_div::testInt($type)) { // if there is a difference set correct it
 					unset($tempParams['type']); // unset type param to use system default
 					/* should we redirect if the parameter is wrong */
 					if ($configReader->getRedirectOnParameterDiff()) {
-						header('Location: ' . $GLOBALS['TSFE']->config['config']['baseURL'] . $translator->params2uri($params), true, $configReader->getRedirectStatus());
+						$uri = $GLOBALS['TSFE']->config['config']['baseURL'] . $path;
+						if (count($tempParams) > 0) {
+							$uri .= '?' . tx_naworkuri_helper::implode_parameters($tempParams);
+						}
+						header('Location: ' . $uri, true, $configReader->getRedirectStatus());
 					}
 				}
 			}
@@ -138,11 +142,15 @@ class tx_naworkuri {
 					unset($tempParams['L']); // unset L param to use system default
 					/* should we redirect if the parameter is wrong */
 					if ($configReader->getRedirectOnParameterDiff()) {
-						header('Location: /' . $GLOBALS['TSFE']->config['config']['baseURL'] . $translator->params2uri($params), true, $configReader->getRedirectStatus());
+						$uri = $GLOBALS['TSFE']->config['config']['baseURL'] . $path;
+						if (count($tempParams) > 0) {
+							$uri .= '?' . tx_naworkuri_helper::implode_parameters($tempParams);
+						}
+						header('Location: ' . $uri, true, $configReader->getRedirectStatus());
 					}
 				}
 			}
-			if((substr($GLOBALS['TSFE']->siteScript, 0, 9) == 'index.php' || substr($GLOBALS['TSFE']->siteScript, 0, 1) == '?')) {
+			if ((substr($GLOBALS['TSFE']->siteScript, 0, 9) == 'index.php' || substr($GLOBALS['TSFE']->siteScript, 0, 1) == '?')) {
 				$dontCreateNewUrls = true;
 				$tempParams = tx_naworkuri_helper::explode_parameters($params);
 				if ((count($tempParams) < 3 && array_key_exists('L', $tempParams) && array_key_exists('id', $tempParams)) || (count($tempParams) < 2 && array_key_exists('id', $tempParams))) {

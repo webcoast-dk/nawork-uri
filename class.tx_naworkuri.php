@@ -131,6 +131,7 @@ class tx_naworkuri {
 							$uri .= '?' . tx_naworkuri_helper::implode_parameters($tempParams);
 						}
 						header('Location: ' . $uri, true, $configReader->getRedirectStatus());
+						exit;
 					}
 				}
 			}
@@ -147,6 +148,7 @@ class tx_naworkuri {
 							$uri .= '?' . tx_naworkuri_helper::implode_parameters($tempParams);
 						}
 						header('Location: ' . $uri, true, $configReader->getRedirectStatus());
+						exit;
 					}
 				}
 			}

@@ -119,7 +119,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		/* check if type should be casted to int to avoid strange behavior when creating links */
 		if ($this->config->getCastTypeToInt()) {
 			$type = !empty($params['type']) ? $params['type'] : t3lib_div::_GP('type');
-			if (!empty($type) && !t3lib_div::testInt($type)) { // if there is a difference correct it
+			if (!empty($type) && !t3lib_div::testInt($type)) { // if type is not an int
 				unset($params['type']); // remove type param to use systems default
 			}
 		}
@@ -127,7 +127,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		/* check if L should be casted to int to avoid strange behavior when creating links */
 		if ($this->config->getCastLToInt()) {
 			$L = !empty($params['L']) ? $params['L'] : t3lib_div::_GP('L');
-			if (!empty($L) && !t3lib_div::testInt($L)) { // if there is a difference correct it
+			if (!empty($L) && !t3lib_div::testInt($L)) { // if L is not an int
 				unset($params['L']); // remove L param to use system default
 			}
 		}

@@ -101,29 +101,6 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			parse_str($params, $getparams);
 			// merged result
 			$res = t3lib_div::array_merge_recursive_overrule($cachedparams, $getparams);
-			/* check if type should be casted to int to avoid strange behavior when creating links */
-			if ($this->config->getCastTypeToInt()) {
-				$type = !empty($res['type']) ? $res['type'] : t3lib_div::_GP('type');
-				if (!empty($type) && !t3lib_div::testInt($type)) { // if there is a difference set correct it
-					$res['type'] = intval($type);
-					/* should we redirect if the parameter is wrong */
-					if ($this->config->getRedirectOnParameterDiff()) {
-						header('Location: ' . $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $this->params2uri($res), true, $this->config->getRedirectStatus());
-					}
-				}
-			}
-
-			/* check if L should be casted to int to avoid strange behavior when creating links */
-			if ($this->config->getCastLToInt()) {
-				$L = !empty($res['L']) ? $res['L'] : t3lib_div::_GP('L');
-				if (!empty($L) && !t3lib_div::testInt($L)) { // if there is a difference set correct it
-					$res['L'] = intval($L);
-					/* should we redirect if the parameter is wrong */
-					if ($this->config->getRedirectOnParameterDiff()) {
-						header('Location: ' . $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $this->params2uri($res), true, $this->config->getRedirectStatus());
-					}
-				}
-			}
 			return $res;
 		}
 		return false;

@@ -56,6 +56,10 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 	public function getRedirectStatus() {
 		return (int)$this->config->redirectStatus;
 	}
+	
+	public function getCheckForUpperCaseURI() {
+		return (boolean)(int)$this->config->checkForUpperCaseURI;
+	}
 
 	public function getPagePathTableName() {
 		return (string)$this->config->pagepath->table;
@@ -180,8 +184,12 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 		} else {
 			$redirectStatus = (int)$this->config->redirectStatus;
 			if(empty($redirectStatus)) {
-				$this->config->redirectStatus = 1;
+				$this->config->redirectStatus = '301';
 			}
+		}
+		
+		if(!$this->config->checkForUpperCaseURI instanceof SimpleXMLElement) {
+			$this->config->addChild('checkForUpperCaseURI', false);
 		}
 	}
 }

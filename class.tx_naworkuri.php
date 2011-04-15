@@ -120,6 +120,18 @@ class tx_naworkuri {
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader);
 			$tempParams = tx_naworkuri_helper::explode_parameters($params);
 			
+			/* should the path be converted to lowercase to treat uppercase paths like normal paths */
+			if($configReader->getCheckForUpperCaseURI()) {
+				if($path != strtolower($path)) {
+					$uri = $GLOBALS['TSFE']->config['config']['baseURL']. strtolower($path);
+					if(!empty($params)) {
+						$uri .= '?'.$params;
+					}
+					header('Location: '. $uri, true, $configReader->getRedirectStatis());
+					exit;
+				}
+			}
+			
 			/* check if type should be casted to int to avoid strange behavior when creating links */
 			if ($configReader->getCastTypeToInt()) {
 				$type = !empty($tempParams['type']) ? $tempParams['type'] : t3lib_div::_GP('type');

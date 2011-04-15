@@ -29,43 +29,46 @@ class tx_naworkuri {
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, $extConf['MULTIDOMAIN']);
 			$uri_params = $translator->uri2params($uri);
 
-			if ($uri_params) { // uri found
-				$params['pObj']->id = $uri_params['id'];
-				unset($uri_params['id']);
-				$params['pObj']->mergingWithGetVars($uri_params);
-			} else { // handle 404
-				if ($configReader->hasPageNotFoundConfig()) {
-					header('Content-Type: text/html; charset=utf-8');
-					header($configReader->getPageNotFoundConfigStatus());
-					switch ($configReader->getPageNotFoundConfigBehaviorType()) {
-						case 'message':
-							$res = $configReader->getPageNotFoundConfigBehaviorValue();
-							break;
-						case 'page':
-							if (t3lib_div::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
-								$curl = curl_init();
-								curl_setopt($curl, CURLOPT_URL, $configReader->getPageNotFoundConfigBehaviorValue());
-								curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-								curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
-								curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-								curl_setopt($curl, CURLOPT_USERAGENT, 'nawork_uri');
-								curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-								$res = curl_exec($curl);
-							} else {
-								$res = '404 not found! The 404 Page URL ' . $configReader->getPageNotFoundConfigBehaviorValue() . ' seems to cause a redirect loop.';
-							}
-							break;
-						case 'redirect':
-							$path = html_entity_decode($configReader->getPageNotFoundConfigBehaviorValue());
-							if (!($_SERVER['REQUEST_METHOD'] == 'POST' && preg_match('/index.php/', $_SERVER['SCRIPT_NAME']))) {
-								header('Location: ' . $path, true, 301);
-								exit;
-							}
-						default:
-							$res = '';
+			/* should the path be converted to lowercase to treat uppercase paths like normal paths */
+			if(($configReader->getCheckForUpperCaseURI() && $uri == strtolower($uri)) || !$configReader->getCheckForUpperCaseURI()) {
+				if ($uri_params) { // uri found
+					$params['pObj']->id = $uri_params['id'];
+					unset($uri_params['id']);
+					$params['pObj']->mergingWithGetVars($uri_params);
+				} else { // handle 404
+					if ($configReader->hasPageNotFoundConfig()) {
+						header('Content-Type: text/html; charset=utf-8');
+						header($configReader->getPageNotFoundConfigStatus());
+						switch ($configReader->getPageNotFoundConfigBehaviorType()) {
+							case 'message':
+								$res = $configReader->getPageNotFoundConfigBehaviorValue();
+								break;
+							case 'page':
+								if (t3lib_div::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
+									$curl = curl_init();
+									curl_setopt($curl, CURLOPT_URL, $configReader->getPageNotFoundConfigBehaviorValue());
+									curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+									curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
+									curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+									curl_setopt($curl, CURLOPT_USERAGENT, 'nawork_uri');
+									curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+									$res = curl_exec($curl);
+								} else {
+									$res = '404 not found! The 404 Page URL ' . $configReader->getPageNotFoundConfigBehaviorValue() . ' seems to cause a redirect loop.';
+								}
+								break;
+							case 'redirect':
+								$path = html_entity_decode($configReader->getPageNotFoundConfigBehaviorValue());
+								if (!($_SERVER['REQUEST_METHOD'] == 'POST' && preg_match('/index.php/', $_SERVER['SCRIPT_NAME']))) {
+									header('Location: ' . $path, true, 301);
+									exit;
+								}
+							default:
+								$res = '';
+						}
+						echo $res;
+						exit;
 					}
-					echo $res;
-					exit;
 				}
 			}
 		}
@@ -119,7 +122,7 @@ class tx_naworkuri {
 			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader);
 			$tempParams = tx_naworkuri_helper::explode_parameters($params);
-			
+
 			/* should the path be converted to lowercase to treat uppercase paths like normal paths */
 			if($configReader->getCheckForUpperCaseURI()) {
 				if($path != strtolower($path)) {
@@ -127,11 +130,11 @@ class tx_naworkuri {
 					if(!empty($params)) {
 						$uri .= '?'.$params;
 					}
-					header('Location: '. $uri, true, $configReader->getRedirectStatis());
+					header('Location: '. $uri, true, $configReader->getRedirectStatus());
 					exit;
 				}
 			}
-			
+
 			/* check if type should be casted to int to avoid strange behavior when creating links */
 			if ($configReader->getCastTypeToInt()) {
 				$type = !empty($tempParams['type']) ? $tempParams['type'] : t3lib_div::_GP('type');

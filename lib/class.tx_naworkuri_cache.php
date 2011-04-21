@@ -3,7 +3,7 @@
 require_once (t3lib_extMgm::extPath('nawork_uri').'/lib/class.tx_naworkuri_helper.php');
 
 class tx_naworkuri_cache {
-	
+
 	private $helper;
 	/**
 	 *
@@ -11,7 +11,7 @@ class tx_naworkuri_cache {
 	 */
 	private $config;
 	private $timeout = false;
-	
+
 	/**
 	 * Constructor
 	 *
@@ -19,8 +19,9 @@ class tx_naworkuri_cache {
 	public function __construct ($config){
 		$this->helper = t3lib_div::makeInstance('tx_naworkuri_helper');
 		$this->config = $config;
+		$this->setTimeout(10); // set timeout to 10 seconds by default to avoid re creating while generating a page
 	}
-	
+
 	/**
 	 * set Timeout for cache
 	 * @param int $to
@@ -28,10 +29,10 @@ class tx_naworkuri_cache {
 	 */
 	public function setTimeout ($to){
 		$this->timeout = $to;
-	} 
-	
-	/**
-	 * Read a previously created URI from cache 
+	}
+
+	/*
+	 * Read a previously created URI from cache
 	 *
 	 * @param array $params Parameter Array
 	 * @param string $domain current Domain
@@ -52,9 +53,9 @@ class tx_naworkuri_cache {
 		} else {
 			return false;
 		}
-		
+
 	}
-	
+
 	/**
 	 * Read Cache entry for the given URI
 	 *
@@ -67,47 +68,46 @@ class tx_naworkuri_cache {
   		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
   			'pid, sys_language_uid, params',
 			$this->config->getUriTable(),
-  			'deleted=0 AND hidden=0 AND hash_path="'.$hash_path.'" AND domain="'.$domain.'"' 
+  			'deleted=0 AND hidden=0 AND hash_path="'.$hash_path.'" AND domain="'.$domain.'"'
   		);
-  		
+
         if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
         	return $row;
         }
 		return false;
 	}
 
-	
+
 	/**
-	 * Find the cached URI for the given parameters 
-	 * 
+	 * Find the cached URI for the given parameters
+	 *
 	 * @param int $id        : the if param
 	 * @param int $lang      : the L param
 	 * @param string $domain : the current domain '' for not multidomain setups
 	 * @param array $params  : other  url parameters
-	 * @return string        : uri wich matches to these params otherwise false 
+	 * @return string        : uri wich matches to these params otherwise false
 	 */
 	public function read ($id, $lang, $domain, $parameters, $ignoreTimeout = false ){
-		
+
 		$timeout_condition = '';
-//		if ($this->timeout>0 && $ignoreTimeout == false){
-//			$timeout_condition = 'AND ( tstamp > "'.(time()-$this->timeout).'" OR sticky="1" )'; 		
-//		} 
-		
+		if ($this->timeout>0 && $ignoreTimeout == false){
+			$timeout_condition = 'AND ( tstamp > "'.(time()-$this->timeout).'" OR sticky="1" )';
+		}
+
 				// lookup in db
 				$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
 		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
-			'uid, path, sticky', 
+			'uid, path, sticky',
 			$this->config->getUriTable(),
-			'deleted=0 AND hidden=0 AND pid='.$id.' AND sys_language_uid='.$lang.' AND domain="'.$domain.'" AND hash_params = "'.md5($parameters).'" '.$timeout_condition 
+			'deleted=0 AND hidden=0 AND pid='.$id.' AND sys_language_uid='.$lang.' AND domain="'.$domain.'" AND hash_params = "'.md5($parameters).'" '.$timeout_condition
 		);
-		
+
 		if ( $row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
 			return $row;
 		} else {
-			return false; 
+			return false;
 		}
 	}
-	
 
 	/**
 	 * Write a new URI to cache
@@ -121,15 +121,15 @@ class tx_naworkuri_cache {
 	public function write_params ($params, $domain, $path, $debug_info=''){
 		$uid   = (int)$params['id'];
 		$lang  = (int)($params['L'])?$params['L']:0;
-		
+
 		unset($params['id']);
 		unset($params['L']);
-		 
+
 		$imploded_params = $this->helper->implode_parameters($params);
-		
+
 		return $this->write($uid, $lang, $domain, $imploded_params, $path, $debug_info);
 	}
-	
+
 	/**
 	 * Write a new URI-Parameter combination to the cache
 	 *

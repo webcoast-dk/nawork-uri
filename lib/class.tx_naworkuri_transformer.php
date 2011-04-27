@@ -133,7 +133,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		}
 		
 		if (!isset($params['L'])) {
-			$params['L'] = 0;
+			$params['L'] = $GLOBALS['TSFE']->sys_language_uid;
 			if (isset($params['cHash'])) {
 				$cHashParams = $params;
 				unset($cHashParams['cHash']);
@@ -409,9 +409,6 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 			// determine language (system or link)
 			$lang = 0;
-			if ($GLOBALS['TSFE'] && $GLOBALS['TSFE']->config['config']['sys_language_uid']) {
-				$lang = (int) $GLOBALS['TSFE']->config['config']['sys_language_uid'];
-			}
 			if (isset($original_params['L'])) {
 				$lang = (int) $original_params['L'];
 			}

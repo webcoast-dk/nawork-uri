@@ -51,13 +51,7 @@ class tx_naworkuri {
 									curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
 									curl_setopt($curl, CURLOPT_TIMEOUT, 30);
 									curl_setopt($curl, CURLOPT_USERAGENT, 'nawork_uri');
-									// workaround for open_basedir and safe mode
-									if ( ini_get('open_basedir') == '' && ( ini_get('safe_mode' == 'Off') || ini_get('safe_mode' == '') ) ){
-										curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-										$res = curl_exec($curl);
-									} else {
-										$res = $this->curl_redir_exec($curl);
-									}
+									$res = $this->curl_exec_follow($curl);
 								} else {
 									$res = '404 not found! The 404 Page URL ' . $configReader->getPageNotFoundConfigBehaviorValue() . ' seems to cause a redirect loop.';
 								}
@@ -210,54 +204,49 @@ class tx_naworkuri {
 	}
 	
 	
-	private function curl_redir_exec($ch) {
-		
-		static $curl_loops = 0;
-		static $curl_max_loops = 20;
-
-		if ($curl_loops++ >= $curl_max_loops) {
-			$curl_loops = 0;
-			return FALSE;
-		}
-		
-		curl_setopt($ch, CURLOPT_HEADER, true);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		$data = curl_exec($ch);
-
-		list($header, $data) = explode("\n\n", $data, 2);
-		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-		if ($http_code == 301 || $http_code == 302) {
-			$matches = array();
-			preg_match('/Location:(.*?)\n/', $header, $matches);
-			$url = @parse_url(trim(array_pop($matches)));
-
-			if (!$url) {
-				//couldn't process the url to redirect to
-				$curl_loops = 0;
-				return $data;
-			}
-
-			$last_url = parse_url(curl_getinfo($ch, CURLINFO_EFFECTIVE_URL));
-
-			if (!$url['scheme'])
-				$url['scheme'] = $last_url['scheme'];
-			if (!$url['host'])
-				$url['host'] = $last_url['host'];
-			if (!$url['path'])
-				$url['path'] = $last_url['path'];
-
-			$new_url = $url['scheme'] . '://' . $url['host'] . $url['path'] . ($url['query'] ? '?' . $url['query'] : '');
-
-			curl_setopt($ch, CURLOPT_URL, $new_url);
-
-			return $this->curl_redir_exec($ch);
+	function curl_exec_follow($ch, &$maxredirect = null) {
+		$mr = $maxredirect === null ? 5 : intval($maxredirect);
+		if (ini_get('open_basedir') == '' && ini_get('safe_mode') == '') {
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, $mr > 0);
+			curl_setopt($ch, CURLOPT_MAXREDIRS, $mr);
 		} else {
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+			if ($mr > 0) {
+				$newurl = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
 
-			$curl_loops = 0;
-
-			return $data;
+				$rch = curl_copy_handle($ch);
+				curl_setopt($rch, CURLOPT_HEADER, true);
+				curl_setopt($rch, CURLOPT_NOBODY, true);
+				curl_setopt($rch, CURLOPT_FORBID_REUSE, false);
+				curl_setopt($rch, CURLOPT_RETURNTRANSFER, true);
+				do {
+					curl_setopt($rch, CURLOPT_URL, $newurl);
+					$header = curl_exec($rch);
+					if (curl_errno($rch)) {
+						$code = 0;
+					} else {
+						$code = curl_getinfo($rch, CURLINFO_HTTP_CODE);
+						if ($code == 301 || $code == 302) {
+							preg_match('/Location:(.*?)\n/', $header, $matches);
+							$newurl = trim(array_pop($matches));
+						} else {
+							$code = 0;
+						}
+					}
+				} while ($code && --$mr);
+				curl_close($rch);
+				if (!$mr) {
+					if ($maxredirect === null) {
+						trigger_error('Too many redirects. When following redirects, libcurl hit the maximum amount.', E_USER_WARNING);
+					} else {
+						$maxredirect = 0;
+					}
+					return false;
+				}
+				curl_setopt($ch, CURLOPT_URL, $newurl);
+			}
 		}
+		return curl_exec($ch);
 	}
 
 }

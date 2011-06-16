@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <nawork_uri>
-	
+
 	<append>/</append>
 	<castTypeToInt>1</castTypeToInt>
 	<castLToInt>1</castLToInt>
 	<redirectOnParameterDiff>1</redirectOnParameterDiff>
 	<redirectStatus>301</redirectStatus>
-	
+
 	<pagenotfound>
 		<status>HTTP/1.0 404 Not Found</status>
 		<!--
+		<status domain="www.domain.tld">HTTP/1.0 404 Not Found</status>
 		<behavior type="message"><![CDATA[ <h1>Page not found!</h1> ]]></behavior>
-		<behavior type="redirect">http://localhost/fielmann/testcontent/404/</behavior>
-		<behavior type="page">http://localhost/fielmann/testcontent/404/</behavior>
+		<behavior type="redirect">http://www.domain.tld/?id=notfound</behavior>
+		<behavior type="page">http://www.domain.tld/?id=notfound</behavior>
+		<behavior type="page" domain="www.domain.tld">http://www.domain.tld/index.php?id=notfound</behavior>
 		-->
-		<behavior type="page">http://localhost/fielmann/testcontent/404/</behavior>
+		<behavior type="message"><![CDATA[ <h1>Page not found!</h1> ]]></behavior>
 	</pagenotfound>
 
-	
+
 	<!-- define fixed uri segments -->
 	<predefinedparts>
-		<!-- ignore these parameters in uri -->  
+		<!-- ignore these parameters in uri -->
 		<part>
 			<parameter>tx_ttnews[backPid]</parameter>
 		</part>
@@ -30,11 +32,11 @@
 		<part>
 			<parameter>no_cache</parameter>
 		</part>
-		<part key="predef_uri_part"> 
-			<parameter>predef_uri_value</parameter> 
-			<value>1</value> 
+		<part key="predef_uri_part">
+			<parameter>predef_uri_value</parameter>
+			<value>1</value>
 		</part>
-		<!-- /number-123/.. >> &number=123 -->  
+		<!-- /number-123/.. >> &number=123 -->
 		<part key="number-###">
 			<parameter>number</parameter>
 		</part>
@@ -47,7 +49,7 @@
 		<limit>100</limit>
 	</pagepath>
 
-	<!-- remap parameters to db values -->  
+	<!-- remap parameters to db values -->
 	<uriparts>
 		<part>
 			<parameter>tx_ttnews[tt_news]</parameter>
@@ -66,7 +68,7 @@
 			<field>{subtitle//title}-{uid}--{pid}</field>
 			<table>pages</table>
 			<where>uid='###'</where>
-		</part>		
+		</part>
 		<part>
 			<parameter>pages[test3]</parameter>
 			<field>{title}</field>
@@ -78,7 +80,7 @@
 			<field>title-{uid}</field>
 			<table>pages</table>
 			<where>title="###"</where>
-		</part>		
+		</part>
 		<part>
 			<parameter>tx_standocuments_pi_details[doc]</parameter>
 			<field>number//title</field>
@@ -87,8 +89,8 @@
 		</part>
 
 	</uriparts>
- 
-	<!-- remap parameters to constant values -->  
+
+	<!-- remap parameters to constant values -->
 	<valuemaps>
 		<valuemap>
 			<parameter>L</parameter>
@@ -103,11 +105,11 @@
 		</valuemap>
 	</valuemaps>
 
-	<!-- define the order of parameter path segments -->  
+	<!-- define the order of parameter path segments -->
 	<paramorder>
 		<param>L</param>
 		<param>id</param>
 		<param>type</param>
 	</paramorder>
-  
+
 </nawork_uri>

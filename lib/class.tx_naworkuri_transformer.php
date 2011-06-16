@@ -47,23 +47,8 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		$this->db = $GLOBALS['TYPO3_DB'];
 		// read configuration
 		$this->config = $config;
-		// check multidomain mode
-		if ($multidomain) {
-			$this->domain = t3lib_div::getIndpEnv('TYPO3_HOST_ONLY');
-			if (!empty($domain)) {
-				$this->domain = $domain;
-			}
-			$domainRes = $this->db->exec_SELECTgetRows('tx_naworkuri_masterDomain', $this->config->getDomainTable(), 'domainName LIKE \'' . $this->domain . '\'');
-			if ($domainRes) {
-				$uid = $domainRes[0]['tx_naworkuri_masterDomain'];
-				$domainRes = $this->db->exec_SELECTgetRows('domainName', $this->config->getDomainTable(), 'uid=' . intval($uid));
-				if (is_array($domainRes) && count($domainRes) > 0) {
-					$this->domain = $domainRes[0]['domainName'];
-				}
-			}
-		} else {
-			$this->domain = '';
-		}
+		// get the domain, if multiple domain is not enabled the helper return ""
+		$this->domain = tx_naworkuri_helper::getCurrentDomain();
 
 		$this->cache = t3lib_div::makeInstance('tx_naworkuri_cache', $this->config);
 		$this->cache->setTimeout(30);
@@ -131,7 +116,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 				unset($params['L']); // remove L param to use system default
 			}
 		}
-		
+
 		if (!isset($params['L'])) {
 			$params['L'] = $GLOBALS['TSFE']->sys_language_uid;
 			if (isset($params['cHash'])) {
@@ -345,9 +330,16 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 				// find fields
 				$where_part = str_replace('###', $unencoded_params[$param_name], $where);
+				if(!empty($where_part)) {
+					$where_part .= ' AND ';
+				}
+				$where_part .= 'sys_language_uid=0';
 				if (!empty($table)) {
 					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $table, $where_part, '', '', 1);
 					if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres)) {
+						if(!empty($GLOBALS['TCA'][$table]['languageField'])) {
+							$row = $GLOBALS['TSFE']->sys_page->getRecordOverLay($table, $row, $GLOBALS['TSFE']->sys_language_uid);
+						}
 						$value = $fieldpattern;
 						foreach ($fieldmap as $map_key => $map_value) {
 							$mapfields = explode('//', $map_value);
@@ -422,7 +414,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 
 
-					
+
 // translate pagepath if needed
 				// @TODO some languages have to be excluded here somehow
 				if ($lang > 0) {

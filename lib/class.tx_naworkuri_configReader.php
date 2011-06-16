@@ -1,26 +1,27 @@
 <?php
-/***************************************************************
-*  Copyright notice
-*
-*  (c) 2010 Thorben Kapp <thorben@work.de>
-*  All rights reserved
-*
-*  This script is part of the TYPO3 project. The TYPO3 project is
-*  free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License as published by
-*  the Free Software Foundation; either version 2 of the License, or
-*  (at your option) any later version.
-*
-*  The GNU General Public License can be found at
-*  http://www.gnu.org/copyleft/gpl.html.
-*
-*  This script is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU General Public License for more details.
-*
-*  This copyright notice MUST APPEAR in all copies of the script!
-***************************************************************/
+
+/* * *************************************************************
+ *  Copyright notice
+ *
+ *  (c) 2010 Thorben Kapp <thorben@work.de>
+ *  All rights reserved
+ *
+ *  This script is part of the TYPO3 project. The TYPO3 project is
+ *  free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  The GNU General Public License can be found at
+ *  http://www.gnu.org/copyleft/gpl.html.
+ *
+ *  This script is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  This copyright notice MUST APPEAR in all copies of the script!
+ * ************************************************************* */
 
 /**
  * Description of class
@@ -28,49 +29,55 @@
  * @author Thorben Kapp <thorben@work.de>
  */
 class tx_naworkuri_configReader implements t3lib_Singleton {
-	
+
 	/**
 	 *
 	 * @var SimpleXMLElement
 	 */
 	protected $config;
+	protected $extConfig;
 
-	public function  __construct($configFile = '') {
+	public function __construct($configFile = '') {
 		global $TYPO3_CONF_VARS;
-		$this->config = new SimpleXMLElement(PATH_site.$configFile, null, true);
+		$this->config = new SimpleXMLElement(PATH_site . $configFile, null, true);
+		$this->extConfig = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 		$this->validateConfig();
 	}
-	
+
+	public function isMultiDomainEnabled() {
+		return (boolean) $this->extConfig['MULTIDOMAIN'];
+	}
+
 	public function getCastTypeToInt() {
-		return (boolean)(int)$this->config->castTypeToInt;
+		return (boolean) (int) $this->config->castTypeToInt;
 	}
-	
+
 	public function getCastLToInt() {
-		return (boolean)(int)$this->config->castLToInt;
+		return (boolean) (int) $this->config->castLToInt;
 	}
-	
+
 	public function getRedirectOnParameterDiff() {
-		return (boolean)(int)$this->config->redirectOnParameterDiff;
+		return (boolean) (int) $this->config->redirectOnParameterDiff;
 	}
-	
+
 	public function getRedirectStatus() {
-		return (int)$this->config->redirectStatus;
+		return (int) $this->config->redirectStatus;
 	}
-	
+
 	public function getCheckForUpperCaseURI() {
-		return (boolean)(int)$this->config->checkForUpperCaseURI;
+		return (boolean) (int) $this->config->checkForUpperCaseURI;
 	}
 
 	public function getPagePathTableName() {
-		return (string)$this->config->pagepath->table;
+		return (string) $this->config->pagepath->table;
 	}
 
 	public function getPagePathField() {
-		return (string)$this->config->pagepath->field;
+		return (string) $this->config->pagepath->field;
 	}
 
 	public function getPagePathLimit() {
-		return (int)$this->config->pagepath->limit;
+		return (int) $this->config->pagepath->limit;
 	}
 
 	public function hasPagePathConfig() {
@@ -78,30 +85,54 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 	}
 
 	public function getPageNotFoundConfigStatus() {
-		return (string)$this->config->pagenotfound->status;
+		$status = '';
+		foreach($this->config->pagenotfound->children() as $child) {
+			if($child->getName() == 'status') {
+				if(empty($status) || (string)$child->attributes()->domain == tx_naworkuri_helper::getCurrentDomain()) {
+					$status = (string)$child;
+				}
+			}
+		}
+		return $status;
 	}
 
 	public function getPageNotFoundConfigBehaviorType() {
-		return (string)$this->config->pagenotfound->behavior->attributes()->type;
+		$type = '';
+		foreach($this->config->pagenotfound->children() as $child) {
+			if($child->getName() == 'behavior') {
+				if(empty($behavior) || (string)$child->attributes()->domain == tx_naworkuri_helper::getCurrentDomain()) {
+					$type = (string)$child->attributes()->type;
+				}
+			}
+		}
+		return $type;
 	}
 
 	public function getPageNotFoundConfigBehaviorValue() {
-		return (string)$this->config->pagenotfound->behavior;
+		$behavior = '';
+		foreach($this->config->pagenotfound->children() as $child) {
+			if($child->getName() == 'behavior') {
+				if(empty($behavior) || (string)$child->attributes()->domain == tx_naworkuri_helper::getCurrentDomain()) {
+					$behavior = (string)$child;
+				}
+			}
+		}
+		return $behavior;
 	}
 
 	public function hasPageNotFoundConfig() {
-		if(is_a($this->config->pagenotfound, 'SimpleXMLElement')) {
+		if (is_a($this->config->pagenotfound, 'SimpleXMLElement')) {
 			return true;
 		}
 		return false;
 	}
 
 	public function getDomainTable() {
-		return (string)$this->config->domaintable;
+		return (string) $this->config->domaintable;
 	}
 
 	public function getUriTable() {
-		return (string)$this->config->uritable;
+		return (string) $this->config->uritable;
 	}
 
 	public function getParamOrder() {
@@ -109,7 +140,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 	}
 
 	public function getAppend() {
-		return is_a($this->config->append, 'SimpleXMLElement') ? (string)$this->config->append : '';
+		return is_a($this->config->append, 'SimpleXMLElement') ? (string) $this->config->append : '';
 	}
 
 	public function getPredefinedParts() {
@@ -125,72 +156,74 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 	}
 
 	private function validateConfig() {
-		if(!is_a($this->config->uritable, 'SimpleXMLElement')) {
+		if (!is_a($this->config->uritable, 'SimpleXMLElement')) {
 			$this->config->addChild('uritable', 'tx_naworkuri_uri');
 		} else {
-			$uriTable = (string)$this->config->uritable;
-			if(empty($uriTable)) {
+			$uriTable = (string) $this->config->uritable;
+			if (empty($uriTable)) {
 				$this->config->uritable = 'tx_naworkuri_uri';
 			}
 		}
 
-		if(!is_a($this->config->domaintable, 'SimpleXMLElement')) {
+		if (!is_a($this->config->domaintable, 'SimpleXMLElement')) {
 			$this->config->addChild('domaintable', 'sys_domain');
 		} else {
-			$domaintable = (string)$this->config->domaintable;
-			if(empty($domaintable)) {
+			$domaintable = (string) $this->config->domaintable;
+			if (empty($domaintable)) {
 				$this->config->domaintable = 'sys_domain';
 			}
 		}
 
-		if(!is_a($this->config->pagepath->table, 'SimpleXMLElement')) {
+		if (!is_a($this->config->pagepath->table, 'SimpleXMLElement')) {
 			$this->config->addChild('pagepath->table', 'pages');
 		} else {
-			$pagepath->table = (string)$this->config->pagepath->table;
-			if(empty($pagepath->table)) {
+			$pagepath->table = (string) $this->config->pagepath->table;
+			if (empty($pagepath->table)) {
 				$this->config->pagepath->table = 'pages';
 			}
 		}
-		
-		if(!$this->config->castTypeToInt instanceof SimpleXMLElement) {
+
+		if (!$this->config->castTypeToInt instanceof SimpleXMLElement) {
 			$this->config->addChild('castTypeToInt', 0);
 		} else {
-			$castTypeToInt = (int)$this->config->castTypeToInt;
-			if(empty($castTypeToInt)) {
+			$castTypeToInt = (int) $this->config->castTypeToInt;
+			if (empty($castTypeToInt)) {
 				$this->config->castTypeToInt = 1;
 			}
 		}
-		
-		if(!$this->config->castLToInt instanceof SimpleXMLElement) {
+
+		if (!$this->config->castLToInt instanceof SimpleXMLElement) {
 			$this->config->addChild('castLToInt', 0);
 		} else {
-			$castLToInt = (int)$this->config->castLToInt;
-			if(empty($castLToInt)) {
+			$castLToInt = (int) $this->config->castLToInt;
+			if (empty($castLToInt)) {
 				$this->config->castLToInt = 1;
 			}
 		}
-		
-		if(!$this->config->redirectOnParameterDiff instanceof SimpleXMLElement) {
+
+		if (!$this->config->redirectOnParameterDiff instanceof SimpleXMLElement) {
 			$this->config->addChild('redirectOnParameterDiff', 1);
 		} else {
-			$redirectOnParameterDiff = (int)$this->config->redirectOnParameterDiff;
-			if(empty($redirectOnParameterDiff)) {
+			$redirectOnParameterDiff = (int) $this->config->redirectOnParameterDiff;
+			if (empty($redirectOnParameterDiff)) {
 				$this->config->redirectOnParameterDiff = 1;
 			}
 		}
-		
-		if(!$this->config->redirectStatus instanceof SimpleXMLElement) {
+
+		if (!$this->config->redirectStatus instanceof SimpleXMLElement) {
 			$this->config->addChild('redirectStatus', '301');
 		} else {
-			$redirectStatus = (int)$this->config->redirectStatus;
-			if(empty($redirectStatus)) {
+			$redirectStatus = (int) $this->config->redirectStatus;
+			if (empty($redirectStatus)) {
 				$this->config->redirectStatus = '301';
 			}
 		}
-		
-		if(!$this->config->checkForUpperCaseURI instanceof SimpleXMLElement) {
+
+		if (!$this->config->checkForUpperCaseURI instanceof SimpleXMLElement) {
 			$this->config->addChild('checkForUpperCaseURI', false);
 		}
 	}
+
 }
+
 ?>

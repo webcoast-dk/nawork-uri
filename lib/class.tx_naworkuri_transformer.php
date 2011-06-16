@@ -112,7 +112,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	 * @param str $param_str Parameter string
 	 * @return string $uri encoded uri
 	 */
-	public function params2uri($param_str, $dontCreateNewUrls = false) {
+	public function params2uri($param_str, $dontCreateNewUrls = false, $ignoreTimeout = false) {
 
 		list($parameters, $anchor) = explode('#', $param_str, 2);
 		$params = $this->helper->explode_parameters($parameters);
@@ -143,7 +143,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		}
 
 		// find already created uri with exactly these parameters
-		$cache_uri = $this->cache->read_params($params, $this->domain);
+		$cache_uri = $this->cache->read_params($params, $this->domain, $ignoreTimeout);
 		if ($cache_uri !== false) {
 			// append stored anchor
 			if ($anchor) {

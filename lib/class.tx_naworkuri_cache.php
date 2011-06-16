@@ -38,7 +38,7 @@ class tx_naworkuri_cache {
 	 * @param string $domain current Domain
 	 * @return string URI if found otherwise false
 	 */
-	public function read_params ($params, $domain){
+	public function read_params ($params, $domain, $ignoreTimeout = false){
 		$uid   = (int)$params['id'];
 		$lang  = (int)($params['L'])?$params['L']:0;
 
@@ -46,9 +46,10 @@ class tx_naworkuri_cache {
 		unset($params['L']);
 
 		$imploded_params =$this->helper->implode_parameters($params);
+		//debug(array($uid, $lang, $domain, $imploded_params));
 
-		$row = $this->read($uid, $lang, $domain, $imploded_params);
-		if ($row){
+		$row = $this->read($uid, $lang, $domain, $imploded_params, $ignoreTimeout);
+		if (is_array($row)) {
 			return $row['path'];
 		} else {
 			return false;
@@ -94,14 +95,13 @@ class tx_naworkuri_cache {
 			$timeout_condition = 'AND ( tstamp > "'.(time()-$this->timeout).'" OR sticky="1" )';
 		}
 
-				// lookup in db
-				$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
+		// lookup in db
+		$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
 		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 			'uid, path, sticky',
 			$this->config->getUriTable(),
 			'deleted=0 AND hidden=0 AND pid='.$id.' AND sys_language_uid='.$lang.' AND domain="'.$domain.'" AND hash_params = "'.md5($parameters).'" '.$timeout_condition
 		);
-
 		if ( $row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
 			return $row;
 		} else {

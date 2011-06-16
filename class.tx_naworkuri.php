@@ -119,7 +119,7 @@ class tx_naworkuri {
 			list($path, $params) = explode('?', $GLOBALS['TSFE']->siteScript);
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
-			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader);
+			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, $extConf['MULTIDOMAIN']);
 			$tempParams = tx_naworkuri_helper::explode_parameters($params);
 
 			/* should the path be converted to lowercase to treat uppercase paths like normal paths */
@@ -177,7 +177,8 @@ class tx_naworkuri {
 						$dontCreateNewUrls = false;
 					}
 				}
-				$uri = $translator->params2uri($params, $dontCreateNewUrls);
+				$ignoreTimeout = true;
+				$uri = $translator->params2uri($params, $dontCreateNewUrls, $ignoreTimeout);
 				if (!($_SERVER['REQUEST_METHOD'] == 'POST') && ($path == 'index.php' || $path == '') && $uri !== false) {
 					header('Location: ' . $GLOBALS['TSFE']->config['config']['baseURL'] . $uri, true, 301);
 					exit;

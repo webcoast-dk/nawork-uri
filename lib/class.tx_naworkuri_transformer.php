@@ -337,7 +337,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 				if (!empty($table)) {
 					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $table, $where_part, '', '', 1);
 					if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres)) {
-						if(!empty($GLOBALS['TCA'][$table]['languageField'])) {
+						if(!empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
 							$row = $GLOBALS['TSFE']->sys_page->getRecordOverLay($table, $row, $GLOBALS['TSFE']->sys_language_uid);
 						}
 						$value = $fieldpattern;

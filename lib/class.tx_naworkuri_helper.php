@@ -274,11 +274,11 @@ class tx_naworkuri_helper {
 	}
 
 	public static function getCurrentDomain() {
-		$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader');
+		$config = t3lib_div::makeInstance('tx_naworkuri_configReader');
 		$db = $GLOBALS['TYPO3_DB'];
-		if ($configReader->isMultiDomainEnabled()) {
+		if ($config->isMultiDomainEnabled()) {
 			$domain = t3lib_div::getIndpEnv('TYPO3_HOST_ONLY');
-			$domainRes = $db->exec_SELECTgetRows('tx_naworkuri_masterDomain', $configReader->getDomainTable(), 'domainName LIKE \'' . $domain . '\'');
+			$domainRes = $db->exec_SELECTgetRows('tx_naworkuri_masterDomain', $config->getDomainTable(), 'domainName LIKE \'' . $domain . '\'');
 			if ($domainRes) {
 				$uid = $domainRes[0]['tx_naworkuri_masterDomain'];
 				$domainRes = $db->exec_SELECTgetRows('domainName', $config->getDomainTable(), 'uid=' . intval($uid));

@@ -67,9 +67,9 @@ class tx_naworkuri_cache {
 	public function read_path ($path, $domain){
 		$hash_path = md5($path);
   		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
-  			'pid, sys_language_uid, params',
-			$this->config->getUriTable(),
-  			'deleted=0 AND hidden=0 AND hash_path="'.$hash_path.'" AND domain="'.$domain.'"'
+  			'u.pid, u.sys_language_uid, u.params',
+			$this->config->getUriTable().' u, pages p',
+  			'u.deleted=0 AND u.hidden=0 AND u.hash_path="'.$hash_path.'" AND u.domain="'.$domain.'" AND p.hidden=0 AND p.deleted=0 AND p.starttime < '.time().' AND (p.endtime=0 OR p.endtime > '.time().') AND p.uid=u.pid'
   		);
 
         if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){

@@ -35,6 +35,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	 * @var tx_naworkuri_cache
 	 */
 	private $cache;
+	private $language = 0;
 
 	/**
 	 * Constructor
@@ -126,6 +127,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 				$params['cHash'] = t3lib_div::calculateCHash($cHashParams);
 			}
 		}
+		$this->language = $params['L'];
 
 		// find already created uri with exactly these parameters
 		$cache_uri = $this->cache->read_params($params, $this->domain, $ignoreTimeout);
@@ -338,7 +340,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $table, $where_part, '', '', 1);
 					if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres)) {
 						if(!empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
-							$row = $GLOBALS['TSFE']->sys_page->getRecordOverLay($table, $row, $GLOBALS['TSFE']->sys_language_uid);
+							$row = $GLOBALS['TSFE']->sys_page->getRecordOverLay($table, $row, $this->language);
 						}
 						$value = $fieldpattern;
 						foreach ($fieldmap as $map_key => $map_value) {

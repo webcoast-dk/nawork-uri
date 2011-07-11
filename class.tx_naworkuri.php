@@ -31,7 +31,7 @@ class tx_naworkuri {
 			$uri_params = $translator->uri2params($uri);
 
 			/* should the path be converted to lowercase to treat uppercase paths like normal paths */
-			if(($configReader->getCheckForUpperCaseURI() && urldecode($uri) == strtolower(urldecode($uri))) || !$configReader->getCheckForUpperCaseURI()) {
+			if(($configReader->getCheckForUpperCaseURI() && $uri == strtolower($uri)) || !$configReader->getCheckForUpperCaseURI()) {
 				if (is_array($uri_params)) { // uri found
 					$params['pObj']->id = $uri_params['id'];
 					unset($uri_params['id']);

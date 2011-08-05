@@ -347,10 +347,11 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 				// find fields
 				$where_part = str_replace('###', $unencoded_params[$param_name], $where);
-				if (!empty($where_part)) {
-					$where_part .= ' AND ';
+
+				if(!empty($where_part) && !empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
+					$where_part .= ' AND '.$GLOBALS['TCA'][$table]['ctrl']['languageField'].'=0' ;
 				}
-				$where_part .= 'sys_language_uid=0';
+
 				if (!empty($table)) {
 					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $table, $where_part, '', '', 1);
 					if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres)) {

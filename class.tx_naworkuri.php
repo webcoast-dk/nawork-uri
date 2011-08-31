@@ -31,7 +31,7 @@ class tx_naworkuri {
 			$uri_params = $translator->uri2params($uri);
 
 			/* should the path be converted to lowercase to treat uppercase paths like normal paths */
-			if(($configReader->getCheckForUpperCaseURI() && $uri == strtolower($uri)) || !$configReader->getCheckForUpperCaseURI()) {
+			if (($configReader->getCheckForUpperCaseURI() && $uri == strtolower($uri)) || !$configReader->getCheckForUpperCaseURI()) {
 				if (is_array($uri_params)) { // uri found
 					$params['pObj']->id = $uri_params['id'];
 					unset($uri_params['id']);
@@ -88,13 +88,29 @@ class tx_naworkuri {
 				&& $link['LD']['url']
 		) {
 			list($path, $params) = explode('?', $link['LD']['totalURL']);
-			if(t3lib_div::int_from_ver(TYPO3_version) > 4002000) {
+			if (t3lib_div::int_from_ver(TYPO3_version) > 4002000) {
 				$params = urldecode($params);
 			}
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, (boolean) $extConf['MULTIDOMAIN']);
-			$link['LD']['totalURL'] = $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $translator->params2uri($params);
+			$url = $translator->params2uri($params);
+			$link['LD']['totalURL'] = $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $url;
+			/* add hook for post processing the url */
+			if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'])) {
+				$helper = t3lib_div::makeInstance('tx_naworkuri_helper');
+				$hookParams = array(
+					'url' => $url,
+					'params' => $helper->explode_parameters($params),
+					'LD' => $link['LD']
+				);
+				foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'] as $funcRef) {
+					t3lib_div::callUserFunction($funcRef, $hookParams, $this);
+				}
+				if ($hookParams['url'] !== FALSE) { // if the url is not false set it
+					$link['LD']['totalURL'] = $hookParams['url'];
+				}
+			}
 		}
 	}
 
@@ -102,10 +118,10 @@ class tx_naworkuri {
 	 * This function is used for two purposes. The first purpose is to redirect if the page is called via parameterized
 	 * form, like "index.php?id=...", to the path form. The second purpose is to redirect if the type or L parameter
 	 * are not valid, e.g. the type parameter contains "%25252525252523header" or something other non useful content.
-	 * 
+	 *
 	 * The first type only happens if the site is called via 'index.php?id=...' or '?id=...'
 	 * The second type of redirect is sent if the parameters are checked and not seen as valid.
-	 * 
+	 *
 	 * Whatever redirect is sent, the state of enable and redirect option of nawork_uri in config are checked. Additionally
 	 * it is checked that the page is not called as preview from admin panel and there is a sitescript at all.
 	 *
@@ -127,13 +143,13 @@ class tx_naworkuri {
 			$tempParams = tx_naworkuri_helper::explode_parameters($params);
 
 			/* should the path be converted to lowercase to treat uppercase paths like normal paths */
-			if($configReader->getCheckForUpperCaseURI()) {
-				if($path != strtolower($path)) {
-					$uri = $GLOBALS['TSFE']->config['config']['baseURL']. strtolower($path);
-					if(!empty($params)) {
-						$uri .= '?'.$params;
+			if ($configReader->getCheckForUpperCaseURI()) {
+				if ($path != strtolower($path)) {
+					$uri = $GLOBALS['TSFE']->config['config']['baseURL'] . strtolower($path);
+					if (!empty($params)) {
+						$uri .= '?' . $params;
 					}
-					header('Location: '. $uri, true, $configReader->getRedirectStatus());
+					header('Location: ' . $uri, true, $configReader->getRedirectStatus());
 					exit;
 				}
 			}
@@ -171,7 +187,7 @@ class tx_naworkuri {
 					}
 				}
 			}
-			
+
 			/* if the page is called via parameterized form look for a path to redirect to */
 			if ((substr($GLOBALS['TSFE']->siteScript, 0, 9) == 'index.php' || substr($GLOBALS['TSFE']->siteScript, 0, 1) == '?')) {
 				$dontCreateNewUrls = true;
@@ -207,8 +223,7 @@ class tx_naworkuri {
 				$incomingFieldArray['hash_params'] = md5($incomingFieldArray['params']);
 		}
 	}
-	
-	
+
 	function curl_exec_follow($ch, &$maxredirect = null) {
 		$mr = $maxredirect === null ? 5 : intval($maxredirect);
 		if (ini_get('open_basedir') == '' && ini_get('safe_mode') == '') {

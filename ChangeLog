@@ -1,5 +1,1 @@
-(add new changes on top of this file)
-
-07-03-20 Jan Bednarik  <info@bednarik.org>
-
-	* Initial release
+2011-08-30:: 2.0.1 :: Add hooks for post processing parameter before transformation and post processing the url after transformation

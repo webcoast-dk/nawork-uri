@@ -20,11 +20,13 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	 * @var tx_naworkuri_configReader
 	 */
 	private $config;
+
 	/**
 	 *
 	 * @var string
 	 */
 	private $domain;
+
 	/**
 	 *
 	 * @var t3lib_db
@@ -99,9 +101,22 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	 * @return string $uri encoded uri
 	 */
 	public function params2uri($param_str, $dontCreateNewUrls = false, $ignoreTimeout = false) {
+		global $TYPO3_CONF_VARS;
 
 		list($parameters, $anchor) = explode('#', $param_str, 2);
 		$params = $this->helper->explode_parameters($parameters);
+		$orgParams = $params;
+		/* add hook for processing the parameter set */
+		if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['parameterSet-preProcess'])) {
+			foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['parameterSet-preProcess'] as $funcRef) {
+				t3lib_div::callUserFunction($funcRef, $params, $this);
+			}
+		}
+		/* if something destroys the params reset them */
+		if (!is_array($params) || !array_key_exists('id', $params)) {
+			$params = $orgParams;
+		}
+
 		/* check if type should be casted to int to avoid strange behavior when creating links */
 		if ($this->config->getCastTypeToInt()) {
 			$type = !empty($params['type']) ? $params['type'] : t3lib_div::_GP('type');
@@ -332,14 +347,14 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 				// find fields
 				$where_part = str_replace('###', $unencoded_params[$param_name], $where);
-				if(!empty($where_part)) {
+				if (!empty($where_part)) {
 					$where_part .= ' AND ';
 				}
 				$where_part .= 'sys_language_uid=0';
 				if (!empty($table)) {
 					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $table, $where_part, '', '', 1);
 					if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres)) {
-						if(!empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
+						if (!empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
 							$row = $GLOBALS['TSFE']->sys_page->getRecordOverLay($table, $row, $this->language);
 						}
 						$value = $fieldpattern;
@@ -413,6 +428,9 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 				$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
 				if (!$row)
 					break; // no page found
+
+
+
 
 
 

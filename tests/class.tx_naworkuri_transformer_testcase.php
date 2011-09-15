@@ -27,7 +27,7 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 			),
 		);
 	}
-	
+
 	/**
 	 * @test
 	 * @dataProvider params2uri_pagepathReturnCorrectPathProvider
@@ -120,9 +120,9 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 			'page id 10, cHash 123, both existing' => array(
 				array(
 					'id=10',
-					'id=10&cHash=123',
+					'id=10&L=0&cHash=123',
 				),
-				'id=10&cHash=123',
+				'id=10&L=0&cHash=123',
 				'sub-2/sub-2-4-1/',
 			),
 			'page id 10, cHash 456' => array(
@@ -146,13 +146,15 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 	 * @dataProvider params2uriReturnCorrectPathProvider
 	 */
 	public function params2uriReturnsCorrectPath($preparedUris, $params, $expectedResult) {
+		$uris = array();
 		foreach($preparedUris as $uri) {
-			$res = $this->transformer->params2uri($uri);
+			$uris[$uri] = $this->transformer->params2uri($uri);
+
 		}
 		$result = $this->transformer->params2uri($params);
 		$this->assertEquals($expectedResult, $result);
 	}
-	
+
 
 	public function params2uri_uripartsReturnsCorrectTranslationProvider() {
 		return array(
@@ -191,22 +193,22 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 	public function params2uri_predefinedpartsReturnsCorrectTranslationProvider(){
 		return array(
 			array(
-				array( 
+				array(
 					'number'=>123,
 					'predef_uri_value' => 1,
 					'no_cache' => 'no_cache',
 					'not_encoded_params' => 'not_encoded_value'
 				),
-				array('predef_uri_value'=>'predef_uri_part','number'=>'number-123') 
+				array('predef_uri_value'=>'predef_uri_part','number'=>'number-123')
 			),
 		);
 	}
-	
+
 	/**
 	 * Enter description here...
 	 * @test
 	 * @dataProvider params2uri_predefinedpartsReturnsCorrectTranslationProvider
-	 * 
+	 *
 	 */
 	public function params2uri_predefinedpartsReturnsCorrectTranslation($params, $expected_parts, $error=''){
 		$encoded_params = array();
@@ -216,11 +218,15 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 			$parts,
 			$error
 		);
-		
+
 	}
-	
+
 	public function params2uri_valuemapsReturnCorrectTranslationProvider(){
 		return array(
+			array(
+				array('L' => 0),
+				array()
+			),
 			array(
 				array('L'=>1,'type'=>50,'not_encoded_params' => 'not_encoded_value'),
 				array('L'=>'en','type'=>'text'),
@@ -231,9 +237,9 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 			),
 		);
 	}
-	
+
 	/**
-	 * General path encoding Tests 
+	 * General path encoding Tests
 	 *
 	 * @test
 	 * @dataProvider params2uri_valuemapsReturnCorrectTranslationProvider
@@ -243,7 +249,7 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 	public function params2uri_valuemapsReturnsCorrectTranslation($params, $expected_parts, $error=''){
 		$encoded_params = array();
 		$parts = $this->transformer->params2uri_valuemaps($params, $params, $encoded_params);
-		
+
 		$this->assertEquals(
 			$expected_parts,
 			$parts,
@@ -306,7 +312,7 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 	 * @dataProvider uri2paramsReturnsCorrectResultProvider
 	 * @param array $params Parameters to encode
 	 * @param string $uri Expected URI
-	 */	
+	 */
 	public function uri2paramsReturnsCorrectResult($preparedUri, $uri, $params) {
 		$this->transformer->params2uri($preparedUri);
 		$this->assertEquals($params, $this->transformer->uri2params($uri));
@@ -316,13 +322,13 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 	 * @test
 	 */
 	public function uri2paramsReturnsCorrectResultOnURIWithNonDefaultAppend() {
-		$this->transformer->params2uri('id=0');
+		$this->transformer->params2uri('id=10');
 		$this->db->exec_UPDATEquery('test_tx_naworkuri_uri', 'uid=1', array(
 			'path' => 'home.html',
 			'hash_path' => md5('home.html'),
 		));
 		$this->assertEquals(array(
-			'id' => '0',
+			'id' => '10',
 			'L' => '0',
 		), $this->transformer->uri2params('home.html'));
 	}
@@ -336,7 +342,7 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 		$this->transformer->params2uri('id=6');
 		$this->transformer->params2uri('id=7');
 		$this->transformer->params2uri('id=8');
-		$dbRes = $this->db->exec_SELECTcountRows('uid', 'test_tx_naworkuri_uri', 'domain NOT LIKE \'test.test\'');
+		$dbRes = $this->db->exec_SELECTcountRows('uid', 'test_tx_naworkuri_uri', 'domain NOT LIKE \'test.local\'');
 		$this->assertEquals(0, $dbRes);
 	}
 

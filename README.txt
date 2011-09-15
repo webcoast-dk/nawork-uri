@@ -1,37 +1,38 @@
-Hi folks,
+Quick manual for nawork_uri
 
-sorry that there's no manual. You have to wait a bit longer.
+1. General
 
-If you decide to try this extension, please report any mistake you find to me (info@bednarik.org). It's still an alpha testing!
+n@work URI is also a url rewrite extension as RealURL or CoolURI. It was forked from CoolURI some day.
 
-This extension is a sort of a bridge to my thesis, which is about CoolURIs (SE friendly URIs). It's a kind of universal rewriting engine and it's placed in cooluri/cooluri directory.
+2. Requirements
 
+PHP 5.2/5.3
+MySQL 5
+TYPO3 4.3
 
-Configuration:
+3. Installation & Configuration
 
-- Copy EXT:cooluri/cooluri/CoolUriConf.xml_default file to typo3conf/CoolUriConf.xml
+3.1 Install the exention via the extension manager and apply the database changes
 
-- use the same .htaccess as with the RealURI
-- install extension
-- if you have a multi-language site, set language identifier
-- add to your template setup:
+3.2 Extension configuraiton
 
-config.baseURL = http://www.example.com/
-config.tx_cooluri_enable = 1
-config.redirectOldLinksToNew = 1 # if you want to redirect index.php?id=X to a new URI
+The xml path holds the path to the configuration file, e.g.: fileadmin/resources/naworkUriConf.xml or fieladmin/config/uriConf.xml
+Check the multidomain flag if you plan to use more than one domain in your installation
 
-All configuration is placed in the CoolURIConf.xml. I hope it can be understood even without the manual.
+3.3 TypoScript configuration
 
-What it can do and RealURL can't do (or I don't know it can do)?
+Enter this in your typoscript:
 
-- check whether an URI has changed every X days (or every time)
-- redirect old links (those which have changed) to new ones
-- redirect index.php?id=X... to the new (cool) URI
+config {
+	tx_naworkuri {
+		enable = 1
+		redirect = 1
+	}
+}
 
+"enable" activates the url transformation of nawork_uri
+"redirect" activates the redirect mechanism if a page is called via the "index.php?id=10&..." form. The user is redirected to the correct path, if it exists
 
-Requirements:
+4. Help
 
-- PHP 5+ with SimpleXML enabled!
-- MySQL 4.1+
-
-
+If you need help setting up n@work URI, find bugs or have ideas to improve it, get in touch with me via email kapp@work.de

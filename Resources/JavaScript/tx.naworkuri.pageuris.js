@@ -2,6 +2,7 @@ Ext.namespace('tx','tx.naworkuri');
 
 tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 	filterTimeout:  null,
+	baseParams: null,
 
 	constructor: function(config) {
 		var showColumn = new Ext.grid.ButtonColumn({
@@ -42,6 +43,10 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 			{
 				name: 'locked',
 				type: 'boolean'
+			},
+			{
+				name: 'redirect_path',
+				type: 'string'
 			},
 			'show'
 			],
@@ -85,15 +90,14 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 			},
 			applyState: function(state) {
 				this.setValue(state.value);
-				this.grid.data_store.addListener('load', this.grid.onChangeFilterLanguage, this.grid);
 			}
 		});
+		/* apply the current value to the store after loading */
 		this.languageFilter.store.addListener('load', function() {
 			this.languageFilter.setValue(this.languageFilter.getValue());
 		}, this);
 
 		config = Ext.apply({
-			//			height: 400,
 			collapsible: true,
 			store: this.data_store,
 			autoHeight: false,
@@ -129,6 +133,13 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 					tooltip: 'The path shown in the address line'
 				}),
 				new Ext.grid.Column({
+					header: 'Redirect path',
+					dataIndex: 'redirect_path',
+					id: 'redirect',
+					width: 200,
+					hidden: true
+				}),
+				new Ext.grid.Column({
 					header: 'Domain',
 					dataIndex: 'domain',
 					id: 'domain',
@@ -140,10 +151,7 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 					id: 'params',
 					width: 250
 				})
-				],
-				defaults: {
-			//						editable: false
-			}
+				]
 			}),
 			plugins: [showColumn],
 			tbar: [
@@ -197,8 +205,7 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 				[1, 'Locked URLs'],
 				[2, 'Normal & locked URLs'],
 				[3, 'Old URLs'],
-				[4, 'Redirects'],
-				[-1, 'All']
+				[4, 'Redirects']
 				],
 				editable: false,
 				triggerAction: 'all',
@@ -216,54 +223,32 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 				},
 				applyState: function(state) {
 					this.setValue(state.value);
-					this.grid.data_store.addListener('load', this.grid.onChangeFilterShow, this.grid);
 				}
 			}), ' ','|',' ','Language:',' ',
 			this.languageFilter
 			],
-			bbar: new Ext.PagingToolbar({
+			bbar: new tx.naworkuri.pagingToolbar({
+				id: "pagingToolbar",
 				store: this.data_store,
 				pageSize: 10,
 				displayInfo: true,
 				displayMsg: 'Displaying URLs {0} - {1} of {2}',
 				emptyMsg: "No URLs to display",
-				items: [
-				' ', '-',' ',
-				new Ext.form.ComboBox({
-					id: 'resultsPerPage',
-					editable: false,
-					store: [
-					[10, '10'],
-					[20, '20'],
-					[50, '50'],
-					[100, '100'],
-					[0, 'all']
-					],
-					triggerAction: 'all',
-					value: 10,
-					width: 60,
-					stateful: true,
-					grid: this,
-					stateEvents: [
-					'collapse'
-					],
-					getState: function() {
-						var state = {
-							value: this.getValue()
-						}
-						return state;
-					},
-					applyState: function(state) {
-						this.setValue(state.value);
-						this.grid.data_store.addListener('load', this.grid.onChangeResultsPerPage, this.grid);
-					}
-				}),' ',
-				'Results per page'
-				]
+				grid: this
 			}),
 			view: new Ext.grid.GridView({
 				emptyText: 'No URLs to display.'
-			})
+			}),
+			stateful: true,
+			stateEvents: [
+			'changeBaseParams'
+			],
+			getState: function() {
+				return this.getStore().baseParams;
+			},
+			applyState: function(state) {
+				this.baseParams = state;
+			}
 		}, config);
 		this.addEvents({
 			'cellclicked': true
@@ -273,21 +258,39 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 		showColumn.addListener('click', this.onShow, this);
 
 		tx.naworkuri.PageUris.superclass.constructor.call(this, config);
+		/* apply base params to the store */
+		if(this.baseParams) {
+			Ext.iterate(this.baseParams, function(name, value) {
+				if(name != "url") {
+					this.getStore().setBaseParam(name, value);
+				}
+			}, this);
+		}
 
-//		this.addListener('afterrender', function() {
-//			this.getStore().setBaseParam('limit', this.getBottomToolbar().findById('resultsPerPage').value);
-//			this.reloadStore();
-//		}, this);
-
+		/* add listeners */
 		this.getTopToolbar().findById('filterPath').addListener('keyup', this.onChangeFilterPath, this);
-		//		this.getTopToolbar().findById('filterLocked').addListener('collapse', this.onChangeFilterLocked, this);
 		this.getTopToolbar().findById('filterShow').addListener('collapse', this.onChangeFilterShow, this);
-		this.getBottomToolbar().findById('resultsPerPage').addListener('collapse', this.onChangeResultsPerPage, this);
+		this.getBottomToolbar().addListener('changePageSize', this.onChangePageSize, this);
 		this.getBottomToolbar().addListener('change', this.onChangePage, this);
 		this.getStore().addListener('datachanged', this.checkPage, this);
+		this.languageFilter.addListener('collapse', this.onChangeFilterLanguage, this);
+
+		/* after rendering load the store */
+		this.addListener('afterrender', function() {
+			this.initializeColumns();
+			this.reloadStore();
+		}, this);
 	},
 
-	initializeButtons: function(uid) {
+	/**
+	 * On every selection change evaluate the selection state. Changes only edit,delete and lock buttons
+	 *
+	 * If there is no record selected, only the buttons are disabled
+	 * If there is one record selected, all buttons are enabled
+	 * If there are more than on record selected, only the delete button is enabled
+	 *
+	 */
+	initializeButtons: function() {
 		var selection = this.getSelectionModel().getSelections();
 		var lockBtn = this.getTopToolbar().findById('lockButton');
 		var editBtn = this.getTopToolbar().findById('editButton');
@@ -319,18 +322,25 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 		}
 	},
 
+	initializeColumns: function() {
+		var show = this.getTopToolbar().findById('filterShow').getValue();
+		if(show == 4) {
+			this.getColumnModel().setHidden(6, true);
+			this.getColumnModel().setHidden(4, false);
+		} else {
+			this.getColumnModel().setHidden(6, false);
+			this.getColumnModel().setHidden(4, true);
+		}
+		console.debug(show);
+	},
+
 	/**
 	 * Reload the store using the base params
 	 * The base param are set everytime a filter changes
 	 */
 	reloadStore: function() {
 		this.getStore().reload({
-			//		this.data_store.reload({
-			//			params: this.data_store.baseParams
-			params: this.getStore().baseParams,
-			callback: function() {
-
-			}
+			params: this.getStore().baseParams
 		});
 	},
 
@@ -347,6 +357,19 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 		if(pages > 0 && activePage > pages) {
 			t.changePage(pages);
 		}
+	},
+
+	/**
+	 * Set the given base params to the store and fire the changeBaseParams event
+	 * to save the state of the base params
+	 *
+	 * @param params An object like the base params
+	 */
+	setBaseParams: function(params) {
+		Ext.iterate(params, function(name, value, object) {
+			this.getStore().setBaseParam(name, value);
+		}, this);
+		this.fireEvent('changeBaseParams');
 	},
 
 	/**
@@ -399,7 +422,7 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 	 * Opens the tce form to add a new url
 	 */
 	onAdd: function(btn, ev) {
-		var url = '/typo3/alt_doc.php?returnUrl=' + location.href + '&edit[tx_naworkuri_uri][' + this.page + ']=new';
+		var url = '/typo3/alt_doc.php?returnUrl=' + location.href + '&edit[tx_naworkuri_uri][0]=new';
 		location.href = url;
 	},
 
@@ -455,6 +478,8 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 	/**
 	 * This is called if the grid's page changes. Sets the store's base param
 	 * on which record number to start on query
+	 *
+	 * @stateful The current page is not stateful
 	 */
 	onChangePage: function() {
 		var t = this.getBottomToolbar()
@@ -463,9 +488,23 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 	},
 
 	/**
+	 * Change the page size of the pagination toolbar
+	 *
+	 * @stateful The page size is saved in the limit base param
+	 */
+	onChangePageSize: function(pageSize) {
+		this.setBaseParams({
+			limit: pageSize
+		});
+		this.reloadStore();
+	},
+
+	/**
 	 * Called when any key is pressed in the path filter field.
 	 * Sets the url base param for the query and reloads the store
 	 * if there isn't any other key pressed within 200 ms.
+	 *
+	 * @stateful We dont want to make this settings stateful
 	 */
 	onChangeFilterPath: function() {
 		this.getStore().setBaseParam('url', this.getTopToolbar().findById('filterPath').getValue());
@@ -476,9 +515,10 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 	/**
 	 * The show filter changes so we must adjust the base param of the store and
 	 * reload it.
+	 *
+	 * @stateful This settings is stateful
 	 */
 	onChangeFilterShow: function() {
-		this.getStore().removeListener('load', this.onChangeFilterShow, this);
 		var show = this.getTopToolbar().findById('filterShow').getValue();
 		var type = this.getStore().baseParams.type;
 		var locked = this.getStore().baseParams.locked;
@@ -508,31 +548,23 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 				locked = 0;
 				break;
 		}
-		this.getStore().setBaseParam('locked', locked);
-		this.getStore().setBaseParam('type', type);
-		this.reloadStore();
-	},
-
-	onChangeFilterLanguage: function() {
-		this.getStore().removeListener('load', this.onChangeFilterLanguage, this);
-		this.getStore().setBaseParam('language', this.languageFilter.getValue());
+		this.setBaseParams({
+			type: type,
+			locked: locked
+		});
+		this.initializeColumns();
 		this.reloadStore();
 	},
 
 	/**
-	 * Called after the number of results per page is changed.
-	 * Sets the limit base param and the page size for the pagination and reloads
-	 * the store.
+	 * Change the language filter for the url records
+	 *
+	 * @stateful The language filter is stateful
 	 */
-	onChangeResultsPerPage: function() {
-		this.getStore().removeListener('load', this.onChangeResultsPerPage, this);
-		var limit = this.getBottomToolbar().findById('resultsPerPage').getValue();
-		if(limit == 0) {
-			this.getBottomToolbar().pageSize = this.getStore().getTotalCount();
-		} else {
-			this.getBottomToolbar().pageSize = limit;
-		}
-		this.getStore().setBaseParam('limit', limit);
+	onChangeFilterLanguage: function() {
+		this.setBaseParams({
+			language: this.languageFilter.getValue()
+		});
 		this.reloadStore();
 	}
 });

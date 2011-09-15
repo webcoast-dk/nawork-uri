@@ -53,7 +53,7 @@ class tx_naworkuri_cache {
 
 	public function read_params($params, $domain, $ignoreTimeout = TRUE, $allowRedirects = TRUE) {
 		$uid = (int) $params['id'];
-		$lang = (int) ($params['L']) ? $params['L'] : 0;
+		$lang = (int) ($params['L'] ? $params['L'] : 0);
 
 		unset($params['id']);
 		unset($params['L']);
@@ -83,12 +83,18 @@ class tx_naworkuri_cache {
 	 */
 	public function read_path($path, $domain) {
 		$hash_path = md5($path);
-		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
-				'u.*', $this->config->getUriTable() . ' u, pages p', 'u.deleted=0 AND u.hidden=0 AND u.hash_path="' . $hash_path . '" AND u.domain="' . $domain . '" AND p.hidden=0 AND p.deleted=0 AND p.starttime < ' . time() . ' AND (p.endtime=0 OR p.endtime > ' . time() . ') AND p.uid=u.pid'
+		$displayPageCondition = 'AND p.hidden=0 AND p.starttime < ' . time() . ' AND (p.endtime=0 OR p.endtime > ' . time() . ') ';
+		if(tx_naworkuri_helper::isActiveBeUserSession()) {
+			$displayPageCondition = '';
+		}
+		$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
+		$uris = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
+				'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p',
+				'u.deleted=0 AND u.hash_path="' . $hash_path . '" AND u.domain="' . $domain . $displayPageCondition .'" AND p.deleted=0 AND (p.uid=u.page_uid OR u.type=2)'
 		);
 
-		if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres)) {
-			return $row;
+		if (is_array($uris) && count($uris) > 0) {
+			return $uris[0];
 		}
 		return false;
 	}
@@ -103,10 +109,9 @@ class tx_naworkuri_cache {
 	 * @return string        : uri wich matches to these params otherwise false
 	 */
 	public function read($lang, $domain, $parameters, $ignoreTimeout = FALSE, $allowRedirects = TRUE) {
-
 		$timeout_condition = '';
 		if ($this->timeout > 0 && $ignoreTimeout == false) {
-			$timeout_condition = 'AND ( tstamp > "' . (time() - $this->timeout) . '" OR sticky="1" )';
+			$timeout_condition = 'AND ( tstamp > "' . (time() - $this->timeout) . '" OR locked=1 )';
 		}
 		$redirectCondition = '';
 		if (!$allowRedirects) {
@@ -116,7 +121,7 @@ class tx_naworkuri_cache {
 		// lookup in db
 		$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
 		$urls = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
-				'*', $this->config->getUriTable(), 'type < 2 AND deleted=0 AND hidden=0 AND sys_language_uid=' . $lang . ' AND domain="' . $domain . '" AND hash_params = "' . md5($parameters) . '" ' . $timeout_condition . $redirectCondition, '', 'locked DESC'
+				'*', $this->config->getUriTable(), 'type < 2 AND deleted=0 AND sys_language_uid=' . $lang . ' AND domain="' . $domain . '" AND hash_params = "' . md5($parameters) . '" ' . $timeout_condition . $redirectCondition, '', 'locked DESC'
 		);
 		return (is_array($urls) ? $urls : FALSE);
 	}
@@ -308,13 +313,8 @@ class tx_naworkuri_cache {
 			$additionalWhere .= ' AND uid!=' . intval($uid);
 		}
 
-//		if ($exclude_uid) {
-//			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND uid !='.(int)$exclude_uid.' AND domain="'.$search_domain.'" AND hash_path = "'.$search_hash.'"' );
-//		} else {
 		$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
-		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', $this->config->getUriTable(), 'deleted=0 AND hidden=0 AND hash_path = "' . $search_hash . '"' . $additionalWhere);
-//		}
-
+		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', $this->config->getUriTable(), 'deleted=0 AND hash_path = "' . $search_hash . '"' . $additionalWhere);
 
 		if ($dbres > 0) {
 			// make the uri unique
@@ -327,7 +327,7 @@ class tx_naworkuri_cache {
 					$tmp_uri = $append . $uriAppend;
 				}
 				$search_hash = md5($tmp_uri);
-				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', $this->config->getUriTable(), 'deleted=0 AND hidden=0 AND hash_path = "' . $search_hash . '"' . $additionalWhere);
+				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', $this->config->getUriTable(), 'deleted=0 AND hash_path = "' . $search_hash . '"' . $additionalWhere);
 			} while ($dbres > 0);
 		}
 		return $tmp_uri;

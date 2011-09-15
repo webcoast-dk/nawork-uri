@@ -106,12 +106,12 @@ class tx_naworkuri_PageInfo {
 		$output = '';
 		if ($pid > 0) {
 			$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
-			$uriRes = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('u.uid as uid,u.path as path,u.params as params,u.locked as locked,u.domain as domain,u.type as type,(SELECT flag FROM sys_language l WHERE l.uid = u.sys_language_uid AND u.sys_language_uid > 0) as flag', 'tx_naworkuri_uri u', 'u.page_uid=' . intval($pid) . ' AND u.deleted=0 AND u.page_uid>0' . $andWhereString, '', 'path ASC');
+			$uriRes = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('u.uid as uid,u.path as path,u.redirect_path as redirect_path,u.params as params,u.locked as locked,u.domain as domain,u.type as type,(SELECT flag FROM sys_language l WHERE l.uid = u.sys_language_uid AND u.sys_language_uid > 0) as flag', 'tx_naworkuri_uri u', '((u.page_uid=' . intval($pid) . ' AND u.type!=2 AND u.page_uid>0) OR u.type=2) AND u.deleted=0' . $andWhereString, '', 'path ASC');
 			$total = count($uriRes);
 			$urls = array();
 			$counter = 0;
 			foreach ($uriRes as $u) {
-				if (($limit > 0  && $counter >= $start && $counter <= $limit) || $limit < 1) {
+				if (($limit > 0  && $counter >= $start && $counter <= ($start + $limit)) || $limit < 1) {
 					/* evaluate icon */
 					$iconFileName = 'uri';
 					switch ($u['type']) {
@@ -131,6 +131,7 @@ class tx_naworkuri_PageInfo {
 					$urls[] = array(
 						'uid' => intval($u['uid']),
 						'path' => $u['path'],
+						'redirect_path' => $u['redirect_path'],
 						'params' => $u['params'],
 						'locked' => intval($u['locked']),
 						'domain' => $u['domain'],
@@ -315,7 +316,7 @@ class tx_naworkuri_PageInfo {
 				'label' => 'Default'
 			)
 		);
-		$res = $this->db->exec_SELECTgetRows('uid,title', 'sys_language', 'deleted=0');
+		$res = $this->db->exec_SELECTgetRows('uid,title', 'sys_language', 'hidden=0');
 		if (count($res) > 0) {
 			foreach ($res as $lang) {
 				$languages[] = array(

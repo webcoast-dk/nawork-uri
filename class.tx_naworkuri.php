@@ -75,7 +75,7 @@ class tx_naworkuri {
 			} catch (Tx_NaworkUri_Exception_UrlIsRedirectException $ex) {
 				$url = $ex->getUrl();
 				if ($url['type'] == tx_naworkuri_cache::TX_NAWORKURI_URI_TYPE_OLD) {
-					$newUrlParameters = array('id' => $url['pid'], 'L' => $url['sys_language_uid']);
+					$newUrlParameters = array('id' => $url['page_uid'], 'L' => $url['sys_language_uid']);
 					if (!empty($url['params'])) {
 						$newUrlParameters = array_merge($newUrlParameters, tx_naworkuri_helper::explode_parameters($url['params']));
 					}

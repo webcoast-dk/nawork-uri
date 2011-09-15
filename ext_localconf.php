@@ -14,6 +14,9 @@ $TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::getpageuris'] = 'EXT:nawork_uri/cl
 $TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::modpageuris'] = 'EXT:nawork_uri/classes/ajax/class.tx_naworkuri_PageInfo.php:tx_naworkuri_PageInfo->modPageUris';
 $TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::searchpageuris'] = 'EXT:nawork_uri/classes/ajax/class.tx_naworkuri_PageInfo.php:tx_naworkuri_PageInfo->searchPageUris';
 $TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::getlanguages'] = 'EXT:nawork_uri/classes/ajax/class.tx_naworkuri_PageInfo.php:tx_naworkuri_PageInfo->getLanguages';
+$TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::checkpathunique'] = 'EXT:nawork_uri/Classes/Validation/class.tx_naworkuri_path.php:tx_naworkuri_path->checkPathUnique';
 
+
+$TYPO3_CONF_VARS['SC_OPTIONS']['tce']['formevals']['tx_naworkuri_path'] = 'EXT:nawork_uri/Classes/Validation/class.tx_naworkuri_path.php';
 
 ?>

@@ -51,7 +51,10 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		// read configuration
 		$this->config = $config;
 		// get the domain, if multiple domain is not enabled the helper return ""
-		$this->domain = tx_naworkuri_helper::getCurrentDomain();
+		$this->domain = $domain;
+		if (empty($this->domain)) {
+			$this->domain = tx_naworkuri_helper::getCurrentDomain();
+		}
 
 		$this->cache = t3lib_div::makeInstance('tx_naworkuri_cache', $this->config);
 		$this->cache->setTimeout(30);
@@ -78,14 +81,14 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 		// look into the db
 		$cache = $this->cache->read_path($path, $this->domain);
-		if($cache['type'] > 0) {
+		if ($cache['type'] > 0) {
 			throw new Tx_NaworkUri_Exception_UrlIsRedirectException($cache);
 		}
 		if ($cache) {
 			// cachedparams
 			$cachedparams = Array();
 			parse_str($cache['params'], $cachedparams);
-			$cachedparams['id'] = $cache['pid'];
+			$cachedparams['id'] = $cache['page_uid'];
 			$cachedparams['L'] = $cache['sys_language_uid'];
 			// classic url params
 			$getparams = Array();
@@ -137,7 +140,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		}
 
 		if (!isset($params['L'])) {
-			$params['L'] = $GLOBALS['TSFE']->sys_language_uid;
+			$params['L'] = $GLOBALS['TSFE']->sys_language_uid ? $GLOBALS['TSFE']->sys_language_uid : 0;
 			if (isset($params['cHash'])) {
 				$cHashParams = $params;
 				unset($cHashParams['cHash']);
@@ -148,6 +151,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		$this->language = $params['L'];
 
 		// find already created uri with exactly these parameters
+		$res = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', $this->config->getUriTable(), '');
 		$cache_uri = $this->cache->read_params($params, $this->domain, $ignoreTimeout, FALSE);
 		if ($cache_uri !== false) {
 			// append stored anchor
@@ -213,7 +217,6 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 		// append
 		if ($result_path) {
-			//debug((string)$this->config->getConfig()->append);
 			$append = $this->config->getAppend();
 			if (substr($result_path, -strlen($append)) != $append) {
 				$result_path = $result_path . $append;
@@ -355,15 +358,15 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 				// find fields
 				$where_part = str_replace('###', $unencoded_params[$param_name], $where);
 
-				if(!empty($where_part) && !empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
-					$where_part .= ' AND '.$GLOBALS['TCA'][$table]['ctrl']['languageField'].'=0' ;
+				if (!empty($where_part) && !empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
+					$where_part .= ' AND ' . $GLOBALS['TCA'][$table]['ctrl']['languageField'] . '=0';
 				}
 
 				if (!empty($table)) {
-					if(empty($selectFields) || empty($foreignTable) || empty($mmTable)) {
+					if (empty($selectFields) || empty($foreignTable) || empty($mmTable)) {
 						$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(empty($selectFields) ? '*' : $selectFields, $table, $where_part, '', '', 1);
 					} else {
-						$dbres = $GLOBALS['TYPO3_DB']->exec_SELECT_mm_query($selectFields, $table, $mmTable, $foreignTable, 'AND '.$where_part, '', '', 1);
+						$dbres = $GLOBALS['TYPO3_DB']->exec_SELECT_mm_query($selectFields, $table, $mmTable, $foreignTable, 'AND ' . $where_part, '', '', 1);
 					}
 					if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres)) {
 						if (!empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
@@ -440,6 +443,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 				$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
 				if (!$row)
 					break; // no page found
+
 
 
 

@@ -326,7 +326,11 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 				$table = (string) $uripart->table;
 				$field = (string) $uripart->field;
+				$selectFields = (string) $uripart->selectFields;
+				$foreignTable = (string) $uripart->foreignTable;
+				$mmTable = (string) $uripart->mmTable;
 				$where = (string) $uripart->where;
+				
 
 				$matches = array();
 				$fieldmap = array();
@@ -353,7 +357,12 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 				}
 
 				if (!empty($table)) {
-					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $table, $where_part, '', '', 1);
+					if(empty($selectFields) || empty($foreignTable) || empty($mmTable)) {
+						$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(empty($selectFields) ? '*' : $selectFields, $table, $where_part, '', '', 1);
+					} else {
+						$dbres = $GLOBALS['TYPO3_DB']->exec_SELECT_mm_query($selectFields, $table, $mmTable, $foreignTable, 'AND '.$where_part, '', '', 1);
+					}
+					//$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $table, $where_part, '', '', 1);
 					if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres)) {
 						if (!empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
 							$row = $GLOBALS['TSFE']->sys_page->getRecordOverLay($table, $row, $this->language);

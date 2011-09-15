@@ -15,4 +15,6 @@
 	  :: * FIX: jumping back to the first page after a url is locked or deleted does not happend anymore
 	  :: * FIX: selected rows are now visible
 
-2.0.1 :: Added hooks for post processing parameter before transformation and post processing the url after transformation
+2.0.2 :: Add the ability to use mm queries in nawork_uri conf
+
+2.0.1 :: Add hooks for post processing parameter before transformation and post processing the url after transformation

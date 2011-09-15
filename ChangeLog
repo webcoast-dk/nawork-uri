@@ -1,1 +1,18 @@
-2011-08-30:: 2.0.1 :: Add hooks for post processing parameter before transformation and post processing the url after transformation
+2.1.0 :: Added redirect feature:
+	  :: * editors can create redirects e.g. for old pages, advertisements or special events
+	  :: * paths are not overriden anymore on change, old ones are changed to redirects and new ones are created, redirect urls are reused if the path is needed again
+	  :: * urls are of type redirect when created manually, type field is not shown in tce form to avoid mistakes by editors
+	  :: Sticky is renamed to locked, database field is still called sticky
+	  :: FIX: Records are not copied pages anymore because the pid field is empty, we now use the field page_uid to store the pid
+	  :: Added update script to process the database changes to make the system work as expected
+	  :: Made backend module more useable:
+	  :: * Buttons in the rows are gone and now placed in the top toolbar
+	  :: * edit and lock buttons are only available if one url is selected
+	  :: * delete button is available if at least one url is selected, this allows multiple deletion
+	  :: * deletion must be confirmed
+	  :: * Added filters to the backend module: Choose between locked, unlocked or all urls, filter by path
+	  :: * Show normal urls, old urls or redirects
+	  :: * FIX: jumping back to the first page after a url is locked or deleted does not happend anymore
+	  :: * FIX: selected rows are now visible
+
+2.0.1 :: Added hooks for post processing parameter before transformation and post processing the url after transformation

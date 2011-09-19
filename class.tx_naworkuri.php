@@ -111,6 +111,11 @@ class tx_naworkuri {
 					$link['LD']['totalURL'] = $hookParams['url'];
 				}
 			}
+			if(!preg_match('/https?:\/\//', $link['LD']['totalURL']) && !empty($GLOBALS['TSFE']->config['config']['absRefPrefix'])) {
+				if(substr($link['LD']['totalURL'], 0, strlen($GLOBALS['TSFE']->config['config']['absRefPrefix'])) != $GLOBALS['TSFE']->config['config']['absRefPrefix']) {
+					$link['LD']['totalURL'] = $GLOBALS['TSFE']->config['config']['absRefPrefix'].$link['LD']['totalURL'];
+				}
+			}
 		}
 	}
 

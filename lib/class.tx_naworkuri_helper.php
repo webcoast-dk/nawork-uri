@@ -12,7 +12,7 @@ class tx_naworkuri_helper {
 	 * @param string $param_string Parameter Part of URI
 	 * @return array Exploded Parameters
 	 */
-	public function explode_parameters($param_string) {
+	public static function explode_parameters($param_string) {
 		/*
 		  $res = array();
 		  parse_str($param_string, $res);
@@ -34,7 +34,7 @@ class tx_naworkuri_helper {
 	 * @param array $params_array Parameter Array
 	 * @return string Imploded Parameters
 	 */
-	public function implode_parameters($params_array) {
+	public static function implode_parameters($params_array) {
 		ksort($params_array);
 		$result = '';
 		$i = 0;
@@ -89,7 +89,7 @@ class tx_naworkuri_helper {
 	 * @return string
 	 */
 	function uri_handle_punctuation($uri) {
-		$uri = preg_replace('/[\!\"\#\&\'\?\@\[\\\\\]\^\`\{\|\}\%\<\>\,\+]+/u', '-', $uri);
+		$uri = preg_replace('/[\!\"\#\&\'\?\@\[\\\\\]\^\`\{\|\}\%\<\>\+]+/u', '-', $uri);
 		return $uri;
 	}
 
@@ -115,6 +115,7 @@ class tx_naworkuri_helper {
 	 */
 	function uri_make_wellformed($uri) {
 		$uri = preg_replace('/[\-]*[\/]+[\-]*/u', '/', $uri);
+		$uri = preg_replace('/\-+/', '-', $uri);
 		$uri = preg_replace('/^[\/]+/u', '', $uri);
 		$uri = preg_replace('/\-$/', '', $uri);
 		return $uri;
@@ -290,6 +291,24 @@ class tx_naworkuri_helper {
 			$domain = '';
 		}
 		return $domain;
+	}
+
+	public static function finalizeUrl($url) {
+		$prefix = '/';
+		if (!empty($url) && !empty($GLOBALS['TSFE']->config['config']['absRefPrefix'])) {
+			$prefix = $GLOBALS['TSFE']->config['config']['absRefPrefix'];
+		} elseif (empty($url)) {
+			if (!empty($GLOBALS['TSFE']->config['config']['baseURL']))
+				$prefix = $GLOBALS['TSFE']->config['config']['baseURL'];
+			if (!empty($GLOBALS['TSFE']->config['config']['absRefPrefix']))
+				$prefix = $GLOBALS['TSFE']->config['config']['absRefPrefix'];
+		}
+		return $prefix . $url;
+	}
+
+	public static function sendRedirect($url, $status) {
+		header('X-Redirect-By: nawork_uri');
+		header('Location: '.$url, true, $status);
 	}
 
 }

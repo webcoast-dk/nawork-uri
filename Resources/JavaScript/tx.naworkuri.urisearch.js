@@ -1,6 +1,6 @@
 Ext.namespace('tx','tx.naworkuri');
 
-tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
+tx.naworkuri.UriSearch = Ext.extend(Ext.grid.GridPanel, {
 
     constructor: function(config) {
 		var stickyColumn = new Ext.grid.CheckColumn({
@@ -33,38 +33,34 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 			icon: '/typo3/sysext/t3skin/icons/gfx/zoom.gif',
 			isLink: true
 		});
-		this.data_store = new Ext.data.JsonStore({
-				url: config.backPath + 'ajax.php?ajaxID=tx_naworkuri::getpageuris&page=' + config.page,
-				root: 'urls',
-				totalProperty: 'totalCount',
-				fields: [
-					'icon',
-					'uid',
-					'url',
-					'domain',
-					'params',
-					'flag',
-					'sticky',
-					'edit',
-					'delete',
-					'hidden',
-					'show'
-				],
-				baseParams: {
-					start: 0,
-					limit: 10
-				},
-//				proxy: new Ext.data.HttpProxy({
-//					url: config.backPath + 'ajax.php?ajaxID=tx_naworkuri::getpageuris&page=' + config.page,
-//				}),
-				autoLoad: true
+		this.dataStore = new Ext.data.JsonStore({
+			url: config.backPath + 'ajax.php?ajaxID=tx_naworkuri::searchpageuris&search=',
+			root: 'urls',
+			totalProperty: 'totalCount',
+			fields: [
+				'icon',
+				'uid',
+				'url',
+				'domain',
+				'params',
+				'flag',
+				'sticky',
+				'edit',
+				'delete',
+				'hidden',
+				'show'
+			]
+//			baseParams: {
+//				start: 0,
+//				limit: 10
+//			}
 		});
-		
+
 		config = Ext.apply({
-//			height: 400,
-			collapsible: true,
-			store: this.data_store,
 			autoHeight: true,
+			collapsed: true,
+			collapsible: true,
+			store: this.dataStore,
 			loadMask: true,
 			colModel: new Ext.grid.ColumnModel({
 				columns: [
@@ -120,45 +116,50 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 			}),
 			plugins: [stickyColumn, editButton, deleteButton, hiddenColumn, showColumn],
 			tbar: [
+				'Search: ',
 				{
-					id: 'addButton',
-					text: 'Add',
-					icon: '../resources/images/add.png',
-					handler: this.onAdd,
-					scope: this
-				}/*,'-',
+					id: 'searchField',
+					xtype: 'textfield',
+					name: 'searchField',
+					emptyText: 'Enter a part of an uri to search for'
+				},' ', '-',' ',
+				new Ext.form.ComboBox({
+					id: 'searchType',
+					editable: false,
+					store: [
+						[-1, 'Global'],
+						[0, 'This page'],
+						[1, '1 level'],
+						[2, '2 levels'],
+						[3, '3 levels']
+					],
+					triggerAction: 'all',
+					value: -1,
+					width: 100
+				}),'|',
 				{
-					id: 'deleteButton',
-					text: 'Delete',
-//					iconCls: 'silk-delete',
-					disabled: true,
-					handler: this.onDelete,
+					id: 'searchButton',
+					text: 'Search',
+					handler: this.onSearch,
 					scope: this
-				},'-',
-				{
-					id: 'stickyButton',
-					text: 'Sticky',
-					disabled: true,
-					enableToggle: true,
-					toggleHandler: this.onSticky,
-					scope: this
-				}*/
+				}
 			],
 			bbar: new Ext.PagingToolbar({
-				store: this.data_store,
+				store: this.dataStore,
 				pageSize: 10,
 				displayInfo: true,
 				displayMsg: 'Displaying URLs {0} - {1} of {2}',
 				emptyMsg: "No URLs to display"
 			}),
 			view: new Ext.grid.GridView({
-				emptyText: 'No pid given. Please click on a page in the page tree.'
+				emptyText: 'No URLs to display.'
 			})
 		}, config);
+
 		this.addEvents({
 			'cellclicked': true
 		});
-		
+
 		this.getSelectionModel().addListener('selectionchange', this.onSelectionChange, this);
 		stickyColumn.addListener('click', this.onSticky, this);
 		editButton.addListener('click', this.onEdit, this);
@@ -166,10 +167,7 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 		hiddenColumn.addListener('click', this.onHidden, this);
 		showColumn.addListener('click', this.onShow, this);
 
-		tx.naworkuri.PageUris.superclass.constructor.call(this, config);
-//		this.on('afterrender', function() {
-//			this.getStore().load()
-//		}, this);
+		tx.naworkuri.UriSearch.superclass.constructor.call(this, config);
 	},
 
 	initializeButtons: function(uid) {
@@ -210,6 +208,17 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 				deleteBtn.disable();
 			}
 		}
+	},
+
+	onSearch: function(btn, ev) {
+		var searchValue = this.getTopToolbar().findById('searchField').getValue();
+		var url = this.initialConfig.backPath + 'ajax.php?ajaxID=tx_naworkuri::searchpageuris';
+		this.getStore().setBaseParam('search', escape(searchValue));
+		this.getStore().setBaseParam('type', this.getTopToolbar().findById('searchType').getValue());
+		this.getStore().setBaseParam('page', this.initialConfig.page);
+		this.getStore().setBaseParam('start', 0);
+		this.getStore().setBaseParam('limit', 10);
+		this.getStore().load();
 	},
 
 	onSelectionChange: function(selectionModel) {
@@ -295,12 +304,11 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 	},
 
 	onShow: function(btn, ev, rec) {
-		var url = location.protocol + "//" +  location.host + "/" + rec.data.url;
+		var url = location.protocol + location.host;
 		console.debug(url);
-		window.open(url, "popup", null);
 	}
 });
 
-Ext.reg( 'naworkuri-pageuris', tx.naworkuri.PageUris );
+Ext.reg('naworkuri-urisearch', tx.naworkuri.UriSearch);
 
 

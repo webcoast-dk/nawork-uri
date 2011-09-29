@@ -36,6 +36,11 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 	 */
 	protected $config;
 	protected $extConfig;
+	protected $tables = array(
+		'uri' => 'tx_naworkuri_uri',
+		'page' => 'pages',
+		'domain' => 'sys_domain'
+	);
 
 	public function __construct($configFile = '') {
 		global $TYPO3_CONF_VARS;
@@ -133,6 +138,10 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 
 	public function getUriTable() {
 		return (string) $this->config->uritable;
+	}
+
+	public function getPageTable() {
+		return (string) $this->config->pagepath->table;
 	}
 
 	public function getParamOrder() {

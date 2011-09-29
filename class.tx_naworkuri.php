@@ -249,7 +249,8 @@ class tx_naworkuri {
 					if (empty($uri)) {
 						$uri = ($GLOBALS['TSFE']->config['config']['baseURL'] ? $GLOBALS['TSFE']->config['config']['baseURL'] : ($GLOBALS['TSFE']->config['config']['absRefPrefix'] ? $GLOBALS['TSFE']->config['config']['baseURL'] : '/'));
 					}
-					header('Location: ' . $GLOBALS['TSFE']->config['config']['baseURL'] . $uri, true, 301);
+					$uri = tx_naworkuri_helper::finalizeUrl($uri);
+					tx_naworkuri_helper::sendRedirect($uri, 301);
 					exit;
 				}
 			}

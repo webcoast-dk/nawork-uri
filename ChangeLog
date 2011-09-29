@@ -1,3 +1,5 @@
+2.1.1 :: FIX: Redirect after call via parameter form is now finalized and redirected by helper class
+
 2.1.0 :: Added redirect feature:
 	  :: * editors can create redirects for e.g. old pages, advertisements or special events
 	  :: * paths are not overwritten anymore on change, old ones are changed to redirects and new ones are created, redirect urls are reused if the path is needed again

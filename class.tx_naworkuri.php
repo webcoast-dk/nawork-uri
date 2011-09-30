@@ -127,7 +127,7 @@ class tx_naworkuri {
 			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, (boolean) $extConf['MULTIDOMAIN']);
 			$url = $translator->params2uri($params);
-			$link['LD']['totalURL'] = $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $url;
+			$link['LD']['totalURL'] = tx_naworkuri_helper::finalizeUrl(url);
 			/* add hook for post processing the url */
 			if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'])) {
 				$helper = t3lib_div::makeInstance('tx_naworkuri_helper');
@@ -246,8 +246,8 @@ class tx_naworkuri {
 				$ignoreTimeout = true;
 				$uri = $translator->params2uri($params, $dontCreateNewUrls, $ignoreTimeout);
 				if (!($_SERVER['REQUEST_METHOD'] == 'POST') && ($path == 'index.php' || $path == '') && $uri !== false) {
-					$uri = tx_naworkuri_helper::finalizeUrl($uri);
-					tx_naworkuri_helper::sendRedirect($uri, 301);
+					$uri = tx_naworkuri_helper::finalizeUrl($uri, TRUE); // TRUE is for redirect, this applies "/" by default and the baseURL if set
+					tx_naworkuri_helper::sendRedirect($uri, $configReader->getRedirectStatus());
 					exit;
 				}
 			}

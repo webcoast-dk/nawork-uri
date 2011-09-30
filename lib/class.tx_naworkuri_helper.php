@@ -293,13 +293,13 @@ class tx_naworkuri_helper {
 		return $domain;
 	}
 
-	public static function finalizeUrl($url) {
-		$prefix = '/';
-		if (!empty($url) && !empty($GLOBALS['TSFE']->config['config']['absRefPrefix'])) {
-			$prefix = $GLOBALS['TSFE']->config['config']['absRefPrefix'];
-		} elseif (empty($url)) {
+	public static function finalizeUrl($url, $forRedirect = FALSE) {
+		$prefix = '';
+		if ($forRedirect) {
+			$prefix = '/';
 			if (!empty($GLOBALS['TSFE']->config['config']['baseURL']))
 				$prefix = $GLOBALS['TSFE']->config['config']['baseURL'];
+		} else {
 			if (!empty($GLOBALS['TSFE']->config['config']['absRefPrefix']))
 				$prefix = $GLOBALS['TSFE']->config['config']['absRefPrefix'];
 		}
@@ -308,7 +308,7 @@ class tx_naworkuri_helper {
 
 	public static function sendRedirect($url, $status) {
 		header('X-Redirect-By: nawork_uri');
-		header('Location: '.$url, true, $status);
+		header('Location: ' . $url, true, $status);
 	}
 
 }

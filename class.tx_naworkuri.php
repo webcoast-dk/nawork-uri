@@ -246,9 +246,6 @@ class tx_naworkuri {
 				$ignoreTimeout = true;
 				$uri = $translator->params2uri($params, $dontCreateNewUrls, $ignoreTimeout);
 				if (!($_SERVER['REQUEST_METHOD'] == 'POST') && ($path == 'index.php' || $path == '') && $uri !== false) {
-					if (empty($uri)) {
-						$uri = ($GLOBALS['TSFE']->config['config']['baseURL'] ? $GLOBALS['TSFE']->config['config']['baseURL'] : ($GLOBALS['TSFE']->config['config']['absRefPrefix'] ? $GLOBALS['TSFE']->config['config']['baseURL'] : '/'));
-					}
 					$uri = tx_naworkuri_helper::finalizeUrl($uri);
 					tx_naworkuri_helper::sendRedirect($uri, 301);
 					exit;

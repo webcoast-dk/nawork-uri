@@ -83,14 +83,14 @@ class tx_naworkuri_cache {
 	 */
 	public function read_path($path, $domain) {
 		$hash_path = md5($path);
-		$displayPageCondition = 'AND p.hidden=0 AND p.starttime < ' . time() . ' AND (p.endtime=0 OR p.endtime > ' . time() . ') ';
+		$displayPageCondition = ' AND p.hidden=0 AND p.starttime < ' . time() . ' AND (p.endtime=0 OR p.endtime > ' . time() . ') ';
 		if(tx_naworkuri_helper::isActiveBeUserSession()) {
 			$displayPageCondition = '';
 		}
 		$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
 		$uris = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
 				'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p',
-				'u.deleted=0 AND u.hash_path="' . $hash_path . '" AND u.domain="' . $domain . $displayPageCondition .'" AND p.deleted=0 AND (p.uid=u.page_uid OR u.type=2)'
+				'u.deleted=0 AND u.hash_path="' . $hash_path . '" AND u.domain="' . $domain . '" ' . $displayPageCondition .' AND p.deleted=0 AND (p.uid=u.page_uid OR u.type=2)'
 		);
 
 		if (is_array($uris) && count($uris) > 0) {

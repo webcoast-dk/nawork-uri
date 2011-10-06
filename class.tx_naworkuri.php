@@ -31,6 +31,7 @@ class tx_naworkuri {
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, $extConf['MULTIDOMAIN']);
 			try {
 				$uri_params = $translator->uri2params($uri);
+				//debug($uri_params);
 				/* should the path be converted to lowercase to treat uppercase paths like normal paths */
 				if (($configReader->getCheckForUpperCaseURI() && $uri == strtolower($uri)) || !$configReader->getCheckForUpperCaseURI()) {
 					if (is_array($uri_params)) { // uri found

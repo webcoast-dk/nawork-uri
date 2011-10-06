@@ -78,9 +78,11 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			$path .= (string) $this->config->getAppend();
 		}
 		$path = urldecode($path);
+		//debug($path);
 
 		// look into the db
 		$cache = $this->cache->read_path($path, $this->domain);
+		//debug($cache);
 		if ($cache['type'] > 0) {
 			throw new Tx_NaworkUri_Exception_UrlIsRedirectException($cache);
 		}

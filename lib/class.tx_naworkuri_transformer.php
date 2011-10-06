@@ -55,7 +55,6 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		if (empty($this->domain)) {
 			$this->domain = tx_naworkuri_helper::getCurrentDomain();
 		}
-
 		$this->cache = t3lib_div::makeInstance('tx_naworkuri_cache', $this->config);
 		$this->cache->setTimeout(30);
 
@@ -78,11 +77,9 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			$path .= (string) $this->config->getAppend();
 		}
 		$path = urldecode($path);
-		//debug($path);
 
 		// look into the db
 		$cache = $this->cache->read_path($path, $this->domain);
-		//debug($cache);
 		if ($cache['type'] > 0) {
 			throw new Tx_NaworkUri_Exception_UrlIsRedirectException($cache);
 		}

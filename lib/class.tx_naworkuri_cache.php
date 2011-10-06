@@ -40,7 +40,7 @@ class tx_naworkuri_cache {
 	 */
 	public function setTimeout($to) {
 //		$this->timeout = $to;
-		$this->timeout = 1;
+		$this->timeout = 30;
 	}
 
 	/*
@@ -201,7 +201,7 @@ class tx_naworkuri_cache {
 					 * same as the given one the path should be returned, but to be sure we check it here
 					 */
 					$path = $this->unique($path, $domain);
-					/* Well, if we have a unique path create the url */
+ 					/* Well, if we have a unique path create the url */
 					$this->createUrl($id, $lang, $domain, $parameters, $path);
 					return $path;
 				}

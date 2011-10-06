@@ -30,7 +30,7 @@ CREATE TABLE sys_domain (
 
 CREATE TABLE tx_naworkuri_uri (
     uid int(11) NOT NULL auto_increment,
-	pid tinyint(1) NOT NULL DEFAULT '0',
+	pid int(11) NOT NULL DEFAULT '0',
     page_uid int(11) DEFAULT '0' NOT NULL,
     tstamp int(11) DEFAULT '0' NOT NULL,
     crdate int(11) DEFAULT '0' NOT NULL,

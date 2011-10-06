@@ -1,3 +1,5 @@
+2.1.2 :: FIX: "$" was missing before "url" when giving it to the finalizeUrl function after generating the url
+
 2.1.1 :: FIX: Redirect after call via parameter form is now finalized and redirected by helper class
 
 2.1.0 :: Added redirect feature:

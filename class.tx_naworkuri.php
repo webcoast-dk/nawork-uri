@@ -127,7 +127,7 @@ class tx_naworkuri {
 			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, (boolean) $extConf['MULTIDOMAIN']);
 			$url = $translator->params2uri($params);
-			$link['LD']['totalURL'] = tx_naworkuri_helper::finalizeUrl(url);
+			$link['LD']['totalURL'] = tx_naworkuri_helper::finalizeUrl($url);
 			/* add hook for post processing the url */
 			if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'])) {
 				$helper = t3lib_div::makeInstance('tx_naworkuri_helper');

@@ -150,8 +150,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		$this->language = $params['L'];
 
 		// find already created uri with exactly these parameters
-		$res = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', $this->config->getUriTable(), '');
-		$cache_uri = $this->cache->read_params($params, $this->domain, $ignoreTimeout, FALSE);
+		$cache_uri = $this->cache->read_params($params, $this->domain, $ignoreTimeout);
 		if ($cache_uri !== false) {
 			// append stored anchor
 			if ($anchor) {

@@ -1,3 +1,6 @@
+2.1.5 :: FIX: Cache time was 30 seconds, that was much to low. Cache time is now read from pages or from config.cache_period as fallback, final fallback is 86400
+		 FIX: Transliteration of url was based on some hard coded characters, now iconv is used. The locale from config.locale_all is used. Fallback is the setting in ext conf or en_US
+
 2.1.4 :: FIX: Field pid must not be converted to tinyint, that leads to pid that are max 127 so the page where corrupted
 	  :: CLEANUP: Remove some debugging commands
 

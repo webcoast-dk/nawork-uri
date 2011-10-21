@@ -14,7 +14,7 @@ class tx_naworkuri_cache {
 	 * @var tx_naworkuri_configReader
 	 */
 	private $config;
-	private $timeout = false;
+	private $timeout = 86400;
 
 	/**
 	 *
@@ -29,32 +29,39 @@ class tx_naworkuri_cache {
 	public function __construct($config) {
 		$this->helper = t3lib_div::makeInstance('tx_naworkuri_helper');
 		$this->config = $config;
-		$this->setTimeout(10); // set timeout to 10 seconds by default to avoid re creating while generating a page
 		$this->db = $GLOBALS['TYPO3_DB'];
 	}
 
 	/**
-	 * set Timeout for cache
-	 * @param int $to
-	 * @return unknown_type
+	 * Set the timeout for the url cache validity
+	 *
+	 * @param int $time Number of seconds the should be valid, defaults to 86400 (= one day)
 	 */
-	public function setTimeout($to) {
-//		$this->timeout = $to;
-		$this->timeout = 30;
+	public function setTimeout($time = 86400) {
+		$this->timeout = $time;
 	}
 
-	/*
+	/**
 	 * Read a previously created URI from cache
 	 *
 	 * @param array $params Parameter Array
 	 * @param string $domain current Domain
-	 * @return string URI if found otherwise false
+	 * @param boolean $ignoreTimeout Ignore the timeout settings when reding from cache, needed when updating a url
+	 * @param boolean $allowRedirects Allow redirects when retrieving
+	 * @return string Path if found, FALSE otherwise
 	 */
-
-	public function read_params($params, $domain, $ignoreTimeout = TRUE, $allowRedirects = TRUE) {
+	public function read_params($params, $domain, $ignoreTimeout = FALSE, $allowRedirects = TRUE) {
 		$uid = (int) $params['id'];
 		$lang = (int) ($params['L'] ? $params['L'] : 0);
-
+		$pageRes = $this->db->exec_SELECTgetRows('*', $this->config->getPageTable(), 'uid=' . intval($uid));
+		$page = $pageRes[0];
+		if ($page['cache_timeout'] > 0) {
+			$this->setTimeout($page['cache_timeout']);
+		} elseif ($GLOBALS['TSFE']->config['config']['cache_period'] > 0) {
+			$this->setTimeout($GLOBALS['TSFE']->config['config']['cache_period']);
+		} else {
+			$this->setTimeout();
+		}
 		unset($params['id']);
 		unset($params['L']);
 
@@ -84,13 +91,11 @@ class tx_naworkuri_cache {
 	public function read_path($path, $domain) {
 		$hash_path = md5($path);
 		$displayPageCondition = ' AND p.hidden=0 AND p.starttime < ' . time() . ' AND (p.endtime=0 OR p.endtime > ' . time() . ') ';
-		if(tx_naworkuri_helper::isActiveBeUserSession()) {
+		if (tx_naworkuri_helper::isActiveBeUserSession()) {
 			$displayPageCondition = '';
 		}
-		$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
 		$uris = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
-				'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p',
-				'u.deleted=0 AND u.hash_path="' . $hash_path . '" AND u.domain="' . $domain . '" ' . $displayPageCondition .' AND p.deleted=0 AND (p.uid=u.page_uid OR u.type=2)'
+				'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.deleted=0 AND u.hash_path="' . $hash_path . '" AND u.domain="' . $domain . '" ' . $displayPageCondition . ' AND p.deleted=0 AND (p.uid=u.page_uid OR u.type=2)'
 		);
 
 		if (is_array($uris) && count($uris) > 0) {
@@ -102,10 +107,11 @@ class tx_naworkuri_cache {
 	/**
 	 * Find the cached URI for the given parameters
 	 *
-	 * @param int $id        : the if param
 	 * @param int $lang      : the L param
 	 * @param string $domain : the current domain '' for not multidomain setups
 	 * @param array $params  : other  url parameters
+	 * @param boolean $ignoreTimeout Ignore the timeout when reading urls
+	 * @param boolean $allowRedirects Allow redirect to be selected
 	 * @return string        : uri wich matches to these params otherwise false
 	 */
 	public function read($lang, $domain, $parameters, $ignoreTimeout = FALSE, $allowRedirects = TRUE) {
@@ -117,9 +123,10 @@ class tx_naworkuri_cache {
 		if (!$allowRedirects) {
 			$redirectCondition = ' AND type=0';
 		}
-
+		if (!$ignoreTimeout && $GLOBALS['TSFE']->config['config']['cache_clearAtMidnight'] > 0) {
+			$timeout_condition .= ' AND tstamp > ' . strtotime('midnight');
+		}
 		// lookup in db
-		$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
 		$urls = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
 				'*', $this->config->getUriTable(), 'type < 2 AND deleted=0 AND sys_language_uid=' . $lang . ' AND domain="' . $domain . '" AND hash_params = "' . md5($parameters) . '" ' . $timeout_condition . $redirectCondition, '', 'locked DESC'
 		);
@@ -161,7 +168,7 @@ class tx_naworkuri_cache {
 		/*
 		 *  check for a uri existing url record
 		 */
-		$cachedUrls = $this->read($lang, $domain, $parameters, true);
+		$cachedUrls = $this->read($lang, $domain, $parameters, TRUE);
 		if (is_array($cachedUrls) && count($cachedUrls) > 0) {
 			foreach ($cachedUrls as $url) {
 				/*
@@ -201,7 +208,7 @@ class tx_naworkuri_cache {
 					 * same as the given one the path should be returned, but to be sure we check it here
 					 */
 					$path = $this->unique($path, $domain);
- 					/* Well, if we have a unique path create the url */
+					/* Well, if we have a unique path create the url */
 					$this->createUrl($id, $lang, $domain, $parameters, $path);
 					return $path;
 				}
@@ -313,7 +320,6 @@ class tx_naworkuri_cache {
 			$additionalWhere .= ' AND uid!=' . intval($uid);
 		}
 
-		$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
 		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', $this->config->getUriTable(), 'deleted=0 AND hash_path = "' . $search_hash . '"' . $additionalWhere);
 
 		if ($dbres > 0) {

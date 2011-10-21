@@ -7,3 +7,6 @@ MULTIDOMAIN = 1
 
 # cat=basic//03; type=string; label = The L parameter. Empty if no Languages are present. !!! not implemented yet !!!
 # LANGPARAM = L
+
+# cat=basic//03; type=string; label=Default locale: The default locale that should be used for transliteration if no locale is set in the config
+default_locale = en_US

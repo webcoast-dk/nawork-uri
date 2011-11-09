@@ -13,11 +13,10 @@ class tx_naworkuri_helper {
 	 * @return array Exploded Parameters
 	 */
 	public static function explode_parameters($param_string) {
-		/*
-		  $res = array();
-		  parse_str($param_string, $res);
-		  return $res;
-		 */
+		if (empty($param_string)) {
+			return array();
+		}
+
 		$result = array();
 		$tmp = explode('&', $param_string);
 		foreach ($tmp as $part) {
@@ -68,8 +67,8 @@ class tx_naworkuri_helper {
 
 	public function uriTransliterate($uri) {
 		$config = t3lib_div::makeInstance('tx_naworkuri_configReader');
-		foreach($config->getTransliterations() as $char) {
-			$uri = str_replace((string)$char->attributes()->from, (string)$char->attributes()->to, $uri);
+		foreach ($config->getTransliterations() as $char) {
+			$uri = str_replace((string) $char->attributes()->from, (string) $char->attributes()->to, $uri);
 		}
 		$uri = iconv('UTF-8', 'ASCII//TRANSLIT', $uri);
 		return $uri;

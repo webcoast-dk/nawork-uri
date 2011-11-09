@@ -1,3 +1,5 @@
+2.1.7 :: FIX: Redirect dropped query params e.g. for ga tracking
+
 2.1.6 :: FIX: Introduced transformation cache to avoid multiple db lookups for the same parameter value, this increases performance
 	  :: FIX: Transliteration did not work correctly with libiconv's implementation instead of glibc's so we add an option for transliterateing any character to another character, see default config
 

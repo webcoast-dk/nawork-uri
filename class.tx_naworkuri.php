@@ -90,7 +90,12 @@ class tx_naworkuri implements t3lib_Singleton {
 						$newUrl['scheme'] = $requestUrl['scheme'];
 					if (substr($newUrl['path'], 0, 1) != '/')
 						$newUrl['path'] = '/' . $newUrl['path'];
-					tx_naworkuri_helper::sendRedirect($newUrl['scheme'] . '://' . $newUrl['host'] . $newUrl['path'], $url['redirect_mode']);
+					$uri = $newUrl['scheme'] . '://' . $newUrl['host'] . $newUrl['path'];
+					$queryParams = array_merge(tx_naworkuri_helper::explode_parameters($requestUrl['query']), tx_naworkuri_helper::explode_parameters($newUrl['query']));
+					if(!empty($queryParams)) {
+						$uri .= '?' . tx_naworkuri_helper::implode_parameters($queryParams);
+					}
+					tx_naworkuri_helper::sendRedirect($uri, $url['redirect_mode']);
 				}
 			}
 		}

@@ -2,7 +2,9 @@
 
 require_once 'lib/class.tx_naworkuri_transformer.php';
 
-class tx_naworkuri {
+class tx_naworkuri implements t3lib_Singleton {
+
+	protected $redirectUrl = NULL;
 
 	/**
 	 * decode uri and extract parameters
@@ -75,22 +77,10 @@ class tx_naworkuri {
 			} catch (Tx_NaworkUri_Exception_UrlIsRedirectException $ex) {
 				$url = $ex->getUrl();
 				if ($url['type'] == tx_naworkuri_cache::TX_NAWORKURI_URI_TYPE_OLD) {
-					$newUrlParameters = array('id' => $url['page_uid'], 'L' => $url['sys_language_uid']);
-					if (!empty($url['params'])) {
-						$newUrlParameters = array_merge($newUrlParameters, tx_naworkuri_helper::explode_parameters($url['params']));
-					}
-					$newUrl = $translator->params2uri(tx_naworkuri_helper::implode_parameters($newUrlParameters), TRUE, TRUE);
-					$newUrl = tx_naworkuri_helper::finalizeUrl($newUrl);
-					/* prepend a slash to make it a valid url */
-					if (substr($newUrl, 0, 1) != '/') {
-						$newUrl = '/' . $newUrl;
-					}
-					/* parse the current request url and prepend the scheme and host to the url */
-					$requestUrl = t3lib_div::getIndpEnv('TYPO3_REQUEST_URL');
-					$protocol = parse_url($requestUrl, PHP_URL_SCHEME);
-					$host = parse_url($requestUrl, PHP_URL_HOST);
-					$newUrl = $protocol . '://' . $host . $newUrl;
-					tx_naworkuri_helper::sendRedirect($newUrl, 301);
+					/*
+					 * we must not redirect here because we cannot use link generation here to get the correct target path
+					 */
+					$this->redirectUrl = $url;
 				} elseif ($url['type'] == tx_naworkuri_cache::TX_NAWORKURI_URI_TYPE_REDIRECT) {
 					$newUrl = parse_url($url['redirect_path']);
 					$requestUrl = parse_url(t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'));
@@ -100,7 +90,7 @@ class tx_naworkuri {
 						$newUrl['scheme'] = $requestUrl['scheme'];
 					if (substr($newUrl['path'], 0, 1) != '/')
 						$newUrl['path'] = '/' . $newUrl['path'];
-					tx_naworkuri_helper::sendRedirect($newUrl['scheme'].'://'.$newUrl['host'].$newUrl['path'], $url['redirect_mode']);
+					tx_naworkuri_helper::sendRedirect($newUrl['scheme'] . '://' . $newUrl['host'] . $newUrl['path'], $url['redirect_mode']);
 				}
 			}
 		}
@@ -143,9 +133,9 @@ class tx_naworkuri {
 					$link['LD']['totalURL'] = $hookParams['url'];
 				}
 			}
-			if(!preg_match('/https?:\/\//', $link['LD']['totalURL']) && !empty($GLOBALS['TSFE']->config['config']['absRefPrefix'])) {
-				if(substr($link['LD']['totalURL'], 0, strlen($GLOBALS['TSFE']->config['config']['absRefPrefix'])) != $GLOBALS['TSFE']->config['config']['absRefPrefix']) {
-					$link['LD']['totalURL'] = $GLOBALS['TSFE']->config['config']['absRefPrefix'].$link['LD']['totalURL'];
+			if (!preg_match('/https?:\/\//', $link['LD']['totalURL']) && !empty($GLOBALS['TSFE']->config['config']['absRefPrefix'])) {
+				if (substr($link['LD']['totalURL'], 0, strlen($GLOBALS['TSFE']->config['config']['absRefPrefix'])) != $GLOBALS['TSFE']->config['config']['absRefPrefix']) {
+					$link['LD']['totalURL'] = $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $link['LD']['totalURL'];
 				}
 			}
 		}
@@ -167,7 +157,31 @@ class tx_naworkuri {
 	 */
 	function redirect2uri($params, $ref) {
 		global $TYPO3_CONF_VARS;
-		if (
+		/*
+		 * if we set a redirectUrl above because an old url was called we should
+		 * redirect it here because at this point we have the full tsfe to get
+		 * the correct target url
+		 */
+		if ($this->redirectUrl != NULL) {
+			// translate uri
+			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
+			/* @var $configReader tx_naworkuri_configReader */
+			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
+			/* @var $translator tx_naworkuri_transformer */
+			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, $extConf['MULTIDOMAIN']);
+			$newUrlParameters = array('id' => $this->redirectUrl['page_uid'], 'L' => $this->redirectUrl['sys_language_uid']);
+			if (!empty($this->redirectUrl['params'])) {
+				$newUrlParameters = array_merge($newUrlParameters, tx_naworkuri_helper::explode_parameters($this->redirectUrl['params']));
+			}
+			$newUrl = $translator->params2uri(tx_naworkuri_helper::implode_parameters($newUrlParameters), TRUE, TRUE);
+			$newUrl = tx_naworkuri_helper::finalizeUrl($newUrl);
+			/* parse the current request url and prepend the scheme and host to the url */
+			$requestUrl = t3lib_div::getIndpEnv('TYPO3_REQUEST_URL');
+			$protocol = parse_url($requestUrl, PHP_URL_SCHEME);
+			$host = parse_url($requestUrl, PHP_URL_HOST);
+			$newUrl = $protocol . '://' . $host . $newUrl;
+			tx_naworkuri_helper::sendRedirect($newUrl, 301);
+		} elseif (
 				$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1
 				&& empty($_GET['ADMCMD_prev'])
 				&& $GLOBALS['TSFE']->config['config']['tx_naworkuri.']['redirect'] == 1

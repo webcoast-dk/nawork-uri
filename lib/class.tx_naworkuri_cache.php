@@ -35,10 +35,11 @@ class tx_naworkuri_cache {
 	/**
 	 * Set the timeout for the url cache validity
 	 *
-	 * @param int $time Number of seconds the should be valid, defaults to 86400 (= one day)
+	 * @param int $time Number of seconds the url should be valid, defaults to 86400 (= one day)
 	 */
 	public function setTimeout($time = 86400) {
-		$this->timeout = $time;
+//		$this->timeout = $time;
+		$this->timeout = 1;
 	}
 
 	/**
@@ -128,7 +129,7 @@ class tx_naworkuri_cache {
 		}
 		// lookup in db
 		$urls = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
-				'*', $this->config->getUriTable(), 'type < 2 AND deleted=0 AND sys_language_uid=' . $lang . ' AND domain="' . $domain . '" AND hash_params = "' . md5($parameters) . '" ' . $timeout_condition . $redirectCondition, '', 'locked DESC'
+				'*', $this->config->getUriTable(), 'type < 2 AND deleted=0 AND sys_language_uid=' . $lang . ' AND domain="' . $domain . '" AND hash_params = "' . md5($parameters) . '" ' . $timeout_condition . $redirectCondition, '', 'locked DESC, type ASC'
 		);
 		return (is_array($urls) ? $urls : FALSE);
 	}
@@ -166,7 +167,7 @@ class tx_naworkuri_cache {
 	 */
 	public function write($id, $lang, $domain, $parameters, $path, $debug_info = '') {
 		/*
-		 *  check for a uri existing url record
+		 *  check for an existing url record
 		 */
 		$cachedUrls = $this->read($lang, $domain, $parameters, TRUE);
 		if (is_array($cachedUrls) && count($cachedUrls) > 0) {

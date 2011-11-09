@@ -6,6 +6,16 @@
 	<castLToInt>1</castLToInt>
 	<redirectOnParameterDiff>1</redirectOnParameterDiff>
 	<redirectStatus>301</redirectStatus>
+	<transliteration>
+		<!--
+		<char from="ä" to="ae" />
+		<char from="ö" to="oe" />
+		<char from="ü" to="ue" />
+		<char from="Ä" to="ae" />
+		<char from="Ö" to="oe" />
+		<char from="Ü" to="ue" />
+		-->
+	</transliteration>
 
 	<pagenotfound>
 		<status>HTTP/1.0 404 Not Found</status>

@@ -55,7 +55,7 @@ class tx_naworkuri_helper {
 	 */
 	public function sanitize_uri($uri) {
 		setlocale(LC_ALL, tx_naworkuri_helper::getLocale());
-		$uri = iconv('UTF-8', 'ASCII//TRANSLIT', $uri);
+		$uri = $this->uriTransliterate($uri);
 		$uri = strip_tags($uri);
 		$uri = strtolower($uri);
 		$uri = $this->uri_handle_punctuation($uri);
@@ -63,6 +63,15 @@ class tx_naworkuri_helper {
 		$uri = $this->uri_limit_allowed_chars($uri);
 		$uri = $this->uri_make_wellformed($uri);
 
+		return $uri;
+	}
+
+	public function uriTransliterate($uri) {
+		$config = t3lib_div::makeInstance('tx_naworkuri_configReader');
+		foreach($config->getTransliterations() as $char) {
+			$uri = str_replace((string)$char->attributes()->from, (string)$char->attributes()->to, $uri);
+		}
+		$uri = iconv('UTF-8', 'ASCII//TRANSLIT', $uri);
 		return $uri;
 	}
 

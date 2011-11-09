@@ -164,6 +164,13 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 		return $this->config->uriparts->children();
 	}
 
+	public function getTransliterations() {
+		if($this->config->transliteration instanceof SimpleXMLElement) {
+			return $this->config->transliteration->children();
+		}
+		return array();
+	}
+
 	private function validateConfig() {
 		if (!is_a($this->config->uritable, 'SimpleXMLElement')) {
 			$this->config->addChild('uritable', 'tx_naworkuri_uri');

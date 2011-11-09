@@ -324,70 +324,77 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	public function params2uri_uriparts(&$original_params, &$unencoded_params, &$encoded_params) {
 		$parts = array();
 		foreach ($this->config->getUriParts() as $uripart) {
+			$value = '';
 
 			$param_name = (string) $uripart->parameter;
 			if ($param_name && isset($unencoded_params[$param_name])) {
-
-				$table = (string) $uripart->table;
-				$field = (string) $uripart->field;
-				$selectFields = (string) $uripart->selectFields;
-				$foreignTable = (string) $uripart->foreignTable;
-				$mmTable = (string) $uripart->mmTable;
-				$where = (string) $uripart->where;
+				try {
+					$value = Tx_NaworkUri_Cache_TransformationCache::getTransformation($param_name, $unencoded_params[$param_name]);
+				} catch (Tx_NaworkUri_Exception_TransformationValueNotFoundException $ex) {
 
 
-				$matches = array();
-				$fieldmap = array();
-				$fieldpattern = $field;
+					$table = (string) $uripart->table;
+					$field = (string) $uripart->field;
+					$selectFields = (string) $uripart->selectFields;
+					$foreignTable = (string) $uripart->foreignTable;
+					$mmTable = (string) $uripart->mmTable;
+					$where = (string) $uripart->where;
 
-				if (!preg_match_all('/\{(.*?)\}/', $field, $matches)) {
-					// single fields access
-					$fieldmap = array($field);
-					$fieldpattern = '###0###';
-				} else {
-					// multi field access
-					list($found, $fields) = $matches;
-					for ($i = 0; $i < count($found); $i++) {
-						$fieldmap[] = $fields[$i];
-						$fieldpattern = str_replace($found[$i], '###' . $i . '###', $fieldpattern);
-					}
-				}
 
-				// find fields
-				$where_part = str_replace('###', $unencoded_params[$param_name], $where);
+					$matches = array();
+					$fieldmap = array();
+					$fieldpattern = $field;
 
-				if (!empty($where_part) && !empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
-					$where_part .= ' AND ' . $GLOBALS['TCA'][$table]['ctrl']['languageField'] . '=0';
-				}
-
-				if (!empty($table)) {
-					if (empty($selectFields) || empty($foreignTable) || empty($mmTable)) {
-						$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(empty($selectFields) ? '*' : $selectFields, $table, $where_part, '', '', 1);
+					if (!preg_match_all('/\{(.*?)\}/', $field, $matches)) {
+						// single fields access
+						$fieldmap = array($field);
+						$fieldpattern = '###0###';
 					} else {
-						$dbres = $GLOBALS['TYPO3_DB']->exec_SELECT_mm_query($selectFields, $table, $mmTable, $foreignTable, 'AND ' . $where_part, '', '', 1);
-					}
-					if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres)) {
-						if (!empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
-							$row = $GLOBALS['TSFE']->sys_page->getRecordOverLay($table, $row, $this->language);
+						// multi field access
+						list($found, $fields) = $matches;
+						for ($i = 0; $i < count($found); $i++) {
+							$fieldmap[] = $fields[$i];
+							$fieldpattern = str_replace($found[$i], '###' . $i . '###', $fieldpattern);
 						}
-						$value = $fieldpattern;
-						foreach ($fieldmap as $map_key => $map_value) {
-							$mapfields = explode('//', $map_value);
-							foreach ($mapfields as $mapfield) {
-								if ($row[$mapfield]) {
-									$value = str_replace('###' . $map_key . '###', $row[$mapfield], $value);
-									break;
+					}
+
+					// find fields
+					$where_part = str_replace('###', $unencoded_params[$param_name], $where);
+
+					if (!empty($where_part) && !empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
+						$where_part .= ' AND ' . $GLOBALS['TCA'][$table]['ctrl']['languageField'] . '=0';
+					}
+
+					if (!empty($table)) {
+						if (empty($selectFields) || empty($foreignTable) || empty($mmTable)) {
+							$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(empty($selectFields) ? '*' : $selectFields, $table, $where_part, '', '', 1);
+						} else {
+							$dbres = $GLOBALS['TYPO3_DB']->exec_SELECT_mm_query($selectFields, $table, $mmTable, $foreignTable, 'AND ' . $where_part, '', '', 1);
+						}
+						if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres)) {
+							if (!empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
+								$row = $GLOBALS['TSFE']->sys_page->getRecordOverLay($table, $row, $this->language);
+							}
+							$value = $fieldpattern;
+							foreach ($fieldmap as $map_key => $map_value) {
+								$mapfields = explode('//', $map_value);
+								foreach ($mapfields as $mapfield) {
+									if ($row[$mapfield]) {
+										$value = str_replace('###' . $map_key . '###', $row[$mapfield], $value);
+										break;
+									}
 								}
 							}
 						}
+						$value = trim($value);
+						Tx_NaworkUri_Cache_TransformationCache::setTransformation($param_name, $unencoded_params[$param_name], $value);
+						$encoded_params[$param_name] = $unencoded_params[$param_name];
+						unset($unencoded_params[$param_name]);
 					}
-					$parts[$param_name] = trim($value);
-					$encoded_params[$param_name] = $unencoded_params[$param_name];
-					unset($unencoded_params[$param_name]);
 				}
+				$parts[$param_name] = $value;
 			}
 		}
-
 		return $parts;
 	}
 
@@ -401,6 +408,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	 */
 	public function params2uri_pagepath(&$original_params, &$unencoded_params, &$encoded_params) {
 		$parts = array();
+		$path = '';
 		if ($this->config->hasPagePathConfig() && $unencoded_params['id']) {
 
 			// cast id to int and resolve aliases
@@ -420,27 +428,37 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 			$id = $unencoded_params['id'];
 
-			// get setup
-			$limit = $this->config->getPagePathLimit();
-			if (!$limit)
-				$limit = 10;
+			try {
+				$path = Tx_NaworkUri_Cache_TransformationCache::getTransformation('id', $id);
+			} catch (Tx_NaworkUri_Exception_TransformationValueNotFoundException $ex) {
 
-			$field_conf = $this->config->getPagePathField();
-			$field_conf = str_replace('//', ',', $field_conf);
-			$fields = explode(',', 'tx_naworkuri_pathsegment,' . $field_conf);
+				// get setup
+				$limit = $this->config->getPagePathLimit();
+				if (!$limit)
+					$limit = 10;
 
-			// determine language (system or link)
-			$lang = 0;
-			if (isset($original_params['L'])) {
-				$lang = (int) $original_params['L'];
-			}
-			// walk the pagepath
-			while ($limit && $id > 0) {
+				$field_conf = $this->config->getPagePathField();
+				$field_conf = str_replace('//', ',', $field_conf);
+				$fields = explode(',', 'tx_naworkuri_pathsegment,' . $field_conf);
 
-				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(implode(',', $fields) . ',uid,pid,hidden,tx_naworkuri_exclude', $this->config->getPagePathTableName(), 'uid=' . $id . ' AND deleted=0', '', '', 1);
-				$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
-				if (!$row)
-					break; // no page found
+				// determine language (system or link)
+				$lang = 0;
+				if (isset($original_params['L'])) {
+					$lang = (int) $original_params['L'];
+				}
+				// walk the pagepath
+				while ($limit && $id > 0) {
+
+					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(implode(',', $fields) . ',uid,pid,hidden,tx_naworkuri_exclude', $this->config->getPagePathTableName(), 'uid=' . $id . ' AND deleted=0', '', '', 1);
+					$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
+					if (!$row)
+						break; // no page found
+
+
+
+
+
+
 
 
 
@@ -450,42 +468,43 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 
 // translate pagepath if needed
-				// @TODO some languages have to be excluded here somehow
-				if ($lang > 0) {
-					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'pages_language_overlay', 'pid=' . $id . ' AND deleted=0 AND sys_language_uid=' . $lang, '', '', 1);
-					$translated_row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
-					foreach ($fields as $field) {
-						if ($translated_row[$field]) {
-							$row[$field] = $translated_row[$field];
-						}
-					}
-				}
-				// extract part
-				if ($row['tx_naworkuri_exclude'] == 0) {
-					if ($row['pid'] > 0) {
+					if ($lang > 0) {
+						$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'pages_language_overlay', 'pid=' . $id . ' AND deleted=0 AND sys_language_uid=' . $lang, '', '', 1);
+						$translated_row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
 						foreach ($fields as $field) {
-							if ($row[$field]) {
-								$segment = trim($row[$field]);
-								array_unshift($parts, $segment);
-								break; // field found
+							if ($translated_row[$field]) {
+								$row[$field] = $translated_row[$field];
 							}
 						}
-					} elseif ($row['pid'] == 0 && $row['tx_naworkuri_pathsegment']) {
-						$segment = trim($row['tx_naworkuri_pathsegment']);
-						array_unshift($parts, $segment);
 					}
+					// extract part
+					if ($row['tx_naworkuri_exclude'] == 0) {
+						if ($row['pid'] > 0) {
+							foreach ($fields as $field) {
+								if ($row[$field]) {
+									$segment = trim($row[$field]);
+									array_unshift($parts, $segment);
+									break; // field found
+								}
+							}
+						} elseif ($row['pid'] == 0 && $row['tx_naworkuri_pathsegment']) {
+							$segment = trim($row['tx_naworkuri_pathsegment']);
+							array_unshift($parts, $segment);
+						}
+					}
+					// continue fetching the path
+					$id = $row['pid'];
+					$limit--;
 				}
-				// continue fetching the path
-				$id = $row['pid'];
-				$limit--;
+				$path = implode('/', $parts);
+				Tx_NaworkUri_Cache_TransformationCache::setTransformation('id', $unencoded_params['id'], $path);
 			}
-
-
 			$encoded_params['id'] = $unencoded_params['id'];
 			unset($unencoded_params['id']);
 		}
 
-		return array('id' => implode('/', $parts));
+
+		return array('id' => $path);
 	}
 
 }

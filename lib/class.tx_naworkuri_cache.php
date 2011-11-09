@@ -38,8 +38,8 @@ class tx_naworkuri_cache {
 	 * @param int $time Number of seconds the url should be valid, defaults to 86400 (= one day)
 	 */
 	public function setTimeout($time = 86400) {
-//		$this->timeout = $time;
-		$this->timeout = 1;
+		$this->timeout = $time;
+//		$this->timeout = 1;
 	}
 
 	/**

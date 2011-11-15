@@ -1,3 +1,5 @@
+2.1.8 :: FIX: Improved performance by better code and additional index on the db table for improving cache reading speed
+
 2.1.7 :: FIX: Redirect dropped query params e.g. for ga tracking
 
 2.1.6 :: FIX: Introduced transformation cache to avoid multiple db lookups for the same parameter value, this increases performance

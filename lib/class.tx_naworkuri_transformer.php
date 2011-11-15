@@ -33,10 +33,15 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	 */
 	private $db;
 
-	/*
+	/**
 	 * @var tx_naworkuri_cache
 	 */
 	private $cache;
+
+	/**
+	 *
+	 * @var integer
+	 */
 	private $language = 0;
 
 	/**
@@ -105,7 +110,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	 * @param str $param_str Parameter string
 	 * @return string $uri encoded uri
 	 */
-	public function params2uri($param_str, $dontCreateNewUrls = false, $ignoreTimeout = false) {
+	public function params2uri($param_str, $dontCreateNewUrls = FALSE, $ignoreTimeout = FALSE) {
 		global $TYPO3_CONF_VARS;
 
 		list($parameters, $anchor) = explode('#', $param_str, 2);
@@ -149,9 +154,9 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		}
 		$this->language = $params['L'];
 
-		// find already created uri with exactly these parameters
-		$cache_uri = $this->cache->read_params($params, $this->domain, $ignoreTimeout);
-		if ($cache_uri !== false) {
+		/* find cached urls with the given parameters from the current domain */
+		$cache_uri = $this->cache->findCachedUrl($params, $this->domain);
+		if ($cache_uri !== FALSE) {
 			// append stored anchor
 			if ($anchor) {
 				$cache_uri .= '#' . $anchor;
@@ -220,8 +225,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 				$result_path = $result_path . $append;
 			}
 		}
-
-		$uri = $this->cache->write_params($encoded_params, $this->language, $this->domain, $result_path, $debug_info);
+		$uri = $this->cache->writeUrl($encoded_params, $this->domain, $this->language, $result_path);
 
 		// read not encoded parameters
 		$i = 0;

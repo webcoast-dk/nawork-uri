@@ -50,5 +50,6 @@ CREATE TABLE tx_naworkuri_uri (
 
     PRIMARY KEY (uid),
     KEY parent (pid),
-    KEY domain_path (domain,hash_path)
+    KEY domain_path (domain,hash_path),
+	KEY cache (page_uid,sys_language_uid,domain,hash_params,deleted,type)
 );

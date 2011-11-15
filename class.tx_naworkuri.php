@@ -125,10 +125,9 @@ class tx_naworkuri implements t3lib_Singleton {
 			$link['LD']['totalURL'] = tx_naworkuri_helper::finalizeUrl($url);
 			/* add hook for post processing the url */
 			if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'])) {
-				$helper = t3lib_div::makeInstance('tx_naworkuri_helper');
 				$hookParams = array(
 					'url' => $url,
-					'params' => $helper->explode_parameters($params),
+					'params' => tx_naworkuri_helper::explode_parameters($params),
 					'LD' => $link['LD']
 				);
 				foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'] as $funcRef) {

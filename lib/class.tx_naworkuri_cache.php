@@ -30,6 +30,7 @@ class tx_naworkuri_cache {
 		$this->helper = t3lib_div::makeInstance('tx_naworkuri_helper');
 		$this->config = $config;
 		$this->db = $GLOBALS['TYPO3_DB'];
+		$this->db->store_lastBuiltQuery = 1;
 	}
 
 	/**
@@ -39,7 +40,93 @@ class tx_naworkuri_cache {
 	 */
 	public function setTimeout($time = 86400) {
 		$this->timeout = $time;
-//		$this->timeout = 1;
+//		$this->timeout = 0;
+	}
+
+	/**
+	 * Find a url based on the parameters and the domain
+	 *
+	 * @param array $params
+	 * @param string $domain
+	 */
+	public function findCachedUrl($params, $domain) {
+		$uid = (int) $params['id'];
+		$lang = (int) ($params['L'] ? $params['L'] : 0);
+		unset($params['id']);
+		unset($params['L']);
+		/* evaluate the cache timeout */
+		$pageRes = $this->db->exec_SELECTgetRows('*', $this->config->getPageTable(), 'uid=' . intval($uid));
+		$page = $pageRes[0];
+		if ($page['cache_timeout'] > 0) {
+			$this->setTimeout($page['cache_timeout']);
+		} elseif ($GLOBALS['TSFE']->config['config']['cache_period'] > 0) {
+			$this->setTimeout($GLOBALS['TSFE']->config['config']['cache_period']);
+		} else {
+			$this->setTimeout(); // set to default, should be 86400 (24 hours)
+		}
+		/* if there is now be user logged in hidden or time controlled non visible pages should not return an url */
+		$displayPageCondition = ' AND p.hidden=0 AND p.starttime < ' . time() . ' AND (p.endtime=0 OR p.endtime > ' . time() . ') ';
+		if (tx_naworkuri_helper::isActiveBeUserSession()) {
+			$displayPageCondition = '';
+		}
+		$urls = $this->db->exec_SELECTgetRows(
+				'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.page_uid=' . intval($uid) . ' AND sys_language_uid=' . intval($lang) . ' AND hash_params="' . md5(tx_naworkuri_helper::implode_parameters($params)) . '" AND u.deleted=0 AND u.domain="' . $domain . '" ' . $displayPageCondition . ' AND p.deleted=0 AND p.uid=u.page_uid AND type=0 AND ( u.tstamp > ' . (time() - $this->timeout) . ' OR locked=1 )', // lets find type 0 urls only from the cache
+				'', '', '1'
+		);
+		if (is_array($urls) && count($urls) > 0) {
+			return $urls[0]['path'];
+		}
+		return FALSE;
+	}
+
+	/**
+	 * Find an existing url based on the page's id, language, parameters and domain.
+	 * This is used to get an url that's cache time has expired but is a normal url.
+	 *
+	 * @param integer $id
+	 * @param integer $language
+	 * @param array $params
+	 * @param string $domain
+	 */
+	public function findExistantUrl($page, $language, $params, $domain) {
+		return $this->db->exec_SELECTgetSingleRow('*', $this->config->getUriTable(), 'page_uid=' . intval($page) . ' AND sys_language_uid=' . intval($language) . ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable()) . ' AND hash_params="' . md5(tx_naworkuri_helper::implode_parameters($params)) . '" AND deleted=0 AND type=0');
+	}
+
+	public function findOldUrl($domain, $path) {
+		return $this->db->exec_SELECTgetSingleRow('*', $this->config->getUriTable(), 'domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable()) . ' AND hash_path="' . md5($path) . '"');
+	}
+
+	/**
+	 *
+	 * @param array $parameters
+	 * @param string $domain
+	 * @param integer $language
+	 * @param string $path
+	 * @return string
+	 */
+	public function writeUrl($parameters, $domain, $language, $path) {
+		$pageUid = intval($parameters['id']);
+		$language = intval($language ? $language : 0);
+		unset($parameters['id']);
+		unset($parameters['L']);
+		/* try to find an existing url that was too old to be retreived from cache */
+		$existingUrl = $this->findExistantUrl($pageUid, $language, $parameters, $domain);
+		if ($existingUrl !== FALSE) {
+			$this->updateUrl($existingUrl['uid'], $pageUid, $language, $parameters);
+			return $existingUrl['path'];
+		}
+		/* try find an old url that could be reactivated */
+		$existingUrl = $this->findOldUrl($domain, $path);
+		if ($existingUrl != FALSE) {
+			$this->makeOldUrl($domain, $pageUid, $language, $parameters, $existingUrl['uid']);
+			$this->updateUrl($existingUrl['uid'], $pageUid, $language, $parameters);
+			return $path;
+		}
+		/* if we also did not find a url here we must create it */
+		$this->makeOldUrl($domain, $pageId, $language, $parameters);
+		$path = $this->unique($path, $domain);
+		$this->createUrl($pageUid, $language, $domain, $parameters, $path);
+		return $path;
 	}
 
 	/**
@@ -259,20 +346,22 @@ class tx_naworkuri_cache {
 	 * @param string $domain
 	 * @param int $page
 	 * @param int $language
-	 * @param string $parameters
+	 * @param array $parameters
 	 * @param int $type
 	 */
-	private function updateUrl($uid, $domain, $page, $language, $parameters, $type) {
-		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'uid=' . intval($uid) . ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable()), array(
+	private function updateUrl($uid, $page, $language, $parameters, $type = self::TX_NAWORKURI_URI_TYPE_NORMAL) {
+		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'uid=' . intval($uid), array(
 			'page_uid' => intval($page),
 			'sys_language_uid' => $language,
 			'params' => $parameters,
-			'hash_params' => md5($parameters),
-			'type' => intval($type)
+			'hash_params' => md5(tx_naworkuri_helper::implode_parameters($parameters)),
+			'type' => intval($type),
+			'tstamp' => time()
 				), array(
 			'page_uid',
 			'sys_language_uid',
-			'type'
+			'type',
+			'tstamp'
 		));
 	}
 
@@ -283,8 +372,8 @@ class tx_naworkuri_cache {
 	 * @param int $language
 	 * @param string $parameters
 	 */
-	private function makeOldUrl($domain, $pageId, $language, $parameters, $excludeUid) {
-		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable()) . ' AND hash_params=' . $this->db->fullQuoteStr(md5($parameters), $this->config->getUriTable()) . ' AND page_uid=' . intval($pageId) . ' AND sys_language_uid=' . intval($language) . ' AND uid!=' . intval($excludeUid) . ' AND type=0', array(
+	private function makeOldUrl($domain, $pageId, $language, $parameters, $excludeUid = FALSE) {
+		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable()) . ' AND hash_params=' . $this->db->fullQuoteStr(md5($parameters), $this->config->getUriTable()) . ' AND page_uid=' . intval($pageId) . ' AND sys_language_uid=' . intval($language) . ($excludeUid !== FALSE ? ' AND uid!=' . intval($excludeUid) : '') . ' AND type=0', array(
 			'type' => self::TX_NAWORKURI_URI_TYPE_OLD,
 			'tstamp' => time()
 				), array(

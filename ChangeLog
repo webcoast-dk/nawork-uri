@@ -1,3 +1,5 @@
+2.1.9 :: FIX: Params and params hash were not written to database when creating a new url
+
 2.1.8 :: FIX: Improved performance by better code and additional index on the db table for improving cache reading speed
 
 2.1.7 :: FIX: Redirect dropped query params e.g. for ga tracking

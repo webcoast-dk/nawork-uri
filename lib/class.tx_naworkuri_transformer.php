@@ -183,7 +183,6 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		$debug_info .= "original_params  : " . $this->helper->implode_parameters($original_params) . chr(10);
 		$debug_info .= "encoded_params   : " . $this->helper->implode_parameters($encoded_params) . chr(10);
 		$debug_info .= "unencoded_params : " . $this->helper->implode_parameters($unencoded_params) . chr(10);
-
 		/*
 		 * if any parameter is not encoded and the cHash is encoded, remove it from the encoded parameters
 		 * and put it into the unencoded parameters to avoid unnecessary uris
@@ -392,10 +391,10 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 						}
 						$value = trim($value);
 						Tx_NaworkUri_Cache_TransformationCache::setTransformation($param_name, $unencoded_params[$param_name], $value);
-						$encoded_params[$param_name] = $unencoded_params[$param_name];
-						unset($unencoded_params[$param_name]);
 					}
 				}
+				$encoded_params[$param_name] = $unencoded_params[$param_name];
+				unset($unencoded_params[$param_name]);
 				$parts[$param_name] = $value;
 			}
 		}

@@ -89,11 +89,23 @@ class tx_naworkuri_cache {
 	 * @param string $domain
 	 */
 	public function findExistantUrl($page, $language, $params, $domain) {
-		return $this->db->exec_SELECTgetSingleRow('*', $this->config->getUriTable(), 'page_uid=' . intval($page) . ' AND sys_language_uid=' . intval($language) . ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable()) . ' AND hash_params="' . md5(tx_naworkuri_helper::implode_parameters($params)) . '" AND deleted=0 AND type=0');
+		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(),
+				'page_uid=' . intval($page) . ' AND sys_language_uid=' . intval($language) . ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable()) . ' AND hash_params="' . md5(tx_naworkuri_helper::implode_parameters($params)) . '" AND deleted=0 AND type=0',
+				'', '', 1);
+		if(is_array($urls) && count($urls) > 0) {
+			return $urls[0];
+		}
+		return FALSE;
 	}
 
 	public function findOldUrl($domain, $path) {
-		return $this->db->exec_SELECTgetSingleRow('*', $this->config->getUriTable(), 'domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable()) . ' AND hash_path="' . md5($path) . '"');
+		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(),
+				'domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable()) . ' AND hash_path="' . md5($path) . '" AND deleted=0 AND type=1',
+				'', '', 1);
+		if(is_array($urls) && count($urls) > 0) {
+			return $urls[0];
+		}
+		return FALSE;
 	}
 
 	/**
@@ -130,46 +142,6 @@ class tx_naworkuri_cache {
 	}
 
 	/**
-	 * Read a previously created URI from cache
-	 *
-	 * @param array $params Parameter Array
-	 * @param string $domain current Domain
-	 * @param boolean $ignoreTimeout Ignore the timeout settings when reding from cache, needed when updating a url
-	 * @param boolean $allowRedirects Allow redirects when retrieving
-	 * @return string Path if found, FALSE otherwise
-	 */
-	public function read_params($params, $domain, $ignoreTimeout = FALSE, $allowRedirects = TRUE) {
-		$uid = (int) $params['id'];
-		$lang = (int) ($params['L'] ? $params['L'] : 0);
-		$pageRes = $this->db->exec_SELECTgetRows('*', $this->config->getPageTable(), 'uid=' . intval($uid));
-		$page = $pageRes[0];
-		if ($page['cache_timeout'] > 0) {
-			$this->setTimeout($page['cache_timeout']);
-		} elseif ($GLOBALS['TSFE']->config['config']['cache_period'] > 0) {
-			$this->setTimeout($GLOBALS['TSFE']->config['config']['cache_period']);
-		} else {
-			$this->setTimeout();
-		}
-		unset($params['id']);
-		unset($params['L']);
-
-		$imploded_params = $this->helper->implode_parameters($params);
-
-		$urls = $this->read($lang, $domain, $imploded_params, $ignoreTimeout, $allowRedirects);
-		if (is_array($urls)) {
-			foreach ($urls as $u) {
-				if ($u['type'] == self::TX_NAWORKURI_URI_TYPE_NORMAL && $u['page_uid'] == $uid) {
-					return $u['path'];
-					break;
-				}
-			}
-			return FALSE;
-		} else {
-			return FALSE;
-		}
-	}
-
-	/**
 	 * Read Cache entry for the given URI
 	 *
 	 * @param string $path URI Path
@@ -193,134 +165,15 @@ class tx_naworkuri_cache {
 	}
 
 	/**
-	 * Find the cached URI for the given parameters
 	 *
-	 * @param int $lang      : the L param
-	 * @param string $domain : the current domain '' for not multidomain setups
-	 * @param array $params  : other  url parameters
-	 * @param boolean $ignoreTimeout Ignore the timeout when reading urls
-	 * @param boolean $allowRedirects Allow redirect to be selected
-	 * @return string        : uri wich matches to these params otherwise false
+	 * @param integer $page
+	 * @param integer $language
+	 * @param string $domain
+	 * @param array $parameters
+	 * @param string $path
 	 */
-	public function read($lang, $domain, $parameters, $ignoreTimeout = FALSE, $allowRedirects = TRUE) {
-		$timeout_condition = '';
-		if ($this->timeout > 0 && $ignoreTimeout == false) {
-			$timeout_condition = 'AND ( tstamp > "' . (time() - $this->timeout) . '" OR locked=1 )';
-		}
-		$redirectCondition = '';
-		if (!$allowRedirects) {
-			$redirectCondition = ' AND type=0';
-		}
-		if (!$ignoreTimeout && $GLOBALS['TSFE']->config['config']['cache_clearAtMidnight'] > 0) {
-			$timeout_condition .= ' AND tstamp > ' . strtotime('midnight');
-		}
-		// lookup in db
-		$urls = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
-				'*', $this->config->getUriTable(), 'type < 2 AND deleted=0 AND sys_language_uid=' . $lang . ' AND domain="' . $domain . '" AND hash_params = "' . md5($parameters) . '" ' . $timeout_condition . $redirectCondition, '', 'locked DESC, type ASC'
-		);
-		return (is_array($urls) ? $urls : FALSE);
-	}
-
-	/**
-	 * Write a new URI to cache
-	 *
-	 * @param array $params Parameter Array
-	 * @param string $domain current Domain
-	 * @param string $path preferred Path
-	 * @param string $debug_info Debug Infos
-	 * @return string URI wich was stored for the params
-	 */
-	public function write_params($params, $language, $domain, $path, $debug_info='') {
-		$uid = intval($params['id']);
-		$lang = intval($language ? $language : 0);
-
-		unset($params['id']);
-		unset($params['L']);
-
-		$imploded_params = tx_naworkuri_helper::implode_parameters($params);
-		return $this->write($uid, $lang, $domain, $imploded_params, $path, $debug_info);
-	}
-
-	/**
-	 * Write a new URI-Parameter combination to the cache
-	 *
-	 * @param int $id id Parameter
-	 * @param int $lang L Parameter
-	 * @param string $domain current Domain
-	 * @param string $parameters URI Paramters
-	 * @param string $path Preferred URI Path
-	 * @param string $debug_info Debig Informations
-	 * @return string URI wich was stored for the params
-	 */
-	public function write($id, $lang, $domain, $parameters, $path, $debug_info = '') {
-		/*
-		 *  check for an existing url record
-		 */
-		$cachedUrls = $this->read($lang, $domain, $parameters, TRUE);
-		if (is_array($cachedUrls) && count($cachedUrls) > 0) {
-			foreach ($cachedUrls as $url) {
-				/*
-				 * if the path is equal we must check if we have a redirect here and have to update it to use it as a normal url again
-				 * the existing urls on this page, domain, language and parameter set will be updated to be redirects
-				 * if the url is locked we also have to return the path directly
-				 */
-				if ($url['path'] == $path && $url['type'] == self::TX_NAWORKURI_URI_TYPE_OLD) {
-					/* update the redirect to be used as a normal url again */
-					$this->updateUrl($url['uid'], $domain, $id, $lang, $parameters, self::TX_NAWORKURI_URI_TYPE_NORMAL);
-					/* make old urls by page, language and parameters, they will automatically redirect to the new url updated above */
-					$this->makeOldUrl($domain, $id, $lang, $parameters, $url['uid']);
-					return $url['path'];
-				} elseif ($url['locked'] == 1 && $url['page_uid'] == $id) {
-					/* if the url is locked and the page_uid is correct return the cached path */
-					return $url['path'];
-				} elseif ($url['path'] == $path && $url['page_uid'] == $id) {
-					/* if the path is equal and the page_uid is also correct return the cached path */
-					return $url['path'];
-				}
-			}
-			/*
-			 * we haven't found any url we can reactivate, so make the current
-			 * one a redirect and create a new one
-			 */
-			reset($cachedUrls);
-			foreach ($cachedUrls as $url) {
-				/* if the path differs check for creating a redirect */
-				if ($url['page_uid'] == $id && $url['type'] == self::TX_NAWORKURI_URI_TYPE_NORMAL) {
-					/* if the path differs but the params are equals make a redirect */
-					if ($url['hash_params'] == md5($parameters)) {
-						$this->changeType($url['uid'], self::TX_NAWORKURI_URI_TYPE_OLD);
-					}
-					/*
-					 * Make the path unique, including the redirect created above in the check.
-					 * This situation should not be possible because if the path of the url is the
-					 * same as the given one the path should be returned, but to be sure we check it here
-					 */
-					$path = $this->unique($path, $domain);
-					/* Well, if we have a unique path create the url */
-					$this->createUrl($id, $lang, $domain, $parameters, $path);
-					return $path;
-				}
-			}
-		}
-		/*
-		 * if no path is returned proceed with normal creation
-		 */
-		$path = $this->unique($path, $domain);
-		$this->createUrl($id, $lang, $domain, $parameters, $path);
-		return $path;
-	}
-
-	/**
-	 * Change the type of the url
-	 *
-	 * @param int $uid
-	 * @param int $type
-	 */
-	private function changeType($uid, $type = self::TX_NAWORKURI_URI_TYPE_NORMAL) {
-		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'uid=' . intval($uid), array('type' => intval($type), 'tstamp' => time()), array('type', 'tstamp'));
-	}
-
 	private function createUrl($page, $language, $domain, $parameters, $path) {
+		$parameters = tx_naworkuri_helper::implode_parameters($parameters);
 		$this->db->exec_INSERTquery($this->config->getUriTable(), array(
 			'page_uid' => intval($page),
 			'tstamp' => time(),

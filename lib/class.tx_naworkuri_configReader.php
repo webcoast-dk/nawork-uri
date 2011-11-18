@@ -49,6 +49,10 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 		$this->validateConfig();
 	}
 
+	public function getStoragePage() {
+		return (int) $this->extConfig['storagePage'];
+	}
+
 	public function isMultiDomainEnabled() {
 		return (boolean) $this->extConfig['MULTIDOMAIN'];
 	}

@@ -62,7 +62,7 @@ $TCA['tx_naworkuri_uri'] = Array(
 		'transOrigDiffSourceField' => 'l18n_diffsource',
 		'sortby' => 'crdate',
 		'delete' => 'deleted',
-		'rootLevel' => '1',
+//		'rootLevel' => '1',
 		'enablecolumns' => array(
 		),
 		'dynamicConfigFile' => t3lib_extMgm::extPath($_EXTKEY) . 'tca.php',

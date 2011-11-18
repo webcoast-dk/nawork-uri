@@ -89,20 +89,16 @@ class tx_naworkuri_cache {
 	 * @param string $domain
 	 */
 	public function findExistantUrl($page, $language, $params, $domain) {
-		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(),
-				'page_uid=' . intval($page) . ' AND sys_language_uid=' . intval($language) . ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable()) . ' AND hash_params="' . md5(tx_naworkuri_helper::implode_parameters($params)) . '" AND deleted=0 AND type=0',
-				'', '', 1);
-		if(is_array($urls) && count($urls) > 0) {
+		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'page_uid=' . intval($page) . ' AND sys_language_uid=' . intval($language) . ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable()) . ' AND hash_params="' . md5(tx_naworkuri_helper::implode_parameters($params)) . '" AND deleted=0 AND type=0', '', '', 1);
+		if (is_array($urls) && count($urls) > 0) {
 			return $urls[0];
 		}
 		return FALSE;
 	}
 
 	public function findOldUrl($domain, $path) {
-		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(),
-				'domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable()) . ' AND hash_path="' . md5($path) . '" AND deleted=0 AND type=1',
-				'', '', 1);
-		if(is_array($urls) && count($urls) > 0) {
+		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable()) . ' AND hash_path="' . md5($path) . '" AND deleted=0 AND type=1', '', '', 1);
+		if (is_array($urls) && count($urls) > 0) {
 			return $urls[0];
 		}
 		return FALSE;
@@ -175,6 +171,7 @@ class tx_naworkuri_cache {
 	private function createUrl($page, $language, $domain, $parameters, $path) {
 		$parameters = tx_naworkuri_helper::implode_parameters($parameters);
 		$this->db->exec_INSERTquery($this->config->getUriTable(), array(
+			'pid' => $this->config->getStoragePage(),
 			'page_uid' => intval($page),
 			'tstamp' => time(),
 			'crdate' => time(),
@@ -185,6 +182,7 @@ class tx_naworkuri_cache {
 			'params' => $parameters,
 			'hash_params' => md5($parameters)
 				), array(
+			'pid',
 			'page_uid',
 			'tstamp',
 			'crdate',
@@ -203,11 +201,12 @@ class tx_naworkuri_cache {
 	 * @param int $type
 	 */
 	private function updateUrl($uid, $page, $language, $parameters, $type = self::TX_NAWORKURI_URI_TYPE_NORMAL) {
+		$parameters = tx_naworkuri_helper::implode_parameters($parameters);
 		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'uid=' . intval($uid), array(
 			'page_uid' => intval($page),
 			'sys_language_uid' => $language,
 			'params' => $parameters,
-			'hash_params' => md5(tx_naworkuri_helper::implode_parameters($parameters)),
+			'hash_params' => md5($parameters),
 			'type' => intval($type),
 			'tstamp' => time()
 				), array(

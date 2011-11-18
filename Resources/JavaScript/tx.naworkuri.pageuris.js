@@ -422,7 +422,7 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 	 * Opens the tce form to add a new url
 	 */
 	onAdd: function(btn, ev) {
-		var url = '/typo3/alt_doc.php?returnUrl=' + location.href + '&edit[tx_naworkuri_uri][0]=new';
+		var url = '/typo3/alt_doc.php?returnUrl=' + location.href + '&edit[tx_naworkuri_uri][' + this.initialConfig.storagePage + ']=new';
 		location.href = url;
 	},
 

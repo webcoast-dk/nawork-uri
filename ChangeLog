@@ -1,3 +1,5 @@
+2.1.10:: FIX: Editors could not edit urls nor create redirects because they were saved on pid 0: Different storage page can be set in ext conf and can be updated via ext update functionality
+
 2.1.9 :: FIX: Params and params hash were not written to database when creating a new url
 
 2.1.8 :: FIX: Improved performance by better code and additional index on the db table for improving cache reading speed

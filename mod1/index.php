@@ -74,6 +74,7 @@ class tx_naworkuri_module1 extends t3lib_SCbase {
 	 */
 	function main() {
 		global $BE_USER, $LANG, $BACK_PATH, $TCA_DESCR, $TCA, $HTTP_GET_VARS, $HTTP_POST_VARS, $CLIENT, $TYPO3_CONF_VARS, $scriptfile;
+		$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 
 		$this->pageinfo = t3lib_BEfunc::readPageAccess($this->id, $this->perms_clause);
 		$this->isAccessibleForCurrentUser = (
@@ -114,7 +115,8 @@ class tx_naworkuri_module1 extends t3lib_SCbase {
 					title: "' . $LANG->getLL('pageUris') . '",
 					backPath: "' . $this->doc->backPath . '",
 					border: false,
-					page: "' . $this->id . '"
+					page: "' . $this->id . '",
+					storagePage: "'.intval($extConf['storagePage']).'"
 				});
 
 				tx.naworkuri.view = new Ext.Panel({

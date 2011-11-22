@@ -21,8 +21,10 @@
 			<label index="tx_naworkuri_uri.locked">Locked</label>
 			<label index="tx_naworkuri_uri.redirect_path">Redirect path</label>
 			<label index="tx_naworkuri_uri.redirect_mode">Redirect mode</label>
-			<label index="tx_naworkuri_uri.redirect_mode.301">Permanent (301)</label>
-			<label index="tx_naworkuri_uri.redirect_mode.307">Temporary (307)</label>
+			<label index="tx_naworkuri_uri.redirect_mode.301">301 Moved Permanently</label>
+			<label index="tx_naworkuri_uri.redirect_mode.302">302 Found</label>
+			<label index="tx_naworkuri_uri.redirect_mode.303">303 See Other</label>
+			<label index="tx_naworkuri_uri.redirect_mode.307">307 Moved Temporary</label>
 		</languageKey>
 		<languageKey index="de" type="array">
 			<label index="pages.tx_naworkuri_pathsegment">Pfadsegment für sprechende URL</label>
@@ -38,10 +40,12 @@
 			<label index="tx_naworkuri_uri.path">Pfad</label>
 			<label index="tx_naworkuri_uri.params">Parameter</label>
 			<label index="tx_naworkuri_uri.locked">Gesperrt</label>
-			<label index="tx_naworkuri_uri.redirect_path">Pfad für die Weiterleitung</label>
+			<label index="tx_naworkuri_uri.redirect_path">Ziel-Pfad/Ziel-URL</label>
 			<label index="tx_naworkuri_uri.redirect_mode">Weiterleitungsmodus</label>
-			<label index="tx_naworkuri_uri.redirect_mode.301">Permanent (301)</label>
-			<label index="tx_naworkuri_uri.redirect_mode.307">Temporär (307)</label>
+			<label index="tx_naworkuri_uri.redirect_mode.301">301 Moved Permanently</label>
+			<label index="tx_naworkuri_uri.redirect_mode.302">302 Found</label>
+			<label index="tx_naworkuri_uri.redirect_mode.303">303 See Other</label>
+			<label index="tx_naworkuri_uri.redirect_mode.307">307 Moved Temporary</label>
 		</languageKey>
 	</data>
 </T3locallang>

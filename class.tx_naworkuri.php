@@ -82,17 +82,23 @@ class tx_naworkuri implements t3lib_Singleton {
 					 */
 					$this->redirectUrl = $url;
 				} elseif ($url['type'] == tx_naworkuri_cache::TX_NAWORKURI_URI_TYPE_REDIRECT) {
+					/* add hook for pre processing the redirect record */
+					if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['redirect-preProcess'])) {
+						foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['redirect-preProcess'] as $funcRef) {
+							t3lib_div::callUserFunction($funcRef, $url, $this);
+						}
+					}
 					$newUrl = parse_url($url['redirect_path']);
 					$requestUrl = parse_url(t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'));
-					if (empty($newUrl['host']))
-						$newUrl['host'] = $requestUrl['host'];
 					if (empty($newUrl['scheme']))
 						$newUrl['scheme'] = $requestUrl['scheme'];
+					if (empty($newUrl['host']))
+						$newUrl['host'] = $requestUrl['host'];
 					if (substr($newUrl['path'], 0, 1) != '/')
 						$newUrl['path'] = '/' . $newUrl['path'];
 					$uri = $newUrl['scheme'] . '://' . $newUrl['host'] . $newUrl['path'];
 					$queryParams = array_merge(tx_naworkuri_helper::explode_parameters($requestUrl['query']), tx_naworkuri_helper::explode_parameters($newUrl['query']));
-					if(!empty($queryParams)) {
+					if (!empty($queryParams)) {
 						$uri .= '?' . tx_naworkuri_helper::implode_parameters($queryParams);
 					}
 					tx_naworkuri_helper::sendRedirect($uri, $url['redirect_mode']);

@@ -1,3 +1,6 @@
+2.1.11:: FIX: Domain is now a select box, to make is easier for editors
+	  :: FEATURE: Add hook for pre processing the redirect (type 2) record before
+
 2.1.10:: FIX: Editors could not edit urls nor create redirects because they were saved on pid 0: Different storage page can be set in ext conf and can be updated via ext update functionality
 
 2.1.9 :: FIX: Params and params hash were not written to database when creating a new url

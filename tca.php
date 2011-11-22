@@ -23,30 +23,14 @@ $TCA['tx_naworkuri_uri'] = Array(
 				)
 			)
 		),
-		'l18n_parent' => Array(
-			'displayCond' => 'FIELD:sys_language_uid:>:0',
-			'exclude' => 1,
-			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.l18n_parent',
-			'config' => Array(
-				'type' => 'select',
-				'items' => Array(
-					Array('', 0),
-				),
-				'foreign_table' => 'tx_naworkuri_uri',
-				'foreign_table_where' => 'AND tx_naworkuri_uri.pid=###CURRENT_PID### AND tx_naworkuri_uri.sys_language_uid IN (-1,0)',
-			)
-		),
-		'l18n_diffsource' => Array(
-			'config' => Array(
-				'type' => 'passthrough'
-			)
-		),
 		'domain' => Array(
 			'exclude' => 1,
 			'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.domain',
 			'config' => Array(
-				'type' => 'input',
-				'size' => '30',
+				'type' => 'select',
+				'foreign_table' => 'sys_domain',
+				'foreign_table_where' => 'AND tx_naworkuri_masterDomain=0',
+				'itemsProcFunc' => 'EXT:nawork_uri/Classes/UserFunc/DomainUserFunc.php:&Tx_NaworkUri_UserFunc_DomainUserFunc->itemsProcFunc'
 			)
 		),
 		'path' => Array(
@@ -94,6 +78,7 @@ $TCA['tx_naworkuri_uri'] = Array(
 			)
 		),
 		'locked' => Array(
+			'exclude' => '1',
 			'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.locked',
 			'config' => Array(
 				'type' => 'check',
@@ -113,6 +98,7 @@ $TCA['tx_naworkuri_uri'] = Array(
 			)
 		),
 		'redirect_path' => array(
+			'exclude' => '1',
 			'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.redirect_path',
 			'config' => array(
 				'type' => 'input',
@@ -120,11 +106,14 @@ $TCA['tx_naworkuri_uri'] = Array(
 			)
 		),
 		'redirect_mode' => array(
+			'exclude' => '1',
 			'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode',
 			'config' => array(
 				'type' => 'select',
 				'items' => array(
 					array('LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode.301', 301),
+					array('LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode.302', 303),
+					array('LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode.303', 303),
 					array('LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode.307', 307)
 				)
 			)
@@ -132,26 +121,26 @@ $TCA['tx_naworkuri_uri'] = Array(
 	),
 	'types' => array(
 		'0' => array(
-			'showitem' => 'domain, path, params, sticky'
+			'showitem' => 'path, params, locked'
 		),
 		'1' => array(
-			'showitem' => 'domain, path'
+			'showitem' => 'path'
 		),
 		'2' => array(
-			'showitem' => 'domain, path, redirect_path, redirect_mode'
+			'showitem' => 'path, redirect_path, redirect_mode'
 		)
 	)
 );
 
-// show domain only in Multidomain Setups
-//$confArray = unserialize( $GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
-//if ($confArray['MULTIDOMAIN']){
-//	$TCA['tx_naworkuri_uri']['types'] = Array (
-//        '0' => Array('showitem' => 'sys_language_uid;;;;1-1-1, l18n_parent, l18n_diffsource,  path;;;;2-2-2, domain, params, hash_path;;;;3-3-3, hash_params, sticky, hidden, debug_info'),
-//    );
-//} else {
-//	$TCA['tx_naworkuri_uri']['types'] = Array (
-//        '0' => Array('showitem' => 'sys_language_uid;;;;1-1-1, l18n_parent, l18n_diffsource,  path;;;;2-2-2, params, hash_path;;;;3-3-3, hash_params, sticky, hidden, debug_info'),
-//    );
-//}
+/*
+ * show domain only in Multidomain Setups
+ */
+$confArray = unserialize( $GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
+if ($confArray['MULTIDOMAIN']){
+	$TCA['tx_naworkuri_uri']['types'] = Array (
+        '0' => Array('showitem' => 'domain, path, params, locked'),
+		'1' => array('showitem' => 'domain, path'),
+		'2' => array('showitem' => 'domain, path, redirect_path, redirect_mode')
+    );
+}
 ?>

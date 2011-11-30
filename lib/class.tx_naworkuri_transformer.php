@@ -142,7 +142,6 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 				unset($params['L']); // remove L param to use system default
 			}
 		}
-
 		if (!isset($params['L'])) {
 			$params['L'] = $GLOBALS['TSFE']->sys_language_uid ? $GLOBALS['TSFE']->sys_language_uid : 0;
 			if (isset($params['cHash'])) {
@@ -155,7 +154,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		$this->language = $params['L'];
 
 		/* find cached urls with the given parameters from the current domain */
-		$cache_uri = $this->cache->findCachedUrl($params, $this->domain);
+		$cache_uri = $this->cache->findCachedUrl($params, $this->domain, $this->language);
 		if ($cache_uri !== FALSE) {
 			// append stored anchor
 			if ($anchor) {
@@ -432,7 +431,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			$id = $unencoded_params['id'];
 
 			try {
-				$path = Tx_NaworkUri_Cache_TransformationCache::getTransformation('id', $id);
+				$path = Tx_NaworkUri_Cache_TransformationCache::getTransformation('id', $id, $this->language);
 			} catch (Tx_NaworkUri_Exception_TransformationValueNotFoundException $ex) {
 
 				// get setup
@@ -454,25 +453,13 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(implode(',', $fields) . ',uid,pid,hidden,tx_naworkuri_exclude', $this->config->getPagePathTableName(), 'uid=' . $id . ' AND deleted=0', '', '', 1);
 					$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
-					if (!$row)
+					if (!$row) {
 						break; // no page found
-
-
-
-
-
-
-
-
-
-
-
-
-
+					}
 
 // translate pagepath if needed
-					if ($lang > 0) {
-						$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'pages_language_overlay', 'pid=' . $id . ' AND deleted=0 AND sys_language_uid=' . $lang, '', '', 1);
+					if ($this->language > 0) {
+						$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'pages_language_overlay', 'pid=' . $id . ' AND deleted=0 AND sys_language_uid=' . $this->language, '', '', 1);
 						$translated_row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
 						foreach ($fields as $field) {
 							if ($translated_row[$field]) {
@@ -500,7 +487,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 					$limit--;
 				}
 				$path = implode('/', $parts);
-				Tx_NaworkUri_Cache_TransformationCache::setTransformation('id', $unencoded_params['id'], $path);
+				Tx_NaworkUri_Cache_TransformationCache::setTransformation('id', $unencoded_params['id'], $path, $this->language);
 			}
 			$encoded_params['id'] = $unencoded_params['id'];
 			unset($unencoded_params['id']);

@@ -11,7 +11,11 @@
  * @author thorben
  */
 class Tx_NaworkUri_Exception_TransformationValueNotFoundException extends Exception {
-	//put your code here
+
+	public function __construct($parameter, $value, $language) {
+
+	}
+
 }
 
 ?>

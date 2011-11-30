@@ -6,7 +6,7 @@ if (!defined('TYPO3_MODE'))
 $TCA['tx_naworkuri_uri'] = Array(
 	'ctrl' => $TCA['tx_naworkuri_uri']['ctrl'],
 	'interface' => Array(
-		'showRecordFieldList' => 'sys_language_uid,l18n_parent,l18n_diffsource,domain,path,params'
+		'showRecordFieldList' => 'sys_language_uid,domain,path,params,hash_path,hash_params,locked,type,redirect_path,redirect_mode'
 	),
 	'feInterface' => $TCA['tx_naworkuri_uri']['feInterface'],
 	'columns' => Array(
@@ -66,15 +66,6 @@ $TCA['tx_naworkuri_uri'] = Array(
 				'type' => 'input',
 				'readOnly' => 1,
 				'size' => '30',
-			)
-		),
-		'debug_info' => Array(
-			'exclude' => 1,
-			'label' => 'debug_info',
-			'config' => Array(
-				'type' => 'text',
-				'cols' => '50',
-				'rows' => 5,
 			)
 		),
 		'locked' => Array(

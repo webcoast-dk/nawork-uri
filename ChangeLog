@@ -1,3 +1,7 @@
+2.1.12:: FIX: Hash fields were exclude fields so editors could not create urls
+	  :: FIX: SQL query for finding cached urls was wrong when in single domain mode
+	  :: FIX: l18n_parent and l18n_diffsource were still in showRecordFieldList, leading to error messages when saving a url
+
 2.1.11:: FIX: Domain is now a select box, to make is easier for editors
 	  :: FEATURE: Add hook for pre processing the redirect (type 2) record before
 

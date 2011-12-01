@@ -58,11 +58,8 @@ $TCA['tx_naworkuri_uri'] = Array(
 		'crdate' => 'crdate',
 		'cruser_id' => 'cruser_id',
 		'languageField' => 'sys_language_uid',
-		'transOrigPointerField' => 'l18n_parent',
-		'transOrigDiffSourceField' => 'l18n_diffsource',
 		'sortby' => 'crdate',
 		'delete' => 'deleted',
-//		'rootLevel' => '1',
 		'enablecolumns' => array(
 		),
 		'dynamicConfigFile' => t3lib_extMgm::extPath($_EXTKEY) . 'tca.php',

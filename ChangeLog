@@ -1,3 +1,8 @@
+2.1.14:: FIX: Cleaner code for handling of old urls
+	:: FEATURE: Clean URL cache from the backend clear cache menu
+	:: FIX: Added russian transliterations in default config
+	:: raised version to 2.1.14
+
 2.1.13:: FIX: Removed the language parent and diffsource completely from tca, were still in ext_tables.php
 
 2.1.12:: FIX: Hash fields were exclude fields so editors could not create urls

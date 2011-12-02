@@ -131,7 +131,7 @@ class tx_naworkuri_cache {
 		/* try to find an existing url that was too old to be retreived from cache */
 		$existingUrl = $this->findExistantUrl($pageUid, $language, $parameters, $path, $domain);
 		if ($existingUrl !== FALSE) {
-			$this->updateUrl($existingUrl['uid'], $pageUid, $language, $parameters);
+			$this->touchUrl($existingUrl['uid']);
 			$this->makeOldUrl($domain, $pageUid, $language, $parameters, $existingUrl['uid']);
 			return $existingUrl['path'];
 		}
@@ -139,7 +139,7 @@ class tx_naworkuri_cache {
 		$existingUrl = $this->findOldUrl($domain, $path);
 		if ($existingUrl != FALSE) {
 			$this->makeOldUrl($domain, $pageUid, $language, $parameters, $existingUrl['uid']);
-			$this->updateUrl($existingUrl['uid'], $pageUid, $language, $parameters);
+			$this->touchUrl($existingUrl['uid']);
 			return $path;
 		}
 		/* if we also did not find a url here we must create it */
@@ -204,6 +204,10 @@ class tx_naworkuri_cache {
 			'crdate',
 			'sys_language_uid'
 		));
+	}
+
+	private function touchUrl($uid) {
+		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'uid='.intval($uid), array('tstamp' => time()), array('tstamp'));
 	}
 
 	/**

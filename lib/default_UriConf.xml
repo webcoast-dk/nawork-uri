@@ -15,6 +15,67 @@
 		<char from="Ö" to="oe" />
 		<char from="Ü" to="ue" />
 		-->
+		<!-- cyrillic (russian) transliterations, not supported by glibc :: begin-->
+		<char from="а" to="a" />
+		<char from="б" to="b" />
+		<char from="в" to="v" />
+		<char from="г" to="g" />
+		<char from="д" to="d" />
+		<char from="е" to="e" />
+		<char from="ж" to="z" />
+		<char from="з" to="z" />
+		<char from="и" to="i" />
+		<char from="й" to="j" />
+		<char from="к" to="k" />
+		<char from="л" to="l" />
+		<char from="м" to="m" />
+		<char from="н" to="n" />
+		<char from="о" to="o" />
+		<char from="п" to="p" />
+		<char from="р" to="r" />
+		<char from="с" to="s" />
+		<char from="т" to="t" />
+		<char from="у" to="u" />
+		<char from="ф" to="f" />
+		<char from="х" to="ch" />
+		<char from="ц" to="c" />
+		<char from="ч" to="c" />
+		<char from="ш" to="s" />
+		<char from="щ" to="s" />
+		<char from="э" to="e" />
+		<char from="ю" to="ju" />
+		<char from="я" to="ja" />
+
+		<char from="А" to="a" />
+		<char from="Б" to="b" />
+		<char from="В" to="v" />
+		<char from="Г" to="g" />
+		<char from="Д" to="d" />
+		<char from="Е" to="e" />
+		<char from="Ж" to="z" />
+		<char from="З" to="z" />
+		<char from="И" to="i" />
+		<char from="Й" to="j" />
+		<char from="К" to="k" />
+		<char from="Л" to="l" />
+		<char from="М" to="m" />
+		<char from="Н" to="n" />
+		<char from="О" to="o" />
+		<char from="П" to="p" />
+		<char from="Р" to="r" />
+		<char from="С" to="s" />
+		<char from="Т" to="r" />
+		<char from="У" to="u" />
+		<char from="Ф" to="f" />
+		<char from="Х" to="z" />
+		<char from="Ц" to="c" />
+		<char from="Ч" to="c" />
+		<char from="Ш" to="s" />
+		<char from="Щ" to="s" />
+		<char from="Э" to="e" />
+		<char from="Ю" to="ju" />
+		<char from="Я" to="ja" />
+		<!-- cyrillic (russian) transliterations, not supported by glibc :: end -->
 	</transliteration>
 
 	<pagenotfound>

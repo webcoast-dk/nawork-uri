@@ -184,13 +184,22 @@ class tx_naworkuri implements t3lib_Singleton {
 				$newUrlParameters = array_merge($newUrlParameters, tx_naworkuri_helper::explode_parameters($this->redirectUrl['params']));
 			}
 			$newUrl = $translator->params2uri(tx_naworkuri_helper::implode_parameters($newUrlParameters), TRUE, TRUE);
-			$newUrl = tx_naworkuri_helper::finalizeUrl($newUrl);
+			$newUrl = tx_naworkuri_helper::finalizeUrl($newUrl, TRUE);
 			/* parse the current request url and prepend the scheme and host to the url */
-			$requestUrl = t3lib_div::getIndpEnv('TYPO3_REQUEST_URL');
-			$protocol = parse_url($requestUrl, PHP_URL_SCHEME);
-			$host = parse_url($requestUrl, PHP_URL_HOST);
-			$newUrl = $protocol . '://' . $host . $newUrl;
-			tx_naworkuri_helper::sendRedirect($newUrl, 301);
+			$requestUrl = parse_url(t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'));
+			$newUrl = parse_url($newUrl);
+			if (empty($newUrl['scheme']))
+				$newUrl['scheme'] = $requestUrl['scheme'];
+			if (empty($newUrl['host']))
+				$newUrl['host'] = $requestUrl['host'];
+			if (substr($newUrl['path'], 0, 1) != '/')
+				$newUrl['path'] = '/' . $newUrl['path'];
+			$uri = $newUrl['scheme'] . '://' . $newUrl['host'] . $newUrl['path'];
+			$queryParams = array_merge(tx_naworkuri_helper::explode_parameters($requestUrl['query']), tx_naworkuri_helper::explode_parameters($newUrl['query']));
+			if (!empty($queryParams)) {
+				$uri .= '?' . tx_naworkuri_helper::implode_parameters($queryParams);
+			}
+			tx_naworkuri_helper::sendRedirect($uri, 301);
 		} elseif (
 				$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1
 				&& empty($_GET['ADMCMD_prev'])

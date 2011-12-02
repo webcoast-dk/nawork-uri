@@ -159,6 +159,12 @@ class tx_naworkuri_helper {
 		return $domain;
 	}
 
+	/**
+	 *
+	 * @param string $url The original url
+	 * @param boolean $forRedirect Should be for a redirect or not
+	 * @return string The finalized url
+	 */
 	public static function finalizeUrl($url, $forRedirect = FALSE) {
 		$prefix = '';
 		if ($forRedirect) {

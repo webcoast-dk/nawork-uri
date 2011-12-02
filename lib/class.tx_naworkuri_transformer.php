@@ -331,7 +331,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			$param_name = (string) $uripart->parameter;
 			if ($param_name && isset($unencoded_params[$param_name])) {
 				try {
-					$value = Tx_NaworkUri_Cache_TransformationCache::getTransformation($param_name, $unencoded_params[$param_name]);
+					$value = Tx_NaworkUri_Cache_TransformationCache::getTransformation($param_name, $unencoded_params[$param_name], $this->language);
 				} catch (Tx_NaworkUri_Exception_TransformationValueNotFoundException $ex) {
 
 
@@ -389,7 +389,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 							}
 						}
 						$value = trim($value);
-						Tx_NaworkUri_Cache_TransformationCache::setTransformation($param_name, $unencoded_params[$param_name], $value);
+						Tx_NaworkUri_Cache_TransformationCache::setTransformation($param_name, $unencoded_params[$param_name], $value, $this->language);
 					}
 				}
 				$encoded_params[$param_name] = $unencoded_params[$param_name];

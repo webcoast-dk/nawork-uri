@@ -94,7 +94,7 @@ class tx_naworkuri_cache {
 	public function findExistantUrl($page, $language, $params, $path, $domain) {
 		$domainCondition = '';
 		if ($this->config->isMultiDomainEnabled()) {
-			$domainCondition = ' AND u.domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
+			$domainCondition = ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
 		}
 		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'page_uid=' . intval($page) . ' AND sys_language_uid=' . intval($language) . $domainCondition . ' AND hash_params="' . md5(tx_naworkuri_helper::implode_parameters($params)) . '" AND hash_path="' . md5($path) . '" AND deleted=0 AND type=0', '', '', 1);
 		if (is_array($urls) && count($urls) > 0) {

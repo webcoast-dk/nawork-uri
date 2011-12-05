@@ -1,7 +1,8 @@
+2.1.15:: FIX: domain condition in query for finding existant url contained table alias "u" which was not used anymore, so existant urls could not be found in multidomain setups
+
 2.1.14:: FIX: Cleaner code for handling of old urls
-	:: FEATURE: Clean URL cache from the backend clear cache menu
-	:: FIX: Added russian transliterations in default config
-	:: raised version to 2.1.14
+	  :: FEATURE: Clean URL cache from the backend clear cache menu
+	  :: FIX: Added russian transliterations in default config
 
 2.1.13:: FIX: Removed the language parent and diffsource completely from tca, were still in ext_tables.php
 
@@ -10,7 +11,7 @@
 	  :: FIX: l18n_parent and l18n_diffsource were still in showRecordFieldList, leading to error messages when saving a url
 
 2.1.11:: FIX: Domain is now a select box, to make is easier for editors
-	  :: FEATURE: Add hook for pre processing the redirect (type 2) record before
+	  :: FEATURE: Add hook for pre processing the redirect (type 2) record
 
 2.1.10:: FIX: Editors could not edit urls nor create redirects because they were saved on pid 0: Different storage page can be set in ext conf and can be updated via ext update functionality
 

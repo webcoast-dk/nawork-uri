@@ -1,3 +1,5 @@
+2.1.16:: FIX: Renamed class name for clear cache menu to be compatible with TYPO3 4.4
+
 2.1.15:: FIX: domain condition in query for finding existant url contained table alias "u" which was not used anymore, so existant urls could not be found in multidomain setups
 
 2.1.14:: FIX: Cleaner code for handling of old urls

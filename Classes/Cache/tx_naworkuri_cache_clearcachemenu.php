@@ -10,7 +10,7 @@
  *
  * @author thorben
  */
-class Tx_NaworkUri_Cache_ClearCacheMenu implements backend_cacheActionsHook {
+class tx_naworkuri_cache_clearcachemenu implements backend_cacheActionsHook {
 
 	/**
 	 *

@@ -121,32 +121,38 @@ class tx_naworkuri implements t3lib_Singleton {
 				&& $link['LD']['url']
 		) {
 			list($path, $params) = explode('?', $link['LD']['totalURL']);
-			if (t3lib_div::int_from_ver(TYPO3_version) > 4002000) {
-				$params = urldecode($params);
-			}
+			$params = urldecode($params);
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, (boolean) $extConf['MULTIDOMAIN']);
-			$url = $translator->params2uri($params);
-			$link['LD']['totalURL'] = tx_naworkuri_helper::finalizeUrl($url);
-			/* add hook for post processing the url */
-			if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'])) {
-				$hookParams = array(
-					'url' => $url,
-					'params' => tx_naworkuri_helper::explode_parameters($params),
-					'LD' => $link['LD']
-				);
-				foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'] as $funcRef) {
-					t3lib_div::callUserFunction($funcRef, $hookParams, $this);
+			try {
+				$url = $translator->params2uri($params);
+				$link['LD']['totalURL'] = tx_naworkuri_helper::finalizeUrl($url);
+				/* add hook for post processing the url */
+				if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'])) {
+					$hookParams = array(
+						'url' => $url,
+						'params' => tx_naworkuri_helper::explode_parameters($params),
+						'LD' => $link['LD']
+					);
+					foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'] as $funcRef) {
+						t3lib_div::callUserFunction($funcRef, $hookParams, $this);
+					}
+					if ($hookParams['url'] !== FALSE) { // if the url is not false set it
+						$link['LD']['totalURL'] = $hookParams['url'];
+					}
 				}
-				if ($hookParams['url'] !== FALSE) { // if the url is not false set it
-					$link['LD']['totalURL'] = $hookParams['url'];
+				if (!preg_match('/https?:\/\//', $link['LD']['totalURL']) && !empty($GLOBALS['TSFE']->config['config']['absRefPrefix'])) {
+					if (substr($link['LD']['totalURL'], 0, strlen($GLOBALS['TSFE']->config['config']['absRefPrefix'])) != $GLOBALS['TSFE']->config['config']['absRefPrefix']) {
+						$link['LD']['totalURL'] = $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $link['LD']['totalURL'];
+					}
 				}
-			}
-			if (!preg_match('/https?:\/\//', $link['LD']['totalURL']) && !empty($GLOBALS['TSFE']->config['config']['absRefPrefix'])) {
-				if (substr($link['LD']['totalURL'], 0, strlen($GLOBALS['TSFE']->config['config']['absRefPrefix'])) != $GLOBALS['TSFE']->config['config']['absRefPrefix']) {
-					$link['LD']['totalURL'] = $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $link['LD']['totalURL'];
-				}
+			} catch (Tx_NaworkUri_Exception_UrlIsNotUniqueException $ex) {
+				/* log unique failure to belog */
+				tx_naworkuri_helper::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . tx_naworkuri_helper::implode_parameters($ex->getParameters()), tx_naworkuri_helper::LOG_SEVERITY_ERROR);
+			} catch (Tx_NaworkUri_Exception_DbErrorException $ex) {
+				/* log db errors to belog */
+				tx_naworkuri_helper::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', tx_naworkuri_helper::LOG_SEVERITY_ERROR);
 			}
 		}
 	}

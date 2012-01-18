@@ -12,7 +12,7 @@ CREATE TABLE pages (
 #
 
 CREATE TABLE pages_language_overlay (
-	tx_naworkuri_pathsegment varchar(30) default '',
+	tx_naworkuri_pathsegment varchar(64) default '',
 	tx_naworkuri_exclude tinyint(1) unsigned default '0'
 );
 
@@ -36,8 +36,7 @@ CREATE TABLE tx_naworkuri_uri (
     crdate int(11) DEFAULT '0' NOT NULL,
     cruser_id int(11) DEFAULT '0' NOT NULL,
     sys_language_uid int(11) DEFAULT '0' NOT NULL,
-    deleted tinyint(4) DEFAULT '0' NOT NULL,
-	domain varchar(255) DEFAULT '' NOT NULL,
+    domain varchar(255) DEFAULT '' NOT NULL,
     path varchar(255) DEFAULT '' NOT NULL,
     params tinytext NOT NULL,
 	hash_path varchar(32) DEFAULT '' NOT NULL,
@@ -46,9 +45,12 @@ CREATE TABLE tx_naworkuri_uri (
 	type tinyint(1) DEFAULT '0' NOT NULL,
 	redirect_path varchar(255) DEFAULT '' NOT NULL,
 	redirect_mode int(3) DEFAULT '301' NOT NULL,
+	original_path varchar(255) DEFAULT '' NOT NULL,
 
     PRIMARY KEY (uid),
     KEY parent (pid),
-    KEY domain_path (domain,hash_path),
-	KEY cache (page_uid,sys_language_uid,domain,hash_params,deleted,type)
+    UNIQUE KEY domain_path (domain,hash_path),
+	KEY cache (page_uid,sys_language_uid,domain,hash_params,type),
+	KEY hash_path (hash_path),
+	KEY unique_params (type,hash_params)
 );

@@ -6,6 +6,7 @@ class tx_naworkuri_helper_testcase extends tx_phpunit_testcase {
 
 	protected function setUp() {
 		$this->test_subject = new tx_naworkuri_helper();
+		$this->configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', 'typo3conf/ext/nawork_uri/tests/test_UriConf.xml');
 	}
 
 	/**
@@ -18,8 +19,8 @@ class tx_naworkuri_helper_testcase extends tx_phpunit_testcase {
 
 	public function provider_test_param_implode(){
 		return array(
-			array(array('foo[bar]'=>123,'id'=>2,'L'=>1 ), 'L=1&foo[bar]=123&id=2' ),
-			array(array('id'=>2,'foo[bar]'=>123,'L'=>1 ), 'L=1&foo[bar]=123&id=2' ),
+			array(array('foo[bar]'=>123,'id'=>2,'L'=>1 ), 'L=1&foo%5Bbar%5D=123&id=2' ),
+			array(array('id'=>2,'foo[bar]'=>123,'L'=>1 ), 'L=1&foo%5Bbar%5D=123&id=2' ),
 		);
 	}
 

@@ -188,35 +188,26 @@ class tx_naworkuri_PageInfo {
 	public function modPageUris($params, &$ajaxObj) {
 		$mode = t3lib_div::_GP('mode');
 		$uid = t3lib_div::_GP('uid');
+		$db = $GLOBALS['TYPO3_DB'];
+		/* @var $db t3lib_db */
 
 		switch ($mode) {
 			case 'delete':
-				/* @var $tceMain t3lib_TCEmain */
-				$tceMain = t3lib_div::makeInstance('t3lib_TCEmain');
-				$tceMain->start(array(), array('tx_naworkuri_uri' => array(intval($uid) => array('delete' => 1))));
-				$tceMain->process_cmdmap();
+				$db->exec_DELETEquery('tx_naworkuri_uri', 'uid='.intval($uid));
 				break;
 			case 'delete_multiple':
 				$uids = t3lib_div::trimExplode(',', t3lib_div::_GP('uids'));
 				$records = array();
 				foreach ($uids as $u) {
-					$records[] = intval($u);
+					$records[] = 'uid='.intval($u);
 				}
-				$GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_naworkuri_uri', 'uid IN (' . implode(',', $records) . ')', array('deleted' => 1));
+				$db->exec_DELETEquery('tx_naworkuri_uri', implode(' OR ', $records));
 				break;
 			case 'lock':
 				$GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_naworkuri_uri', 'uid=' . intval($uid), array('locked' => 1), array('locked'));
-				/* @var $tceMain t3lib_TCEmain */
-//				$tceMain = t3lib_div::makeInstance('t3lib_TCEmain');
-//				$tceMain->start(array('tx_naworkuri_uri' => array(intval($uid) => array('locked' => 1))), array());
-//				$tceMain->process_datamap();
 				break;
 			case 'unlock':
 				$GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_naworkuri_uri', 'uid=' . intval($uid), array('locked' => 0), array('locked'));
-				/* @var $tceMain t3lib_TCEmain */
-//				$tceMain = t3lib_div::makeInstance('t3lib_TCEmain');
-//				$tceMain->start(array('tx_naworkuri_uri' => array(intval($uid) => array('locked' => 0))), array());
-//				$tceMain->process_datamap();
 				break;
 		}
 	}

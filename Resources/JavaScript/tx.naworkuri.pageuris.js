@@ -201,6 +201,7 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 			new Ext.form.ComboBox({
 				id: 'filterShow',
 				store: [
+				[-1, 'All URLs'],
 				[0, 'Normal URLs'],
 				[1, 'Locked URLs'],
 				[2, 'Normal & locked URLs'],
@@ -331,7 +332,6 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 			this.getColumnModel().setHidden(6, false);
 			this.getColumnModel().setHidden(4, true);
 		}
-		console.debug(show);
 	},
 
 	/**

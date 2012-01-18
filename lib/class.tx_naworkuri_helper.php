@@ -6,6 +6,11 @@
 
 class tx_naworkuri_helper {
 
+	const LOG_SEVERITY_INFO = 0;
+	const LOG_SEVERITY_ERROR = 1;
+	const LOG_SEVERITY_SYS = 2;
+	const LOG_SEVERITY_SECURITY = 3;
+
 	/**
 	 * Explode URI Parameters
 	 *
@@ -33,14 +38,18 @@ class tx_naworkuri_helper {
 	 * @param array $params_array Parameter Array
 	 * @return string Imploded Parameters
 	 */
-	public static function implode_parameters($params_array) {
+	public static function implode_parameters($params_array, $rawurlencode = TRUE) {
 		ksort($params_array);
 		$result = '';
 		$i = 0;
 		foreach ($params_array as $key => $value) {
 			if ($i > 0)
 				$result .= '&';
-			$result .= $key . '=' . $value;
+			if ($rawurlencode) {
+				$result .= rawurlencode($key) . '=' . rawurlencode($value);
+			} else {
+				$result .= $key . '=' . $value;
+			}
 			$i++;
 		}
 		return $result;
@@ -193,6 +202,86 @@ class tx_naworkuri_helper {
 			$encoding = 'en_US';
 		}
 		return $encoding;
+	}
+
+	/**
+	 * This function filters the given parameters if there exists a configuration for it.
+	 * If the parameter is encoded with a valuemap the values are checked too to avoid are lookup
+	 * with a value that is not encoded
+	 *
+	 * @param array $parameters
+	 */
+	public static function filterConfiguredParameters($parameters) {
+		$encodableParameters = array();
+		$unencodableParameters = array();
+		$parameterNames = array_keys($parameters);
+		$configuration = t3lib_div::makeInstance('tx_naworkuri_configReader');
+		/* @var $configuration tx_naworkuri_configReader */
+		/* check predefined parts */
+		foreach ($configuration->getPredefinedParts() as $parameterConfiguration) {
+			/* @var $parameterConfiguration SimpleXMLElement */
+			$parameterName = (string) $parameterConfiguration->parameter;
+			if (in_array($parameterName, $parameterNames)) {
+				$encodableParameters[$parameterName] = $parameters[$parameterName];
+			}
+		}
+		/* check the uri parts */
+		foreach ($configuration->getUriParts() as $parameterConfiguration) {
+			$parameterName = (string) $parameterConfiguration->parameter;
+			if (in_array($parameterName, $parameterNames)) {
+				$encodableParameters[$parameterName] = $parameters[$parameterName];
+			}
+		}
+		/* check the value maps */
+		foreach ($configuration->getValueMaps() as $parameterConfiguration) {
+			$parameterName = (string) $parameterConfiguration->parameter;
+			if (in_array($parameterName, $parameterNames)) {
+				foreach ($parameterConfiguration->children() as $child) {
+					/* @var $child SimpleXMLElement */
+					if ($child->getName() == 'value') {
+						if ((string) $child == $parameters[$parameterName]) {
+							$encodableParameters[$parameterName] = $parameters[$parameterName];
+						}
+					}
+				}
+			}
+		}
+		/* push the id */
+		$encodableParameters['id'] = self::aliasToId($parameters['id']);
+		ksort($encodableParameters);
+		if (count($parameters) > count($encodableParameters) && array_key_exists('cHash', $encodableParameters)) {
+			unset($encodableParameters['cHash']);
+		}
+		$unencodableParameters = array_diff($parameters, $encodableParameters);
+		return array($encodableParameters, $unencodableParameters);
+	}
+
+	public static function aliasToId($alias) {
+		if (t3lib_div::testInt($alias)) {
+			return $alias;
+		}
+		$db = $GLOBALS['TYPO3_DB'];
+		$configuration = t3lib_div::makeInstance('tx_naworkuri_configReader');
+		/* @var $db t3lib_db */
+		/* @var $configuration tx_naworkuri_configReader */
+		$result = $db->exec_SELECTgetRows('uid', $configuration->getPageTable(), 'alias=' . $db->fullQuoteStr($alias, $configuration->getPageTable()));
+		if (is_array($result) && count($result) > 0) {
+			return $result[0]['uid'];
+		}
+		return $alias;
+	}
+
+	public static function log($msg, $severity = self::LOG_SEVERITY_INFO) {
+		$db = $GLOBALS['TYPO3_DB'];
+		/* @var $db t3lib_db */
+		$db->exec_INSERTquery('sys_log', array(
+			'details' => $msg,
+			'error' => $severity,
+			'tstamp' => time()
+		), array(
+			'error',
+			'tstamp'
+		));
 	}
 
 }

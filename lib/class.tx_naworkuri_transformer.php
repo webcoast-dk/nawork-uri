@@ -9,8 +9,6 @@ require_once (t3lib_extMgm::extPath('nawork_uri') . '/lib/class.tx_naworkuri_hel
  * Class for creating path uris
  *
  * @author Martin Ficzel
- * @TODO make the Language Parameter configurable and optional
- * @TODO add proper handling domain records
  *
  */
 class tx_naworkuri_transformer implements t3lib_Singleton {
@@ -127,6 +125,11 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			$params = $orgParams;
 		}
 
+		/* we must have an integer id so if it is now lookit up */
+		if(!t3lib_div::testInt($params['id'])) {
+			$params['id'] = tx_naworkuri_helper::aliasToId($params['id']);
+		}
+
 		/* check if type should be casted to int to avoid strange behavior when creating links */
 		if ($this->config->getCastTypeToInt()) {
 			$type = !empty($params['type']) ? $params['type'] : t3lib_div::_GP('type');
@@ -152,15 +155,19 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			}
 		}
 		$this->language = $params['L'];
-
 		/* find cached urls with the given parameters from the current domain */
-		$cache_uri = $this->cache->findCachedUrl($params, $this->domain, $this->language);
-		if ($cache_uri !== FALSE) {
-			// append stored anchor
-			if ($anchor) {
-				$cache_uri .= '#' . $anchor;
+		list($encodableParameters, $unencodableParameters) = tx_naworkuri_helper::filterConfiguredParameters($params);
+		$cachedUri = $this->cache->findCachedUrl($encodableParameters, $this->domain, $this->language);
+		if ($cachedUri !== FALSE) {
+			/* compute the unencoded parameters */
+			if(count($unencodableParameters) > 0) {
+				$cachedUri .= '?'.tx_naworkuri_helper::implode_parameters($unencodableParameters);
 			}
-			return $cache_uri;
+			/* append the anchor if not empty */
+			if ($anchor) {
+				$cachedUri .= '#' . $anchor;
+			}
+			return $cachedUri;
 		} elseif ($dontCreateNewUrls && $cache_uri === false) {
 			return false;
 		}
@@ -389,6 +396,9 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 							}
 						}
 						$value = trim($value);
+						if(empty($value)) {
+							$value = $unencoded_params[$param_name];
+						}
 						Tx_NaworkUri_Cache_TransformationCache::setTransformation($param_name, $unencoded_params[$param_name], $value, $this->language);
 					}
 				}

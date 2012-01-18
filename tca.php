@@ -77,6 +77,7 @@ $TCA['tx_naworkuri_uri'] = Array(
 			)
 		),
 		'type' => array(
+			'exclude' => '1',
 			'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.type',
 			'config' => array(
 				'type' => 'select',
@@ -112,13 +113,13 @@ $TCA['tx_naworkuri_uri'] = Array(
 	),
 	'types' => array(
 		'0' => array(
-			'showitem' => 'path, params, locked'
+			'showitem' => 'type,path, params, locked'
 		),
 		'1' => array(
-			'showitem' => 'path'
+			'showitem' => 'type,path'
 		),
 		'2' => array(
-			'showitem' => 'path, redirect_path, redirect_mode'
+			'showitem' => 'type,path, redirect_path, redirect_mode'
 		)
 	)
 );

@@ -59,7 +59,8 @@ $TCA['tx_naworkuri_uri'] = Array(
 		'cruser_id' => 'cruser_id',
 		'languageField' => 'sys_language_uid',
 		'sortby' => 'crdate',
-		'delete' => 'deleted',
+		'delete' => '',
+		'rootLevel' => '-1',
 		'enablecolumns' => array(
 		),
 		'dynamicConfigFile' => t3lib_extMgm::extPath($_EXTKEY) . 'tca.php',

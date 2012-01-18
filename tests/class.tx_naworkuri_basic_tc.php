@@ -98,6 +98,7 @@ class tx_naworkuri_basic_tc extends tx_phpunit_testcase {
 				type tinyint(1) DEFAULT '0' NOT NULL,
 				redirect_path varchar(255) DEFAULT '' NOT NULL,
 				redirect_mode int(3) DEFAULT '301' NOT NULL,
+				original_path varchar(255) DEFAULT '' NOT NULL,
 
 				PRIMARY KEY (uid),
 				KEY parent (pid),

@@ -39,7 +39,7 @@ $TCA['tx_naworkuri_uri'] = Array(
 			'config' => Array(
 				'type' => 'input',
 				'size' => '60',
-				'eval' => 'tx_naworkuri_path'
+//				'eval' => 'tx_naworkuri_path'
 			)
 		),
 		'params' => Array(

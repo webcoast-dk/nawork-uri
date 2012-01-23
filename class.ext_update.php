@@ -35,7 +35,7 @@ class ext_update {
 			switch ($this->mode) {
 				case ext_update::TX_NAWORKURI_UPDATE_MODE_COOLURI:
 					break;
-				case ext_update::Tx_NAWORKURI_UPDATE_MODE_STORAGE:
+				case ext_update::TX_NAWORKURI_UPDATE_MODE_STORAGE:
 					$this->db->exec_UPDATEquery('tx_naworkuri_uri', '', array('pid' => intval($this->extConf['storagePage'])));
 					header('Location: ' . t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'));
 					break;
@@ -63,7 +63,9 @@ class ext_update {
 		if (t3lib_div::_GP('tx_naworkuri_update_mode') == 'cooluri') {
 			$this->mode = ext_update::TX_NAWORKURI_UPDATE_MODE_COOLURI;
 		} elseif (t3lib_div::_GP('tx_naworkuri_update_mode') == 'storage') {
-			$this->mode = ext_update::Tx_NAWORKURI_UPDATE_MODE_STORAGE;
+			$this->mode = ext_update::TX_NAWORKURI_UPDATE_MODE_STORAGE;
+		} elseif (t3lib_div::_GP('tx_naworkuri_update_mode') == 'deleted') {
+			$this->mode = self::TX_NAWORKURI_UPDATE_MODE_CLEANUP_DELETE;
 		}
 		$this->numRecords = $this->countRecords();
 		$this->checkIfCoolUriWasInstalled();
@@ -130,6 +132,7 @@ class ext_update {
 				} else {
 					$output .= '<p>URL records are up-to-date! There is nothing to do!</p>';
 				}
+				break;
 			default:
 				if ($this->numRecords > 0) {
 					$output .= '<p>There are ' . $this->numRecords . ' records that need to be updated!</p>';

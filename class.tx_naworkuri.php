@@ -284,7 +284,7 @@ class tx_naworkuri implements t3lib_Singleton {
 				}
 				$ignoreTimeout = true;
 				$uri = $translator->params2uri($params, $dontCreateNewUrls, $ignoreTimeout);
-				if (!($_SERVER['REQUEST_METHOD'] == 'POST') && ($path == 'index.php' || $path == '') && $uri !== false) {
+				if (!($_SERVER['REQUEST_METHOD'] == 'POST') && ($path == 'index.php' || $path == '') && $uri !== false && $uri != $GLOBALS['TSFE']->siteScript) {
 					$uri = tx_naworkuri_helper::finalizeUrl($uri, TRUE); // TRUE is for redirect, this applies "/" by default and the baseURL if set
 					tx_naworkuri_helper::sendRedirect($uri, $configReader->getRedirectStatus());
 					exit;

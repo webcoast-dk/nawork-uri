@@ -1,3 +1,6 @@
+2.1.21
+* FIX: Use limit parameter for query when looking for urls based on parameter hash in unique function to avoid fetching unknown numbers of records and possibly run into the php memory limit
+
 2.1.20
 * FIX: Removed the deleted field of url table from the cache's sql queries. This caused sql errors if the field was removed from database due to current database updates
 

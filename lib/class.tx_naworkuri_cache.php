@@ -73,7 +73,7 @@ class tx_naworkuri_cache {
 			$domainCondition = ' AND u.domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
 		}
 		$urls = $this->db->exec_SELECTgetRows(
-				'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.page_uid=' . intval($uid) . ' AND sys_language_uid=' . intval($language) . ' AND hash_params="' . md5(tx_naworkuri_helper::implode_parameters($params, FALSE)) . '" AND u.deleted=0 ' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND p.uid=u.page_uid AND type=0 AND ( u.tstamp > ' . (time() - $this->timeout) . ' OR locked=1 )', // lets find type 0 urls only from the cache
+				'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.page_uid=' . intval($uid) . ' AND sys_language_uid=' . intval($language) . ' AND hash_params="' . md5(tx_naworkuri_helper::implode_parameters($params, FALSE)) . '" ' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND p.uid=u.page_uid AND type=0 AND ( u.tstamp > ' . (time() - $this->timeout) . ' OR locked=1 )', // lets find type 0 urls only from the cache
 				'', '', '1'
 		);
 		if (is_array($urls) && count($urls) > 0) {
@@ -96,7 +96,7 @@ class tx_naworkuri_cache {
 		if ($this->config->isMultiDomainEnabled()) {
 			$domainCondition = ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
 		}
-		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'page_uid=' . intval($page) . ' AND sys_language_uid=' . intval($language) . $domainCondition . ' AND hash_params="' . md5(tx_naworkuri_helper::implode_parameters($params, FALSE)) . '" AND hash_path="' . md5($path) . '" AND deleted=0 AND type=0', '', '', 1);
+		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'page_uid=' . intval($page) . ' AND sys_language_uid=' . intval($language) . $domainCondition . ' AND hash_params="' . md5(tx_naworkuri_helper::implode_parameters($params, FALSE)) . '" AND hash_path="' . md5($path) . '" AND type=0', '', '', 1);
 		if (is_array($urls) && count($urls) > 0) {
 			return $urls[0];
 		}
@@ -115,7 +115,7 @@ class tx_naworkuri_cache {
 		if ($this->config->isMultiDomainEnabled()) {
 			$domainCondition = ' AND u.domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
 		}
-		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'hash_path="' . md5($path) . '" AND deleted=0 AND type=1' . $domainCondition, '', '', 1);
+		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'hash_path="' . md5($path) . '" AND type=1' . $domainCondition, '', '', 1);
 		if (is_array($urls) && count($urls) > 0) {
 			return $urls[0];
 		}
@@ -192,7 +192,7 @@ class tx_naworkuri_cache {
 			$domainCondition = ' AND u.domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
 		}
 		$uris = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
-				'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.deleted=0 AND u.hash_path="' . $hash_path . '"' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND (p.uid=u.page_uid OR u.type=2)'
+				'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.hash_path="' . $hash_path . '"' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND (p.uid=u.page_uid OR u.type=2)'
 		);
 
 		if (is_array($uris) && count($uris) > 0) {

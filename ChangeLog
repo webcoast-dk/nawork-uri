@@ -1,3 +1,14 @@
+2.1.20
+* FIX: Removed the deleted field of url table from the cache's sql queries. This caused sql errors if the field was removed from database due to current database updates
+
+2.1.19
+* FIX: if a website was called with, e.g. host/?type=123 and type=123 is not in config it did endless redirects due to return the same url over and over again
+       now the return url is compared to the initial one and the redirect is only made if they are different
+
+2.1.18
+* FIX: fixed some bugs that avoid the ext_update script to work properly
+* FIX: removed the eval from the path field, to manually make paths without the appendix
+
 2.1.17
 * FIX: Additional index on url table on the column hash_path which increases the unique function's speed
 * FIX: Path segment in overlay was only 30 chars long, is now the same as for pages (64 chars)

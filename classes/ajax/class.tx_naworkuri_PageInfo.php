@@ -106,7 +106,7 @@ class tx_naworkuri_PageInfo {
 		$output = '';
 		if ($pid > 0) {
 			$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
-			$uriRes = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('u.uid as uid,u.path as path,u.redirect_path as redirect_path,u.params as params,u.locked as locked,u.domain as domain,u.type as type,(SELECT flag FROM sys_language l WHERE l.uid = u.sys_language_uid AND u.sys_language_uid > 0) as flag', 'tx_naworkuri_uri u', '((u.page_uid=' . intval($pid) . ' AND u.type!=2 AND u.page_uid>0) OR u.type=2) AND u.deleted=0' . $andWhereString, '', 'path ASC');
+			$uriRes = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('u.uid as uid,u.path as path,u.redirect_path as redirect_path,u.params as params,u.locked as locked,u.domain as domain,u.type as type,(SELECT flag FROM sys_language l WHERE l.uid = u.sys_language_uid AND u.sys_language_uid > 0) as flag', 'tx_naworkuri_uri u', '((u.page_uid=' . intval($pid) . ' AND u.type!=2 AND u.page_uid>0) OR u.type=2)' . $andWhereString, '', 'path ASC');
 			$total = count($uriRes);
 			$urls = array();
 			$counter = 0;

@@ -283,12 +283,20 @@ class tx_naworkuri implements t3lib_Singleton {
 					}
 				}
 				$ignoreTimeout = true;
-				$uri = $translator->params2uri($params, $dontCreateNewUrls, $ignoreTimeout);
-				if (!($_SERVER['REQUEST_METHOD'] == 'POST') && ($path == 'index.php' || $path == '') && $uri !== false && $uri != $GLOBALS['TSFE']->siteScript) {
-					$uri = tx_naworkuri_helper::finalizeUrl($uri, TRUE); // TRUE is for redirect, this applies "/" by default and the baseURL if set
-					tx_naworkuri_helper::sendRedirect($uri, $configReader->getRedirectStatus());
-					exit;
-				}
+				try {
+					$uri = $translator->params2uri($params, $dontCreateNewUrls, $ignoreTimeout);
+					if (!($_SERVER['REQUEST_METHOD'] == 'POST') && ($path == 'index.php' || $path == '') && $uri !== false && $uri != $GLOBALS['TSFE']->siteScript) {
+						$uri = tx_naworkuri_helper::finalizeUrl($uri, TRUE); // TRUE is for redirect, this applies "/" by default and the baseURL if set
+						tx_naworkuri_helper::sendRedirect($uri, $configReader->getRedirectStatus());
+						exit;
+					}
+				} catch (Tx_NaworkUri_Exception_UrlIsNotUniqueException $ex) {
+                    /* log unique failure to belog */
+                    tx_naworkuri_helper::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . tx_naworkuri_helper::implode_parameters($ex->getParameters()), tx_naworkuri_helper::LOG_SEVERITY_ERROR);
+                } catch (Tx_NaworkUri_Exception_DbErrorException $ex) {
+                    /* log db errors to belog */
+                    tx_naworkuri_helper::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', tx_naworkuri_helper::LOG_SEVERITY_ERROR);
+                }
 			}
 		}
 	}

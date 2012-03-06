@@ -121,7 +121,7 @@ class tx_naworkuri implements t3lib_Singleton {
 				&& $link['LD']['url']
 		) {
 			list($path, $params) = explode('?', $link['LD']['totalURL']);
-			$params = urldecode($params);
+			$params = rawurldecode(html_entity_decode($params));
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, (boolean) $extConf['MULTIDOMAIN']);
@@ -150,9 +150,21 @@ class tx_naworkuri implements t3lib_Singleton {
 			} catch (Tx_NaworkUri_Exception_UrlIsNotUniqueException $ex) {
 				/* log unique failure to belog */
 				tx_naworkuri_helper::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . tx_naworkuri_helper::implode_parameters($ex->getParameters()), tx_naworkuri_helper::LOG_SEVERITY_ERROR);
+				$totalURL = 'index.php';
+				if(!empty($params)) {
+					$totalURL .= '?'.tx_naworkuri_helper::implode_parameters(tx_naworkuri_helper::explode_parameters($params));
+				}
+				$totalURL = tx_naworkuri_helper::finalizeUrl($totalURL);
+				$link['LD']['totalURL'] = $totalURL;
 			} catch (Tx_NaworkUri_Exception_DbErrorException $ex) {
 				/* log db errors to belog */
 				tx_naworkuri_helper::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', tx_naworkuri_helper::LOG_SEVERITY_ERROR);
+				$totalURL = 'index.php';
+				if(!empty($params)) {
+					$totalURL .= '?'.tx_naworkuri_helper::implode_parameters(tx_naworkuri_helper::explode_parameters($params));
+				}
+				$totalURL = tx_naworkuri_helper::finalizeUrl($totalURL);
+				$link['LD']['totalURL'] = $totalURL;
 			}
 		}
 	}

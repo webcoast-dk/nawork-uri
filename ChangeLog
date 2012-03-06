@@ -1,3 +1,7 @@
+2.1.22
+* FIX: missing try-catch around uri generation in redirect2Uri function, the exception is caught and logged to be log
+* FIX: urlencoding is now correct when the path cannot be encoded, the parameter names must not be encoded
+
 2.1.21
 * FIX: Use limit parameter for query when looking for urls based on parameter hash in unique function to avoid fetching unknown numbers of records and possibly run into the php memory limit
 

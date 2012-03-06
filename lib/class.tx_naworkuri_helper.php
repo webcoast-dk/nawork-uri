@@ -38,21 +38,13 @@ class tx_naworkuri_helper {
 	 * @param array $params_array Parameter Array
 	 * @return string Imploded Parameters
 	 */
-	public static function implode_parameters($params_array, $rawurlencode = TRUE) {
+	public static function implode_parameters($params_array, $encode = TRUE) {
 		ksort($params_array);
-		$result = '';
-		$i = 0;
+		$processedParameters = array();
 		foreach ($params_array as $key => $value) {
-			if ($i > 0)
-				$result .= '&';
-			if ($rawurlencode) {
-				$result .= rawurlencode($key) . '=' . rawurlencode($value);
-			} else {
-				$result .= $key . '=' . $value;
-			}
-			$i++;
+			$processedParameters[] = implode('=', array($key, $encode ? rawurlencode($value) : $value));
 		}
-		return $result;
+		return implode('&', $processedParameters);
 	}
 
 	/**

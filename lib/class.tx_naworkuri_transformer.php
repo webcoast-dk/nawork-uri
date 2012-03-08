@@ -378,7 +378,23 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 						if (empty($selectFields) || empty($foreignTable) || empty($mmTable)) {
 							$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(empty($selectFields) ? '*' : $selectFields, $table, $where_part, '', '', 1);
 						} else {
-							$dbres = $GLOBALS['TYPO3_DB']->exec_SELECT_mm_query($selectFields, $table, $mmTable, $foreignTable, 'AND ' . $where_part, '', '', 1);
+							$dbres = $GLOBALS['TYPO3_DB']->exec_SELECT_mm_query($selectFields, $table, $mmTable, $foreignTable, $where_part, '', '', 1);
+						}
+						/* 
+						 * if the query for a record with sys_language_uid 0 returns nothing let's try it with the current language
+						 * this must be added to avoid an empty uri part if e.g. a news record is only available in english
+						 */
+						if ($GLOBALS['TYPO3_DB']->sql_num_rows($dbres) < 1 && $this->language > 0) {
+							// find fields
+							$where_part = str_replace('###', $unencoded_params[$param_name], $where);
+							if (!empty($where_part) && !empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
+								$where_part .= ' AND ' . $GLOBALS['TCA'][$table]['ctrl']['languageField'] . '=' . $this->language;
+							}
+							if (empty($selectFields) || empty($foreignTable) || empty($mmTable)) {
+								$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(empty($selectFields) ? '*' : $selectFields, $table, $where_part, '', '', 1);
+							} else {
+								$dbres = $GLOBALS['TYPO3_DB']->exec_SELECT_mm_query($selectFields, $table, $mmTable, $foreignTable, $where_part, '', '', 1);
+							}
 						}
 						if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres)) {
 							if (!empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {

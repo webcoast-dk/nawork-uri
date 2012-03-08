@@ -1,3 +1,6 @@
+2.1.23
+* FIX: an empty uri part was returned if a record was not available in default language
+
 2.1.22
 * FIX: missing try-catch around uri generation in redirect2Uri function, the exception is caught and logged to be log
 * FIX: urlencoding is now correct when the path cannot be encoded, the parameter names must not be encoded

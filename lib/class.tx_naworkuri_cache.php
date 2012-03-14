@@ -1,60 +1,177 @@
 <?php
 
-require_once (t3lib_extMgm::extPath('nawork_uri').'/lib/class.tx_naworkuri_helper.php');
+require_once (t3lib_extMgm::extPath('nawork_uri') . '/lib/class.tx_naworkuri_helper.php');
 
 class tx_naworkuri_cache {
+	const TX_NAWORKURI_URI_TYPE_NORMAL = 0;
+	const TX_NAWORKURI_URI_TYPE_OLD = 1;
+	const TX_NAWORKURI_URI_TYPE_REDIRECT = 2;
 
 	private $helper;
+
 	/**
 	 *
 	 * @var tx_naworkuri_configReader
 	 */
 	private $config;
-	private $timeout = false;
+	private $timeout = 86400;
+
+	/**
+	 *
+	 * @var t3lib_db
+	 */
+	private $db = null;
 
 	/**
 	 * Constructor
 	 *
 	 */
-	public function __construct ($config){
+	public function __construct($config) {
 		$this->helper = t3lib_div::makeInstance('tx_naworkuri_helper');
 		$this->config = $config;
-		$this->setTimeout(10); // set timeout to 10 seconds by default to avoid re creating while generating a page
+		$this->db = $GLOBALS['TYPO3_DB'];
+		$this->db->store_lastBuiltQuery = 1;
 	}
 
 	/**
-	 * set Timeout for cache
-	 * @param int $to
-	 * @return unknown_type
+	 * Set the timeout for the url cache validity
+	 *
+	 * @param int $time Number of seconds the url should be valid, defaults to 86400 (= one day)
 	 */
-	public function setTimeout ($to){
-		$this->timeout = $to;
+	public function setTimeout($time = 86400) {
+		$this->timeout = $time;
+//		$this->timeout = 0;
 	}
 
-	/*
-	 * Read a previously created URI from cache
+	/**
+	 * Find a url based on the parameters and the domain
 	 *
-	 * @param array $params Parameter Array
-	 * @param string $domain current Domain
-	 * @return string URI if found otherwise false
+	 * @param array $params
+	 * @param string $domain
 	 */
-	public function read_params ($params, $domain, $ignoreTimeout = false){
-		$uid   = (int)$params['id'];
-		$lang  = (int)($params['L'])?$params['L']:0;
-
+	public function findCachedUrl($params, $domain, $language) {
+		$uid = (int) $params['id'];
 		unset($params['id']);
 		unset($params['L']);
-
-		$imploded_params =$this->helper->implode_parameters($params);
-		//debug(array($uid, $lang, $domain, $imploded_params));
-
-		$row = $this->read($uid, $lang, $domain, $imploded_params, $ignoreTimeout);
-		if (is_array($row)) {
-			return $row['path'];
+		/* evaluate the cache timeout */
+		$pageRes = $this->db->exec_SELECTgetRows('*', $this->config->getPageTable(), 'uid=' . intval($uid));
+		$page = $pageRes[0];
+		if ($page['cache_timeout'] > 0) {
+			$this->setTimeout($page['cache_timeout']);
+		} elseif ($GLOBALS['TSFE']->config['config']['cache_period'] > 0) {
+			$this->setTimeout($GLOBALS['TSFE']->config['config']['cache_period']);
 		} else {
-			return false;
+			$this->setTimeout(); // set to default, should be 86400 (24 hours)
 		}
+		/* if there is no be user logged in, hidden or time controlled non visible pages should not return a url */
+		$displayPageCondition = ' AND p.hidden=0 AND p.starttime < ' . time() . ' AND (p.endtime=0 OR p.endtime > ' . time() . ') ';
+		if (tx_naworkuri_helper::isActiveBeUserSession()) {
+			$displayPageCondition = '';
+		}
+		$domainCondition = '';
+		if ($this->config->isMultiDomainEnabled()) {
+			$domainCondition = ' AND u.domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
+		}
+		$urls = $this->db->exec_SELECTgetRows(
+				'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.page_uid=' . intval($uid) . ' AND sys_language_uid=' . intval($language) . ' AND hash_params="' . md5(tx_naworkuri_helper::implode_parameters($params, FALSE)) . '" ' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND p.uid=u.page_uid AND type=0 AND ( u.tstamp > ' . (time() - $this->timeout) . ' OR locked=1 )', // lets find type 0 urls only from the cache
+				'', '', '1'
+		);
+		if (is_array($urls) && count($urls) > 0) {
+			return $urls[0]['path'];
+		}
+		return FALSE;
+	}
 
+	/**
+	 * Find an existing url based on the page's id, language, parameters and domain.
+	 * This is used to get an url that's cache time has expired but is a normal url.
+	 *
+	 * @param integer $id
+	 * @param integer $language
+	 * @param array $params
+	 * @param string $domain
+	 */
+	public function findExistantUrl($page, $language, $params, $path, $domain) {
+		$domainCondition = '';
+		if ($this->config->isMultiDomainEnabled()) {
+			$domainCondition = ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
+		}
+		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'page_uid=' . intval($page) . ' AND sys_language_uid=' . intval($language) . $domainCondition . ' AND hash_params="' . md5(tx_naworkuri_helper::implode_parameters($params, FALSE)) . '" AND hash_path="' . md5($path) . '" AND type=0', '', '', 1);
+		if (is_array($urls) && count($urls) > 0) {
+			return $urls[0];
+		}
+		return FALSE;
+	}
+
+	/**
+	 * Find an old url based on the domain and path. It will be reused with new parameters
+	 *
+	 * @param type $domain
+	 * @param type $path
+	 * @return type
+	 */
+	public function findOldUrl($domain, $path) {
+		$domainCondition = '';
+		if ($this->config->isMultiDomainEnabled()) {
+			$domainCondition = ' AND u.domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
+		}
+		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'hash_path="' . md5($path) . '" AND type=1' . $domainCondition, '', '', 1);
+		if (is_array($urls) && count($urls) > 0) {
+			return $urls[0];
+		}
+		return FALSE;
+	}
+
+	/**
+	 *
+	 * @param array $parameters
+	 * @param string $domain
+	 * @param integer $language
+	 * @param string $path
+	 * @return string
+	 */
+	public function writeUrl($parameters, $domain, $language, $path) {
+		$orginalParameters = $parameters;
+		$pageUid = intval($parameters['id']);
+		$language = intval($language ? $language : 0);
+		unset($parameters['id']);
+		unset($parameters['L']);
+		/* try to find an existing url that was too old to be retreived from cache */
+		$existingUrl = $this->findExistantUrl($pageUid, $language, $parameters, $path, $domain);
+		if ($existingUrl !== FALSE) {
+			$this->touchUrl($existingUrl['uid']);
+			$this->makeOldUrl($domain, $pageUid, $language, $parameters, $existingUrl['uid']);
+			return $existingUrl['path'];
+		}
+		/* try find an old url that could be reactivated */
+		$existingUrl = $this->findOldUrl($domain, $path);
+		if ($existingUrl != FALSE) {
+			$this->makeOldUrl($domain, $pageUid, $language, $parameters, $existingUrl['uid']);
+			$this->updateUrl($existingUrl['uid'], $pageUid, $language, $parameters);
+			return $path;
+		}
+		/* if we also did not find a url here we must create it */
+		$this->makeOldUrl($domain, $pageId, $language, $parameters);
+		$uniquePath = $this->unique($path, $parameters, $domain); // make the url unique
+		if ($uniquePath === FALSE) {
+			throw new Tx_NaworkUri_Exception_UrlIsNotUniqueException($path, $domain, $orginalParameters, $language);
+		}
+		/* try to find an existing url that was too old to be retreived from cache */
+		$existingUrl = $this->findExistantUrl($pageUid, $language, $parameters, $uniquePath, $domain);
+		if ($existingUrl !== FALSE) {
+			$this->touchUrl($existingUrl['uid']);
+			$this->makeOldUrl($domain, $pageUid, $language, $parameters, $existingUrl['uid']);
+			return $existingUrl['path'];
+		}
+		/* try find an old url that could be reactivated */
+		$existingUrl = $this->findOldUrl($domain, $uniquePath);
+		if ($existingUrl != FALSE) {
+			$this->makeOldUrl($domain, $pageUid, $language, $parameters, $existingUrl['uid']);
+			$this->updateUrl($existingUrl['uid'], $pageUid, $language, $parameters);
+			return $path;
+		}
+		$this->createUrl($pageUid, $language, $domain, $parameters, $uniquePath, $path);
+		return $uniquePath;
 	}
 
 	/**
@@ -64,188 +181,155 @@ class tx_naworkuri_cache {
 	 * @param string $domain Current Domain
 	 * @return array cache result
 	 */
-	public function read_path ($path, $domain){
+	public function read_path($path, $domain) {
 		$hash_path = md5($path);
-  		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
-  			'u.pid, u.sys_language_uid, u.params',
-			$this->config->getUriTable().' u, pages p',
-  			'u.deleted=0 AND u.hidden=0 AND u.hash_path="'.$hash_path.'" AND u.domain="'.$domain.'" AND p.hidden=0 AND p.deleted=0 AND p.starttime < '.time().' AND (p.endtime=0 OR p.endtime > '.time().') AND p.uid=u.pid'
-  		);
+		$displayPageCondition = ' AND p.hidden=0 AND p.starttime < ' . time() . ' AND (p.endtime=0 OR p.endtime > ' . time() . ') ';
+		if (tx_naworkuri_helper::isActiveBeUserSession()) {
+			$displayPageCondition = '';
+		}
+		$domainCondition = '';
+		if ($this->config->isMultiDomainEnabled()) {
+			$domainCondition = ' AND u.domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
+		}
+		$uris = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
+				'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.hash_path="' . $hash_path . '"' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND (p.uid=u.page_uid OR u.type=2)'
+		);
 
-        if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
-        	return $row;
-        }
+		if (is_array($uris) && count($uris) > 0) {
+			return $uris[0];
+		}
 		return false;
 	}
 
+	/**
+	 *
+	 * @param integer $page
+	 * @param integer $language
+	 * @param string $domain
+	 * @param array $parameters
+	 * @param string $path
+	 */
+	private function createUrl($page, $language, $domain, $parameters, $path, $originalPath) {
+		$parameters = tx_naworkuri_helper::implode_parameters($parameters, FALSE);
+		$result = @$this->db->exec_INSERTquery($this->config->getUriTable(), array(
+					'pid' => $this->config->getStoragePage(),
+					'page_uid' => intval($page),
+					'tstamp' => time(),
+					'crdate' => time(),
+					'sys_language_uid' => intval($language),
+					'domain' => $domain,
+					'path' => $path,
+					'hash_path' => md5($path),
+					'params' => $parameters,
+					'hash_params' => md5($parameters),
+					'original_path' => $originalPath
+						), array(
+					'pid',
+					'page_uid',
+					'tstamp',
+					'crdate',
+					'sys_language_uid'
+				));
+		if (!$result) {
+			throw new Tx_NaworkUri_Exception_DbErrorException($this->db->sql_error());
+		}
+	}
+
+	private function touchUrl($uid) {
+		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'uid=' . intval($uid), array('tstamp' => time()), array('tstamp'));
+	}
 
 	/**
-	 * Find the cached URI for the given parameters
+	 * Update an url record based on the uid and domain with the new page, language, parameters and type
 	 *
-	 * @param int $id        : the if param
-	 * @param int $lang      : the L param
-	 * @param string $domain : the current domain '' for not multidomain setups
-	 * @param array $params  : other  url parameters
-	 * @return string        : uri wich matches to these params otherwise false
+	 * @param int $uid
+	 * @param string $domain
+	 * @param int $page
+	 * @param int $language
+	 * @param array $parameters
+	 * @param int $type
 	 */
-	public function read ($id, $lang, $domain, $parameters, $ignoreTimeout = false ){
+	private function updateUrl($uid, $page, $language, $parameters, $type = self::TX_NAWORKURI_URI_TYPE_NORMAL) {
+		$parameters = tx_naworkuri_helper::implode_parameters($parameters);
+		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'uid=' . intval($uid), array(
+			'page_uid' => intval($page),
+			'sys_language_uid' => $language,
+			'params' => $parameters,
+			'hash_params' => md5($parameters),
+			'type' => intval($type),
+			'tstamp' => time()
+				), array(
+			'page_uid',
+			'sys_language_uid',
+			'type',
+			'tstamp'
+		));
+	}
 
-		$timeout_condition = '';
-		if ($this->timeout>0 && $ignoreTimeout == false){
-			$timeout_condition = 'AND ( tstamp > "'.(time()-$this->timeout).'" OR sticky="1" )';
+	/**
+	 * Creates old url for the given page,language and paramters, the should not but might be more than one
+	 *
+	 * @param int $pageId
+	 * @param int $language
+	 * @param array $parameters
+	 */
+	private function makeOldUrl($domain, $pageId, $language, $parameters, $excludeUid = FALSE) {
+		$domainConstraint = '';
+		if (!empty($domain)) {
+			$domain = ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
 		}
-
-		// lookup in db
-		$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
-		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
-			'uid, path, sticky',
-			$this->config->getUriTable(),
-			'deleted=0 AND hidden=0 AND pid='.$id.' AND sys_language_uid='.$lang.' AND domain="'.$domain.'" AND hash_params = "'.md5($parameters).'" '.$timeout_condition
+		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'hash_params=' . $this->db->fullQuoteStr(md5(tx_naworkuri_helper::implode_parameters($parameters)), $this->config->getUriTable()) . $domainConstraint . ' AND page_uid=' . intval($pageId) . ' AND sys_language_uid=' . intval($language) . ($excludeUid !== FALSE ? ' AND uid!=' . intval($excludeUid) : '') . ' AND type=0', array(
+			'type' => self::TX_NAWORKURI_URI_TYPE_OLD,
+			'tstamp' => time()
+				), array(
+			'type',
+			'tstamp')
 		);
-		if ( $row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres) ){
-			return $row;
-		} else {
-			return false;
-		}
 	}
 
 	/**
-	 * Write a new URI to cache
+	 * Make sure this URI is unique for the current domain
 	 *
-	 * @param array $params Parameter Array
-	 * @param string $domain current Domain
-	 * @param string $path preferred Path
-	 * @param string $debug_info Debug Infos
-	 * @return string URI wich was stored for the params
+	 * @param string $uri URI
+	 * @return string unique URI
 	 */
-	public function write_params ($params, $domain, $path, $debug_info=''){
-		$uid   = (int)$params['id'];
-		$lang  = (int)($params['L'])?$params['L']:0;
-
-		unset($params['id']);
-		unset($params['L']);
-
-		$imploded_params = $this->helper->implode_parameters($params);
-
-		return $this->write($uid, $lang, $domain, $imploded_params, $path, $debug_info);
-	}
-
-	/**
-	 * Write a new URI-Parameter combination to the cache
-	 *
-	 * @param int $id id Parameter
-	 * @param int $lang L Parameter
-	 * @param string $domain current Domain
-	 * @param string $parameters URI Paramters 
-	 * @param string $path Preferred URI Path
-	 * @param string $debug_info Debig Informations
-	 * @return string URI wich was stored for the params
-	 */
-	public function write($id, $lang, $domain, $parameters, $path, $debug_info = ''){
-		
-			// check for a uri record to update 
-		$cache = $this->read ($id, $lang, $domain, $parameters, true);
-		if (is_array($cache)){
-			
-				// protect sticky uris
-			if ( $cache['sticky'] || $cache['path'] == $path) return $cache['path'];
-			
-				// update other uris
-			$path = $this->unique($path, $domain, $cache['uid']);	
-
-			$save_record = array(
-				'path'   => $path,
-				'hash_path'   => md5($path),
-				'tstamp' => time(),
-			);
-			
-			$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
-			$GLOBALS['TYPO3_DB']->debugOutput = 1;
-			
-			$dbres = $GLOBALS['TYPO3_DB']->exec_UPDATEquery($this->config->getUriTable(), 'uid='.(int)$cache['uid'] , $save_record );
-			return ($path);
-			
-			
-		} else {
-		
-			
-				// make uri unique
-			$path = $this->unique($path, $domain);
-			
-				// save in dm
-			$save_record = array(
-				'pid' => $id,
-				'sys_language_uid' =>  $lang,
-				'domain' => $domain,
-				'path'   => $path,
-				'params' => $parameters,
-				'hash_path'   => md5($path),
-				'hash_params' => md5($parameters),
-				'debug_info' => $debug_info,
-				'crdate' => time(),
-				'tstamp' => time(),
-			);
-			
-			$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
-			$GLOBALS['TYPO3_DB']->debugOutput = 1;
-			
-			$dbres = $GLOBALS['TYPO3_DB']->exec_INSERTquery($this->config->getUriTable(), $save_record );
-			return ($path);
-		}
-	}
-
-		/**
-		 * Make shure this URI is unique for the current domain
-		 *
-		 * @param string $uri URI
-		 * @return string unique URI 
-		 */
-	public function unique($uri, $domain, $uid=0){
-		$uriAppend = $this->config->getAppend();
-		$baseUri = '';
-		/*
-		 * if the append is at the end of the uri then remove it for adding the unique part
-		 */
-		if(!empty($uriAppend) && substr($uri, -strlen($uriAppend)) == $uriAppend) {
-			$baseUri = substr($uri, 0, strlen($uri) - strlen($uriAppend));
-		} else {
-			$baseUri = $uri;
-		}
-		$tmp_uri       = $uri;
-		$search_hash   = md5($tmp_uri);
-		$search_domain = $domain;
+	public function unique($path, $parameters, $domain) {
+		$pathHash = md5($path);
+		$parameterHash = md5(tx_naworkuri_helper::implode_parameters($parameters, FALSE));
 		$additionalWhere = '';
-		if(!empty($domain)) {
-			$additionalWhere .= ' AND domain LIKE \''.$domain.'\'';
-		}	
-		if($uid > 0) {
-			$additionalWhere .= ' AND uid!='.intval($uid);
+		if (!empty($domain)) {
+			$additionalWhere .= ' AND domain LIKE ' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
 		}
-			
-//		if ($exclude_uid) {
-//			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tx_naworkuri_uri', 'deleted=0 AND hidden=0 AND uid !='.(int)$exclude_uid.' AND domain="'.$search_domain.'" AND hash_path = "'.$search_hash.'"' );
-//		} else {
-		$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
-			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', $this->config->getUriTable(), 'deleted=0 AND hidden=0 AND hash_path = "'.$search_hash.'"'.$additionalWhere );
-//		}
-		
-
-		if($dbres > 0){
-				// make the uri unique
+		$dbRes = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid', $this->config->getUriTable(), 'hash_path = ' . $this->db->fullQuoteStr($pathHash, $this->config->getUriTable()) . $additionalWhere, '', '', '1');
+		if (count($dbRes) > 0) {
+			/* so we have to make the url unique */
+			$cachedUrl = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'type=0 AND hash_params=' . $this->db->fullQuoteStr($parameterHash, $this->config->getUriTable()) . $additionalWhere, '', '', '1');
+			if (count($cachedUrl) > 0 && $cachedUrl[0]['original_path'] == $path) {
+				/* there is a url found with the parameter set, so lets use this path */
+				return $cachedUrl[0]['path'];
+			}
+			// make the uri unique
 			$append = 0;
+			$baseUri = substr($path, -(strlen($this->config->getAppend()))) == $this->config->getAppend() ? substr($path, 0, -strlen($this->config->getAppend())) : $path;
+			$tmp_uri = $path;
 			do {
-				$append ++;
-				if(!empty($baseUri)) {
-					$tmp_uri = $baseUri.'-'.$append.$uriAppend ; // add the unique part and the uri append part to the base uri
-				} else {
-					$tmp_uri = $append.$uriAppend;
+				$append++;
+				if ($append > 10) {
+					return FALSE; // return false, to throw an exception in writeUrl function
 				}
-				$search_hash  = md5($tmp_uri);
-				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', $this->config->getUriTable(), 'deleted=0 AND hidden=0 AND hash_path = "'.$search_hash.'"'.$additionalWhere );
-			} while ($dbres > 0);
+				if (!empty($baseUri)) {
+					$tmp_uri = $baseUri . '-' . $append . $this->config->getAppend(); // add the unique part and the uri append part to the base uri
+				} else {
+					$tmp_uri = $append . $this->config->getAppend();
+				}
+				$search_hash = md5($tmp_uri);
+				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid', $this->config->getUriTable(), 'hash_path=' . $this->db->fullQuoteStr($search_hash, $this->config->getUriTable()) . $additionalWhere, '', '', '1');
+			} while (count($dbres) > 0);
+			return $tmp_uri;
 		}
-		return $tmp_uri;
+		return $path;
 	}
-	
+
 }
+
 ?>

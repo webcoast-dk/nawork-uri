@@ -36,12 +36,21 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 	 */
 	protected $config;
 	protected $extConfig;
+	protected $tables = array(
+		'uri' => 'tx_naworkuri_uri',
+		'page' => 'pages',
+		'domain' => 'sys_domain'
+	);
 
 	public function __construct($configFile = '') {
 		global $TYPO3_CONF_VARS;
 		$this->config = new SimpleXMLElement(PATH_site . $configFile, null, true);
 		$this->extConfig = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 		$this->validateConfig();
+	}
+
+	public function getStoragePage() {
+		return (int) $this->extConfig['storagePage'];
 	}
 
 	public function isMultiDomainEnabled() {
@@ -135,6 +144,10 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 		return (string) $this->config->uritable;
 	}
 
+	public function getPageTable() {
+		return (string) $this->config->pagepath->table;
+	}
+
 	public function getParamOrder() {
 		return $this->config->paramorder->children();
 	}
@@ -153,6 +166,13 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 
 	public function getUriParts() {
 		return $this->config->uriparts->children();
+	}
+
+	public function getTransliterations() {
+		if($this->config->transliteration instanceof SimpleXMLElement) {
+			return $this->config->transliteration->children();
+		}
+		return array();
 	}
 
 	private function validateConfig() {

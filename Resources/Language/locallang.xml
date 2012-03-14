@@ -6,8 +6,10 @@
 	</meta>
 	<data type="array">
 		<languageKey index="default" type="array">
-			<label index="title">n@work URI Management</label>
-			<label index="checklabel">Check box #1</label>
+			<label index="label.clearUrlCache">Clear URL cache</label>
+		</languageKey>
+		<languageKey index="de" type="array">
+			<label index="label.clearUrlCache">URL Cache leeren</label>
 		</languageKey>
 	</data>
 </T3locallang>

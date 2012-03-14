@@ -9,8 +9,6 @@ require_once (t3lib_extMgm::extPath('nawork_uri') . '/lib/class.tx_naworkuri_hel
  * Class for creating path uris
  *
  * @author Martin Ficzel
- * @TODO make the Language Parameter configurable and optional
- * @TODO add proper handling domain records
  *
  */
 class tx_naworkuri_transformer implements t3lib_Singleton {
@@ -20,21 +18,28 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	 * @var tx_naworkuri_configReader
 	 */
 	private $config;
+
 	/**
 	 *
 	 * @var string
 	 */
 	private $domain;
+
 	/**
 	 *
 	 * @var t3lib_db
 	 */
 	private $db;
 
-	/*
+	/**
 	 * @var tx_naworkuri_cache
 	 */
 	private $cache;
+
+	/**
+	 *
+	 * @var integer
+	 */
 	private $language = 0;
 
 	/**
@@ -49,8 +54,10 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		// read configuration
 		$this->config = $config;
 		// get the domain, if multiple domain is not enabled the helper return ""
-		$this->domain = tx_naworkuri_helper::getCurrentDomain();
-
+		$this->domain = $domain;
+		if (empty($this->domain)) {
+			$this->domain = tx_naworkuri_helper::getCurrentDomain();
+		}
 		$this->cache = t3lib_div::makeInstance('tx_naworkuri_cache', $this->config);
 		$this->cache->setTimeout(30);
 
@@ -76,11 +83,14 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 		// look into the db
 		$cache = $this->cache->read_path($path, $this->domain);
+		if ($cache['type'] > 0) {
+			throw new Tx_NaworkUri_Exception_UrlIsRedirectException($cache);
+		}
 		if ($cache) {
 			// cachedparams
 			$cachedparams = Array();
 			parse_str($cache['params'], $cachedparams);
-			$cachedparams['id'] = $cache['pid'];
+			$cachedparams['id'] = $cache['page_uid'];
 			$cachedparams['L'] = $cache['sys_language_uid'];
 			// classic url params
 			$getparams = Array();
@@ -98,10 +108,28 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	 * @param str $param_str Parameter string
 	 * @return string $uri encoded uri
 	 */
-	public function params2uri($param_str, $dontCreateNewUrls = false, $ignoreTimeout = false) {
+	public function params2uri($param_str, $dontCreateNewUrls = FALSE, $ignoreTimeout = FALSE) {
+		global $TYPO3_CONF_VARS;
 
 		list($parameters, $anchor) = explode('#', $param_str, 2);
-		$params = $this->helper->explode_parameters($parameters);
+		$params = tx_naworkuri_helper::explode_parameters($parameters);
+		$orgParams = $params;
+		/* add hook for processing the parameter set */
+		if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['parameterSet-preProcess'])) {
+			foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['parameterSet-preProcess'] as $funcRef) {
+				t3lib_div::callUserFunction($funcRef, $params, $this);
+			}
+		}
+		/* if something destroys the params reset them */
+		if (!is_array($params) || !array_key_exists('id', $params)) {
+			$params = $orgParams;
+		}
+
+		/* we must have an integer id so if it is now lookit up */
+		if(!t3lib_div::testInt($params['id'])) {
+			$params['id'] = tx_naworkuri_helper::aliasToId($params['id']);
+		}
+
 		/* check if type should be casted to int to avoid strange behavior when creating links */
 		if ($this->config->getCastTypeToInt()) {
 			$type = !empty($params['type']) ? $params['type'] : t3lib_div::_GP('type');
@@ -117,9 +145,8 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 				unset($params['L']); // remove L param to use system default
 			}
 		}
-
 		if (!isset($params['L'])) {
-			$params['L'] = $GLOBALS['TSFE']->sys_language_uid;
+			$params['L'] = $GLOBALS['TSFE']->sys_language_uid ? $GLOBALS['TSFE']->sys_language_uid : 0;
 			if (isset($params['cHash'])) {
 				$cHashParams = $params;
 				unset($cHashParams['cHash']);
@@ -128,15 +155,19 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			}
 		}
 		$this->language = $params['L'];
-
-		// find already created uri with exactly these parameters
-		$cache_uri = $this->cache->read_params($params, $this->domain, $ignoreTimeout);
-		if ($cache_uri !== false) {
-			// append stored anchor
-			if ($anchor) {
-				$cache_uri .= '#' . $anchor;
+		/* find cached urls with the given parameters from the current domain */
+		list($encodableParameters, $unencodableParameters) = tx_naworkuri_helper::filterConfiguredParameters($params);
+		$cachedUri = $this->cache->findCachedUrl($encodableParameters, $this->domain, $this->language);
+		if ($cachedUri !== FALSE) {
+			/* compute the unencoded parameters */
+			if(count($unencodableParameters) > 0) {
+				$cachedUri .= '?'.tx_naworkuri_helper::implode_parameters($unencodableParameters);
 			}
-			return $cache_uri;
+			/* append the anchor if not empty */
+			if ($anchor) {
+				$cachedUri .= '#' . $anchor;
+			}
+			return $cachedUri;
 		} elseif ($dontCreateNewUrls && $cache_uri === false) {
 			return false;
 		}
@@ -158,7 +189,6 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		$debug_info .= "original_params  : " . $this->helper->implode_parameters($original_params) . chr(10);
 		$debug_info .= "encoded_params   : " . $this->helper->implode_parameters($encoded_params) . chr(10);
 		$debug_info .= "unencoded_params : " . $this->helper->implode_parameters($unencoded_params) . chr(10);
-
 		/*
 		 * if any parameter is not encoded and the cHash is encoded, remove it from the encoded parameters
 		 * and put it into the unencoded parameters to avoid unnecessary uris
@@ -195,14 +225,12 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 		// append
 		if ($result_path) {
-			//debug((string)$this->config->getConfig()->append);
 			$append = $this->config->getAppend();
 			if (substr($result_path, -strlen($append)) != $append) {
 				$result_path = $result_path . $append;
 			}
 		}
-
-		$uri = $this->cache->write_params($encoded_params, $this->domain, $result_path, $debug_info);
+		$uri = $this->cache->writeUrl($encoded_params, $this->domain, $this->language, $result_path);
 
 		// read not encoded parameters
 		$i = 0;
@@ -305,70 +333,93 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	public function params2uri_uriparts(&$original_params, &$unencoded_params, &$encoded_params) {
 		$parts = array();
 		foreach ($this->config->getUriParts() as $uripart) {
+			$value = '';
 
 			$param_name = (string) $uripart->parameter;
 			if ($param_name && isset($unencoded_params[$param_name])) {
+				try {
+					$value = Tx_NaworkUri_Cache_TransformationCache::getTransformation($param_name, $unencoded_params[$param_name], $this->language);
+				} catch (Tx_NaworkUri_Exception_TransformationValueNotFoundException $ex) {
+					$table = (string) $uripart->table;
+					$field = (string) $uripart->field;
+					$selectFields = (string) $uripart->selectFields;
+					$foreignTable = (string) $uripart->foreignTable;
+					$mmTable = (string) $uripart->mmTable;
+					$where = (string) $uripart->where;
 
-				$table = (string) $uripart->table;
-				$field = (string) $uripart->field;
-				$selectFields = (string) $uripart->selectFields;
-				$foreignTable = (string) $uripart->foreignTable;
-				$mmTable = (string) $uripart->mmTable;
-				$where = (string) $uripart->where;
-				
+					$matches = array();
+					$fieldmap = array();
+					$fieldpattern = $field;
 
-				$matches = array();
-				$fieldmap = array();
-				$fieldpattern = $field;
-
-				if (!preg_match_all('/\{(.*?)\}/', $field, $matches)) {
-					// single fields access
-					$fieldmap = array($field);
-					$fieldpattern = '###0###';
-				} else {
-					// multi field access
-					list($found, $fields) = $matches;
-					for ($i = 0; $i < count($found); $i++) {
-						$fieldmap[] = $fields[$i];
-						$fieldpattern = str_replace($found[$i], '###' . $i . '###', $fieldpattern);
-					}
-				}
-
-				// find fields
-				$where_part = str_replace('###', $unencoded_params[$param_name], $where);
-				if(!empty($where_part) && !empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
-					$where_part .= ' AND '.$GLOBALS['TCA'][$table]['ctrl']['languageField'].'=0' ;
-				}
-
-				if (!empty($table)) {
-					if(empty($selectFields) || empty($foreignTable) || empty($mmTable)) {
-						$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(empty($selectFields) ? '*' : $selectFields, $table, $where_part, '', '', 1);
+					if (!preg_match_all('/\{(.*?)\}/', $field, $matches)) {
+						// single fields access
+						$fieldmap = array($field);
+						$fieldpattern = '###0###';
 					} else {
-						$dbres = $GLOBALS['TYPO3_DB']->exec_SELECT_mm_query($selectFields, $table, $mmTable, $foreignTable, 'AND '.$where_part, '', '', 1);
-					}
-					//$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $table, $where_part, '', '', 1);
-					if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres)) {
-						if(!empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
-							$row = $GLOBALS['TSFE']->sys_page->getRecordOverLay($table, $row, $this->language);
+						// multi field access
+						list($found, $fields) = $matches;
+						for ($i = 0; $i < count($found); $i++) {
+							$fieldmap[] = $fields[$i];
+							$fieldpattern = str_replace($found[$i], '###' . $i . '###', $fieldpattern);
 						}
-						$value = $fieldpattern;
-						foreach ($fieldmap as $map_key => $map_value) {
-							$mapfields = explode('//', $map_value);
-							foreach ($mapfields as $mapfield) {
-								if ($row[$mapfield]) {
-									$value = str_replace('###' . $map_key . '###', $row[$mapfield], $value);
-									break;
+					}
+
+					// find fields
+					$where_part = str_replace('###', $unencoded_params[$param_name], $where);
+
+					if (!empty($where_part) && !empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
+						$where_part .= ' AND ' . $GLOBALS['TCA'][$table]['ctrl']['languageField'] . '=0';
+					}
+
+					if (!empty($table)) {
+						if (empty($selectFields) || empty($foreignTable) || empty($mmTable)) {
+							$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(empty($selectFields) ? '*' : $selectFields, $table, $where_part, '', '', 1);
+						} else {
+							$dbres = $GLOBALS['TYPO3_DB']->exec_SELECT_mm_query($selectFields, $table, $mmTable, $foreignTable, $where_part, '', '', 1);
+						}
+						/*
+						 * if the query for a record with sys_language_uid 0 returns nothing let's try it with the current language
+						 * this must be added to avoid an empty uri part if e.g. a news record is only available in english
+						 */
+						if ($GLOBALS['TYPO3_DB']->sql_num_rows($dbres) < 1 && $this->language > 0) {
+							// find fields
+							$where_part = str_replace('###', $unencoded_params[$param_name], $where);
+							if (!empty($where_part) && !empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
+								$where_part .= ' AND ' . $GLOBALS['TCA'][$table]['ctrl']['languageField'] . '=' . $this->language;
+							}
+							if (empty($selectFields) || empty($foreignTable) || empty($mmTable)) {
+								$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(empty($selectFields) ? '*' : $selectFields, $table, $where_part, '', '', 1);
+							} else {
+								$dbres = $GLOBALS['TYPO3_DB']->exec_SELECT_mm_query($selectFields, $table, $mmTable, $foreignTable, $where_part, '', '', 1);
+							}
+						}
+						if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres)) {
+							if (!empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
+								$row = $GLOBALS['TSFE']->sys_page->getRecordOverLay($table, $row, $this->language);
+							}
+							$value = $fieldpattern;
+							foreach ($fieldmap as $map_key => $map_value) {
+								$mapfields = explode('//', $map_value);
+								foreach ($mapfields as $mapfield) {
+									if ($row[$mapfield]) {
+										$value = str_replace('###' . $map_key . '###', $row[$mapfield], $value);
+										break;
+									}
 								}
 							}
 						}
+						$value = trim($value);
+						if(empty($value)) {
+							$value = $unencoded_params[$param_name];
+						}
+						Tx_NaworkUri_Cache_TransformationCache::setTransformation($param_name, $unencoded_params[$param_name], $value, $this->language);
 					}
-					$parts[$param_name] = trim($value);
-					$encoded_params[$param_name] = $unencoded_params[$param_name];
-					unset($unencoded_params[$param_name]);
 				}
+				$encoded_params[$param_name] = $unencoded_params[$param_name];
+				unset($unencoded_params[$param_name]);
+				$parts[$param_name] = $value;
 			}
 		}
-
 		return $parts;
 	}
 
@@ -382,6 +433,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	 */
 	public function params2uri_pagepath(&$original_params, &$unencoded_params, &$encoded_params) {
 		$parts = array();
+		$path = '';
 		if ($this->config->hasPagePathConfig() && $unencoded_params['id']) {
 
 			// cast id to int and resolve aliases
@@ -401,68 +453,71 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 			$id = $unencoded_params['id'];
 
-			// get setup
-			$limit = $this->config->getPagePathLimit();
-			if (!$limit)
-				$limit = 10;
+			try {
+				$path = Tx_NaworkUri_Cache_TransformationCache::getTransformation('id', $id, $this->language);
+			} catch (Tx_NaworkUri_Exception_TransformationValueNotFoundException $ex) {
 
-			$field_conf = $this->config->getPagePathField();
-			$field_conf = str_replace('//', ',', $field_conf);
-			$fields = explode(',', 'tx_naworkuri_pathsegment,' . $field_conf);
+				// get setup
+				$limit = $this->config->getPagePathLimit();
+				if (!$limit)
+					$limit = 10;
 
-			// determine language (system or link)
-			$lang = 0;
-			if (isset($original_params['L'])) {
-				$lang = (int) $original_params['L'];
-			}
-			// walk the pagepath
-			while ($limit && $id > 0) {
+				$field_conf = $this->config->getPagePathField();
+				$field_conf = str_replace('//', ',', $field_conf);
+				$fields = explode(',', 'tx_naworkuri_pathsegment,' . $field_conf);
 
-				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(implode(',', $fields) . ',uid,pid,hidden,tx_naworkuri_exclude', $this->config->getPagePathTableName(), 'uid=' . $id . ' AND deleted=0', '', '', 1);
-				$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
-				if (!$row)
-					break; // no page found
+				// determine language (system or link)
+				$lang = 0;
+				if (isset($original_params['L'])) {
+					$lang = (int) $original_params['L'];
+				}
+				// walk the pagepath
+				while ($limit && $id > 0) {
 
-
-
+					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(implode(',', $fields) . ',uid,pid,hidden,tx_naworkuri_exclude', $this->config->getPagePathTableName(), 'uid=' . $id . ' AND deleted=0', '', '', 1);
+					$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
+					if (!$row) {
+						break; // no page found
+					}
 
 // translate pagepath if needed
-				// @TODO some languages have to be excluded here somehow
-				if ($lang > 0) {
-					$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'pages_language_overlay', 'pid=' . $id . ' AND deleted=0 AND sys_language_uid=' . $lang, '', '', 1);
-					$translated_row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
-					foreach ($fields as $field) {
-						if ($translated_row[$field]) {
-							$row[$field] = $translated_row[$field];
-						}
-					}
-				}
-				// extract part
-				if ($row['tx_naworkuri_exclude'] == 0) {
-					if ($row['pid'] > 0) {
+					if ($this->language > 0) {
+						$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'pages_language_overlay', 'pid=' . $id . ' AND deleted=0 AND sys_language_uid=' . $this->language, '', '', 1);
+						$translated_row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);
 						foreach ($fields as $field) {
-							if ($row[$field]) {
-								$segment = trim($row[$field]);
-								array_unshift($parts, $segment);
-								break; // field found
+							if ($translated_row[$field]) {
+								$row[$field] = $translated_row[$field];
 							}
 						}
-					} elseif ($row['pid'] == 0 && $row['tx_naworkuri_pathsegment']) {
-						$segment = trim($row['tx_naworkuri_pathsegment']);
-						array_unshift($parts, $segment);
 					}
+					// extract part
+					if ($row['tx_naworkuri_exclude'] == 0) {
+						if ($row['pid'] > 0) {
+							foreach ($fields as $field) {
+								if ($row[$field]) {
+									$segment = trim($row[$field]);
+									array_unshift($parts, $segment);
+									break; // field found
+								}
+							}
+						} elseif ($row['pid'] == 0 && $row['tx_naworkuri_pathsegment']) {
+							$segment = trim($row['tx_naworkuri_pathsegment']);
+							array_unshift($parts, $segment);
+						}
+					}
+					// continue fetching the path
+					$id = $row['pid'];
+					$limit--;
 				}
-				// continue fetching the path
-				$id = $row['pid'];
-				$limit--;
+				$path = implode('/', $parts);
+				Tx_NaworkUri_Cache_TransformationCache::setTransformation('id', $unencoded_params['id'], $path, $this->language);
 			}
-
-
 			$encoded_params['id'] = $unencoded_params['id'];
 			unset($unencoded_params['id']);
 		}
 
-		return array('id' => implode('/', $parts));
+
+		return array('id' => $path);
 	}
 
 }

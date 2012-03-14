@@ -2,7 +2,9 @@
 
 require_once 'lib/class.tx_naworkuri_transformer.php';
 
-class tx_naworkuri {
+class tx_naworkuri implements t3lib_Singleton {
+
+	protected $redirectUrl = NULL;
 
 	/**
 	 * decode uri and extract parameters
@@ -27,48 +29,79 @@ class tx_naworkuri {
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 			/* @var $configReader tx_naworkuri_configReader */
 			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
+			/* @var $translator tx_naworkuri_transformer */
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, $extConf['MULTIDOMAIN']);
-			$uri_params = $translator->uri2params($uri);
-
-			/* should the path be converted to lowercase to treat uppercase paths like normal paths */
-			if(($configReader->getCheckForUpperCaseURI() && $uri == strtolower($uri)) || !$configReader->getCheckForUpperCaseURI()) {
-				if (is_array($uri_params)) { // uri found
-					$params['pObj']->id = $uri_params['id'];
-					unset($uri_params['id']);
-					$params['pObj']->mergingWithGetVars($uri_params);
-				} else { // handle 404
-					if ($configReader->hasPageNotFoundConfig()) {
-						header('Content-Type: text/html; charset=utf-8');
-						header($configReader->getPageNotFoundConfigStatus());
-						switch ($configReader->getPageNotFoundConfigBehaviorType()) {
-							case 'message':
-								$res = $configReader->getPageNotFoundConfigBehaviorValue();
-								break;
-							case 'page':
-								if (t3lib_div::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
-									$curl = curl_init();
-									curl_setopt($curl, CURLOPT_URL, $configReader->getPageNotFoundConfigBehaviorValue());
-									curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-									curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
-									curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-									curl_setopt($curl, CURLOPT_USERAGENT, 'nawork_uri');
-									$res = $this->curl_exec_follow($curl);
-								} else {
-									$res = '404 not found! The 404 Page URL ' . $configReader->getPageNotFoundConfigBehaviorValue() . ' seems to cause a redirect loop.';
-								}
-								break;
-							case 'redirect':
-								$path = html_entity_decode($configReader->getPageNotFoundConfigBehaviorValue());
-								if (!($_SERVER['REQUEST_METHOD'] == 'POST' && preg_match('/index.php/', $_SERVER['SCRIPT_NAME']))) {
-									header('Location: ' . $path, true, 301);
-									exit;
-								}
-							default:
-								$res = '';
+			try {
+				$uri_params = $translator->uri2params($uri);
+				/* should the path be converted to lowercase to treat uppercase paths like normal paths */
+				if (($configReader->getCheckForUpperCaseURI() && $uri == strtolower($uri)) || !$configReader->getCheckForUpperCaseURI()) {
+					if (is_array($uri_params)) { // uri found
+						$params['pObj']->id = $uri_params['id'];
+						unset($uri_params['id']);
+						$params['pObj']->mergingWithGetVars($uri_params);
+					} else { // handle 404
+						if ($configReader->hasPageNotFoundConfig()) {
+							header('Content-Type: text/html; charset=utf-8');
+							header($configReader->getPageNotFoundConfigStatus());
+							switch ($configReader->getPageNotFoundConfigBehaviorType()) {
+								case 'message':
+									$res = $configReader->getPageNotFoundConfigBehaviorValue();
+									break;
+								case 'page':
+									if (t3lib_div::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
+										$curl = curl_init();
+										curl_setopt($curl, CURLOPT_URL, $configReader->getPageNotFoundConfigBehaviorValue());
+										curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+										curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
+										curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+										curl_setopt($curl, CURLOPT_USERAGENT, 'nawork_uri');
+										$res = $this->curl_exec_follow($curl);
+									} else {
+										$res = '404 not found! The 404 Page URL ' . $configReader->getPageNotFoundConfigBehaviorValue() . ' seems to cause a redirect loop.';
+									}
+									break;
+								case 'redirect':
+									$path = html_entity_decode($configReader->getPageNotFoundConfigBehaviorValue());
+									if (!($_SERVER['REQUEST_METHOD'] == 'POST' && preg_match('/index.php/', $_SERVER['SCRIPT_NAME']))) {
+										header('Location: ' . $path, true, 301);
+										exit;
+									}
+								default:
+									$res = '';
+							}
+							echo $res;
+							exit;
 						}
-						echo $res;
-						exit;
 					}
+				}
+			} catch (Tx_NaworkUri_Exception_UrlIsRedirectException $ex) {
+				$url = $ex->getUrl();
+				if ($url['type'] == tx_naworkuri_cache::TX_NAWORKURI_URI_TYPE_OLD) {
+					/*
+					 * we must not redirect here because we cannot use link generation here to get the correct target path
+					 */
+					$this->redirectUrl = $url;
+				} elseif ($url['type'] == tx_naworkuri_cache::TX_NAWORKURI_URI_TYPE_REDIRECT) {
+					/* add hook for pre processing the redirect record */
+					if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['redirect-preProcess'])) {
+						foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['redirect-preProcess'] as $funcRef) {
+							t3lib_div::callUserFunction($funcRef, $url, $this);
+						}
+					}
+					$newUrl = parse_url($url['redirect_path']);
+					$requestUrl = parse_url(t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'));
+					if (empty($newUrl['scheme']))
+						$newUrl['scheme'] = $requestUrl['scheme'];
+					if (empty($newUrl['host']))
+						$newUrl['host'] = $requestUrl['host'];
+					if (substr($newUrl['path'], 0, 1) != '/')
+						$newUrl['path'] = '/' . $newUrl['path'];
+					$uri = $newUrl['scheme'] . '://' . $newUrl['host'] . $newUrl['path'];
+					$queryParams = array_merge(tx_naworkuri_helper::explode_parameters($requestUrl['query']), tx_naworkuri_helper::explode_parameters($newUrl['query']));
+					if (!empty($queryParams)) {
+						$uri .= '?' . tx_naworkuri_helper::implode_parameters($queryParams);
+					}
+					tx_naworkuri_helper::sendRedirect($uri, $url['redirect_mode']);
 				}
 			}
 		}
@@ -88,10 +121,51 @@ class tx_naworkuri {
 				&& $link['LD']['url']
 		) {
 			list($path, $params) = explode('?', $link['LD']['totalURL']);
+			$params = rawurldecode(html_entity_decode($params));
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, (boolean) $extConf['MULTIDOMAIN']);
-			$link['LD']['totalURL'] = $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $translator->params2uri($params);
+			try {
+				$url = $translator->params2uri($params);
+				$link['LD']['totalURL'] = tx_naworkuri_helper::finalizeUrl($url);
+				/* add hook for post processing the url */
+				if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'])) {
+					$hookParams = array(
+						'url' => $url,
+						'params' => tx_naworkuri_helper::explode_parameters($params),
+						'LD' => $link['LD']
+					);
+					foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'] as $funcRef) {
+						t3lib_div::callUserFunction($funcRef, $hookParams, $this);
+					}
+					if ($hookParams['url'] !== FALSE) { // if the url is not false set it
+						$link['LD']['totalURL'] = $hookParams['url'];
+					}
+				}
+				if (!preg_match('/https?:\/\//', $link['LD']['totalURL']) && !empty($GLOBALS['TSFE']->config['config']['absRefPrefix'])) {
+					if (substr($link['LD']['totalURL'], 0, strlen($GLOBALS['TSFE']->config['config']['absRefPrefix'])) != $GLOBALS['TSFE']->config['config']['absRefPrefix']) {
+						$link['LD']['totalURL'] = $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $link['LD']['totalURL'];
+					}
+				}
+			} catch (Tx_NaworkUri_Exception_UrlIsNotUniqueException $ex) {
+				/* log unique failure to belog */
+				tx_naworkuri_helper::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . tx_naworkuri_helper::implode_parameters($ex->getParameters()), tx_naworkuri_helper::LOG_SEVERITY_ERROR);
+				$totalURL = 'index.php';
+				if(!empty($params)) {
+					$totalURL .= '?'.tx_naworkuri_helper::implode_parameters(tx_naworkuri_helper::explode_parameters($params));
+				}
+				$totalURL = tx_naworkuri_helper::finalizeUrl($totalURL);
+				$link['LD']['totalURL'] = $totalURL;
+			} catch (Tx_NaworkUri_Exception_DbErrorException $ex) {
+				/* log db errors to belog */
+				tx_naworkuri_helper::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', tx_naworkuri_helper::LOG_SEVERITY_ERROR);
+				$totalURL = 'index.php';
+				if(!empty($params)) {
+					$totalURL .= '?'.tx_naworkuri_helper::implode_parameters(tx_naworkuri_helper::explode_parameters($params));
+				}
+				$totalURL = tx_naworkuri_helper::finalizeUrl($totalURL);
+				$link['LD']['totalURL'] = $totalURL;
+			}
 		}
 	}
 
@@ -99,10 +173,10 @@ class tx_naworkuri {
 	 * This function is used for two purposes. The first purpose is to redirect if the page is called via parameterized
 	 * form, like "index.php?id=...", to the path form. The second purpose is to redirect if the type or L parameter
 	 * are not valid, e.g. the type parameter contains "%25252525252523header" or something other non useful content.
-	 * 
+	 *
 	 * The first type only happens if the site is called via 'index.php?id=...' or '?id=...'
 	 * The second type of redirect is sent if the parameters are checked and not seen as valid.
-	 * 
+	 *
 	 * Whatever redirect is sent, the state of enable and redirect option of nawork_uri in config are checked. Additionally
 	 * it is checked that the page is not called as preview from admin panel and there is a sitescript at all.
 	 *
@@ -111,7 +185,40 @@ class tx_naworkuri {
 	 */
 	function redirect2uri($params, $ref) {
 		global $TYPO3_CONF_VARS;
-		if (
+		/*
+		 * if we set a redirectUrl above because an old url was called we should
+		 * redirect it here because at this point we have the full tsfe to get
+		 * the correct target url
+		 */
+		if ($this->redirectUrl != NULL) {
+			// translate uri
+			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
+			/* @var $configReader tx_naworkuri_configReader */
+			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
+			/* @var $translator tx_naworkuri_transformer */
+			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, $extConf['MULTIDOMAIN']);
+			$newUrlParameters = array('id' => $this->redirectUrl['page_uid'], 'L' => $this->redirectUrl['sys_language_uid']);
+			if (!empty($this->redirectUrl['params'])) {
+				$newUrlParameters = array_merge($newUrlParameters, tx_naworkuri_helper::explode_parameters($this->redirectUrl['params']));
+			}
+			$newUrl = $translator->params2uri(tx_naworkuri_helper::implode_parameters($newUrlParameters), TRUE, TRUE);
+			$newUrl = tx_naworkuri_helper::finalizeUrl($newUrl, TRUE);
+			/* parse the current request url and prepend the scheme and host to the url */
+			$requestUrl = parse_url(t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'));
+			$newUrl = parse_url($newUrl);
+			if (empty($newUrl['scheme']))
+				$newUrl['scheme'] = $requestUrl['scheme'];
+			if (empty($newUrl['host']))
+				$newUrl['host'] = $requestUrl['host'];
+			if (substr($newUrl['path'], 0, 1) != '/')
+				$newUrl['path'] = '/' . $newUrl['path'];
+			$uri = $newUrl['scheme'] . '://' . $newUrl['host'] . $newUrl['path'];
+			$queryParams = array_merge(tx_naworkuri_helper::explode_parameters($requestUrl['query']), tx_naworkuri_helper::explode_parameters($newUrl['query']));
+			if (!empty($queryParams)) {
+				$uri .= '?' . tx_naworkuri_helper::implode_parameters($queryParams);
+			}
+			tx_naworkuri_helper::sendRedirect($uri, 301);
+		} elseif (
 				$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1
 				&& empty($_GET['ADMCMD_prev'])
 				&& $GLOBALS['TSFE']->config['config']['tx_naworkuri.']['redirect'] == 1
@@ -124,13 +231,16 @@ class tx_naworkuri {
 			$tempParams = tx_naworkuri_helper::explode_parameters($params);
 
 			/* should the path be converted to lowercase to treat uppercase paths like normal paths */
-			if($configReader->getCheckForUpperCaseURI()) {
-				if($path != strtolower($path)) {
-					$uri = $GLOBALS['TSFE']->config['config']['baseURL']. strtolower($path);
-					if(!empty($params)) {
-						$uri .= '?'.$params;
+			if ($configReader->getCheckForUpperCaseURI()) {
+				if ($path != strtolower($path)) {
+					$uri = $GLOBALS['TSFE']->config['config']['baseURL'] . strtolower($path);
+					if (empty($uri)) {
+						$uri = '/';
 					}
-					header('Location: '. $uri, true, $configReader->getRedirectStatus());
+					if (!empty($params)) {
+						$uri .= '?' . $params;
+					}
+					header('Location: ' . $uri, true, $configReader->getRedirectStatus());
 					exit;
 				}
 			}
@@ -143,6 +253,9 @@ class tx_naworkuri {
 					/* should we redirect if the parameter is wrong */
 					if ($configReader->getRedirectOnParameterDiff()) {
 						$uri = $GLOBALS['TSFE']->config['config']['baseURL'] . $path;
+						if (empty($uri)) {
+							$uri = '/';
+						}
 						if (count($tempParams) > 0) {
 							$uri .= '?' . tx_naworkuri_helper::implode_parameters($tempParams);
 						}
@@ -160,6 +273,9 @@ class tx_naworkuri {
 					/* should we redirect if the parameter is wrong */
 					if ($configReader->getRedirectOnParameterDiff()) {
 						$uri = $GLOBALS['TSFE']->config['config']['baseURL'] . $path;
+						if (empty($uri)) {
+							$uri = '/';
+						}
 						if (count($tempParams) > 0) {
 							$uri .= '?' . tx_naworkuri_helper::implode_parameters($tempParams);
 						}
@@ -168,7 +284,7 @@ class tx_naworkuri {
 					}
 				}
 			}
-			
+
 			/* if the page is called via parameterized form look for a path to redirect to */
 			if ((substr($GLOBALS['TSFE']->siteScript, 0, 9) == 'index.php' || substr($GLOBALS['TSFE']->siteScript, 0, 1) == '?')) {
 				$dontCreateNewUrls = true;
@@ -179,11 +295,20 @@ class tx_naworkuri {
 					}
 				}
 				$ignoreTimeout = true;
-				$uri = $translator->params2uri($params, $dontCreateNewUrls, $ignoreTimeout);
-				if (!($_SERVER['REQUEST_METHOD'] == 'POST') && ($path == 'index.php' || $path == '') && $uri !== false) {
-					header('Location: ' . $GLOBALS['TSFE']->config['config']['baseURL'] . $uri, true, 301);
-					exit;
-				}
+				try {
+					$uri = $translator->params2uri($params, $dontCreateNewUrls, $ignoreTimeout);
+					if (!($_SERVER['REQUEST_METHOD'] == 'POST') && ($path == 'index.php' || $path == '') && $uri !== false && $uri != $GLOBALS['TSFE']->siteScript) {
+						$uri = tx_naworkuri_helper::finalizeUrl($uri, TRUE); // TRUE is for redirect, this applies "/" by default and the baseURL if set
+						tx_naworkuri_helper::sendRedirect($uri, $configReader->getRedirectStatus());
+						exit;
+					}
+				} catch (Tx_NaworkUri_Exception_UrlIsNotUniqueException $ex) {
+                    /* log unique failure to belog */
+                    tx_naworkuri_helper::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . tx_naworkuri_helper::implode_parameters($ex->getParameters()), tx_naworkuri_helper::LOG_SEVERITY_ERROR);
+                } catch (Tx_NaworkUri_Exception_DbErrorException $ex) {
+                    /* log db errors to belog */
+                    tx_naworkuri_helper::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', tx_naworkuri_helper::LOG_SEVERITY_ERROR);
+                }
 			}
 		}
 	}
@@ -204,8 +329,7 @@ class tx_naworkuri {
 				$incomingFieldArray['hash_params'] = md5($incomingFieldArray['params']);
 		}
 	}
-	
-	
+
 	function curl_exec_follow($ch, &$maxredirect = null) {
 		$mr = $maxredirect === null ? 5 : intval($maxredirect);
 		if (ini_get('open_basedir') == '' && ini_get('safe_mode') == '') {

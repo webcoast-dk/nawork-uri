@@ -6,8 +6,8 @@ $BACK_PATH='../../../../typo3/';
 $MCONF['name']='web_txnaworkuriM1';
 
 $MCONF['access']='user,group';
-$MLANG['default']['tabs_images']['tab'] = 'moduleicon.gif';
-$MLANG['default']['ll_ref']='LLL:EXT:nawork_uri/mod1/locallang.xml';
+$MLANG['default']['tabs_images']['tab'] = 'moduleicon.png';
+$MLANG['default']['ll_ref']='LLL:EXT:nawork_uri/Resources/Language/locallang_mod.xml';
 $MCONF['script']='index.php';
 
 

@@ -113,7 +113,7 @@ class tx_naworkuri_cache {
 	public function findOldUrl($domain, $path) {
 		$domainCondition = '';
 		if ($this->config->isMultiDomainEnabled()) {
-			$domainCondition = ' AND u.domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
+			$domainCondition = ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
 		}
 		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'hash_path="' . md5($path) . '" AND type=1' . $domainCondition, '', '', 1);
 		if (is_array($urls) && count($urls) > 0) {

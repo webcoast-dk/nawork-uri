@@ -1,3 +1,6 @@
+2.1.24
+* FIX: Remove table alias from query in function for finding old url, that caused the url not to be found when used in multidomain mode
+
 2.1.23
 * FIX: an empty uri part was returned if a record was not available in default language
 

@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <nawork_uri>
+	<general>
+		<!-- use disable option to disable nawork_uri completely, e.g. for a special domain, this also disables the path lookup -->
+		<disable>1</disable>
+		<append>/</append>
+		<castTypeToInt>1</castTypeToInt>
+		<castLToInt>1</castLToInt>
+		<redirectOnParameterDiff>1</redirectOnParameterDiff>
+		<redirectStatus>301</redirectStatus>
+	</general>
 
-	<append>/</append>
-	<castTypeToInt>1</castTypeToInt>
-	<castLToInt>1</castLToInt>
-	<redirectOnParameterDiff>1</redirectOnParameterDiff>
-	<redirectStatus>301</redirectStatus>
 	<transliteration>
 		<!--
 		<char from="ä" to="ae" />
@@ -90,97 +94,73 @@
 		<behavior type="message"><![CDATA[ <h1>Page not found!</h1> ]]></behavior>
 	</pagenotfound>
 
+	<parameters>
+		<param name="cHash">
+			<type>hidden</type>
+		</param>
 
-	<!-- define fixed uri segments -->
-	<predefinedparts>
-		<!-- ignore these parameters in uri -->
-		<part>
-			<parameter>tx_ttnews[backPid]</parameter>
-		</part>
-		<part>
-			<parameter>cHash</parameter>
-		</part>
-		<part>
-			<parameter>no_cache</parameter>
-		</part>
-		<part key="predef_uri_part">
-			<parameter>predef_uri_value</parameter>
-			<value>1</value>
-		</part>
-		<!-- /number-123/.. >> &number=123 -->
-		<part key="number-###">
-			<parameter>number</parameter>
-		</part>
-	</predefinedparts>
+		<param name="no_cache">
+			<type>hidden</type>
+		</param>
 
-	<!-- pagetree >> path -->
-	<!-- @TODO add localisation of pagepath based on laguage -->
-	<pagepath>
-		<field>alias,subtitle,title</field>
-		<limit>100</limit>
-	</pagepath>
+		<param name="L">
+			<type>valuemap</type>
+			<valuemap>
+				<value key="0" remove="1"></value>
+				<value key="1">en</value>
+				<value key="2">fr</value>
+			</valuemap>
+		</param>
 
-	<!-- remap parameters to db values -->
-	<uriparts>
-		<part>
-			<parameter>tx_ttnews[tt_news]</parameter>
-			<field>title</field>
-			<table>tt_news</table>
-			<where>uid=###</where>
-		</part>
-		<part>
-			<parameter>pages[test]</parameter>
-			<field>subtitle//title</field>
-			<table>pages</table>
-			<where>uid=###</where>
-		</part>
-		<part>
-			<parameter>pages[test2]</parameter>
-			<field>{subtitle//title}-{uid}--{pid}</field>
-			<table>pages</table>
-			<where>uid='###'</where>
-		</part>
-		<part>
-			<parameter>pages[test3]</parameter>
-			<field>{title}</field>
-			<table>pages</table>
-			<where>uid='###'</where>
-		</part>
-		<part>
-			<parameter>pages[title]</parameter>
-			<field>title-{uid}</field>
-			<table>pages</table>
-			<where>title="###"</where>
-		</part>
-		<part>
-			<parameter>tx_standocuments_pi_details[doc]</parameter>
-			<field>number//title</field>
-			<table>tx_standocuments_documents</table>
-			<where>uid=###</where>
-		</part>
+		<param name="id">
+			<type>userfunc</type>
+			<userfunc>EXT:nawork_uri/Classes/Transformer.php:Tx_NaworkUri_Transformer->makePagePath</userfunc>
+			<config>
+				<field>nav_title//title</field>
+			</config>
+		</param>
 
-	</uriparts>
+		<!-- param type plain is just put in the path with its value, but can be wrapped with a specific depending on the language -->
+		<param name="tx_ttnews[pointer]">
+			<type>plain</type>
+			<wrap>page-|</wrap>
+			<wrap language="de">seite-|</wrap>
+		</param>
 
-	<!-- remap parameters to constant values -->
-	<valuemaps>
-		<valuemap>
-			<parameter>L</parameter>
-			<value key="" remove="1" >0</value>
-			<value key="en">1</value>
-		</valuemap>
-		<valuemap>
-			<parameter>type</parameter>
-			<value key="" remove="1" >0</value>
-			<value key="text">50</value>
-			<value key="pdf">55</value>
-		</valuemap>
-	</valuemaps>
+		<param name="tx_ttnews[tt_news]">
+			<type>database</type>
+			<table>tx_ttnews</table>
+			<fields>title</fields>
+			<!-- can also be:
+			<fields>{subtitle//title}-{uid}</fields>
+			to use subtitle if it exists or title and append the uid with a "-"
+			-->
+			<whereField>uid</whereField>
+			<!-- can also be:
+			<whereField type="string">some_field_here<whereField>
+			if you want to match against a string field
+			-->
+			<!-- you can also wrap this parameter's transformation -->
+			<wrap>news-|</wrap>
+		</param>
 
-	<!-- define the order of parameter path segments -->
-	<paramorder>
-		<param>L</param>
-		<param>id</param>
-		<param>type</param>
-	</paramorder>
+		<param name="tx_abcourses_pi1[eventId]">
+			<type>database</type>
+			<table>tx_abcourses_event</table>
+			<fields>{title}-{date}</fields>
+			<selectFields>title, FROM_UNIXTIME(coursestart, '%Y-%m-%d') as date</selectFields>
+			<foreignTable>tx_abcourses_course</foreignTable>
+			<mmTable>tx_abcourses_event_course_mm</mmTable>
+			<whereField>uid</whereField>
+		</param>
 
+		<param name="type">
+			<type>valuemap</type>
+			<valuemap>
+				<value key="0"></value>
+				<value key="98">print</value>
+				<value key="99">text</value>
+			</valuemap>
+		</param>
+	</parameters>
 </nawork_uri>

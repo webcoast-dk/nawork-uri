@@ -146,14 +146,18 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			}
 		}
 		if (!isset($params['L'])) {
-			$params['L'] = $GLOBALS['TSFE']->sys_language_uid ? $GLOBALS['TSFE']->sys_language_uid : 0;
-			if (isset($params['cHash'])) {
-				$cHashParams = $params;
-				unset($cHashParams['cHash']);
-				ksort($cHashParams);
-				$params['cHash'] = t3lib_div::calculateCHash($cHashParams);
-			}
+			/* append an empty string to make sure this value is a string when given to t3lib_div::calculateCHash */
+			$params['L'] = '' . ($GLOBALS['TSFE']->sys_language_uid ? $GLOBALS['TSFE']->sys_language_uid : 0);
 		}
+
+		/* recalculate the cHash to avoid doublicated urls with different cHashes based on encoded or non-encoded parameters, e.g. from the crawler */
+		if (isset($params['cHash'])) {
+			$cHashParams = $params;
+			unset($cHashParams['cHash']);
+			ksort($cHashParams);
+			$params['cHash'] = t3lib_div::calculateCHash($cHashParams);
+		}
+
 		$this->language = $params['L'];
 		/* find cached urls with the given parameters from the current domain */
 		list($encodableParameters, $unencodableParameters) = tx_naworkuri_helper::filterConfiguredParameters($params);

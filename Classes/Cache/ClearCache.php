@@ -22,7 +22,7 @@ class Tx_NaworkUri_Cache_ClearCache {
 	}
 
 	public function clearUrlCache() {
-		$this->db->exec_UPDATEquery('tx_naworkuri_uri', 'deleted=0', array('tstamp' => 0), array('tstamp'));
+		$this->db->exec_UPDATEquery('tx_naworkuri_uri', '', array('tstamp' => 0), array('tstamp'));
 	}
 }
 

@@ -1,3 +1,10 @@
+2.1.27
+* FIX: Cache can not be cleared: Removes deleted field from clear cache query, that was removed in 2.1.17
+* FIX: Urls are not converted to old urls: Corrects the spelling mistake in the page id parameter, parameter hash must not be encoded for hashing
+* FIX: Extension configuration containes reference to cool uri config file: Changes the description for the xml path configuration
+* FIX: Queries are stored for debugging: Disables the storing of queries
+* FIX: Removes unnecessary line in function tx_naworkuri_cache::setTimeout that set the timeout to 0
+
 2.1.26
 * FIX: The interface backend_cacheActionsHook wasn't autoloaded anymore in 4.7
 

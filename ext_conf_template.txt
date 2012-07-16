@@ -1,5 +1,5 @@
 
-# cat=basic//01; type=string; label=XML path: Path to the CoolUriConf.xml file
+# cat=basic//01; type=string; label=XML path: Path to the configuration xml file
 XMLPATH = typo3conf/ext/nawork_uri/lib/default_UriConf.xml
 
 # cat=basic//02; type=int; label=URL storage page: The page where to store urls, default is "0", but if editors should work with the urls you need to set it to a specific sysfolder

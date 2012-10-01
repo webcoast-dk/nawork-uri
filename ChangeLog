@@ -1,3 +1,6 @@
+2.1.29:
+* FIX: Wrong sql query syntax in tx_naworkuri_cache::unique
+
 2.1.28:
 * FIX: Missing parameters after explode and implode: explode_parameters and implode_parameters can handle array valued parameters now
 * FIX: Float values were shown with comma instead of point due to setlocale(LC_ALL,...): We don't set LC_ALL anymore

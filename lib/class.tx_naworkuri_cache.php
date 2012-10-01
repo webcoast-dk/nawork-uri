@@ -303,7 +303,7 @@ class tx_naworkuri_cache {
 		$dbRes = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid', $this->config->getUriTable(), '(page_uid!=' . intval($pageUid) . ' OR sys_language_uid!=' . intval($language) . ' OR hash_params != ' . $this->db->fullQuoteStr($parameterHash, $this->config->getUriTable()) . ') AND hash_path = ' . $this->db->fullQuoteStr($pathHash, $this->config->getUriTable()) . $additionalWhere, '', '', '1');
 		if (count($dbRes) > 0) {
 			/* so we have to make the url unique */
-			$cachedUrl = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'page_uid=' . intval($pageUid) . ' AND sys_language_uid=' . intval($language) . 'type=0 AND hash_params=' . $this->db->fullQuoteStr($parameterHash, $this->config->getUriTable()) . $additionalWhere, '', '', '1');
+			$cachedUrl = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'page_uid=' . intval($pageUid) . ' AND sys_language_uid=' . intval($language) . ' AND type=0 AND hash_params=' . $this->db->fullQuoteStr($parameterHash, $this->config->getUriTable()) . $additionalWhere, '', '', '1');
 			if (count($cachedUrl) > 0 && $cachedUrl[0]['original_path'] == $path) {
 				/* there is a url found with the parameter set, so lets use this path */
 				return $cachedUrl[0]['path'];

@@ -1,3 +1,8 @@
+2.1.28:
+* FIX: Missing parameters after explode and implode: explode_parameters and implode_parameters can handle array valued parameters now
+* FIX: Float values were shown with comma instead of point due to setlocale(LC_ALL,...): We don't set LC_ALL anymore
+* FIX: Unit tests does not fit the current development state: Changed unit tests and added several data sets
+
 2.1.27
 * FIX: Cache can not be cleared: Removes deleted field from clear cache query, that was removed in 2.1.17
 * FIX: Urls are not converted to old urls: Corrects the spelling mistake in the page id parameter, parameter hash must not be encoded for hashing

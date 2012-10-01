@@ -26,9 +26,17 @@ class tx_naworkuri_helper {
 		$tmp = explode('&', $param_string);
 		foreach ($tmp as $part) {
 			list($key, $value) = explode('=', $part);
-			$result[$key] = $value;
+			if (substr($key, -2) == '[]') {
+				/* we have an array value */
+				if (!array_key_exists($key, $result)) {
+					$result[$key] = array();
+				}
+				$result[$key][] = $value;
+			} else {
+				$result[$key] = $value;
+			}
 		}
-		ksort($result);
+		krsort($result);
 		return $result;
 	}
 
@@ -39,12 +47,34 @@ class tx_naworkuri_helper {
 	 * @return string Imploded Parameters
 	 */
 	public static function implode_parameters($params_array, $encode = TRUE) {
-		ksort($params_array);
-		$processedParameters = array();
-		foreach ($params_array as $key => $value) {
-			$processedParameters[] = implode('=', array($key, $encode ? rawurlencode($value) : $value));
+		self::arrayKsortRecursive($params_array);
+		$queryStringParts = array();
+		foreach ($params_array as $name => $value) {
+			if (is_array($value)) {
+				foreach ($value as $v) {
+					$queryStringParts[] = ($encode ? rawurlencode($name) : $name) . '=' . ($encode ? rawurlencode($v) : $v);
+				}
+			} else {
+				$queryStringParts[] = ($encode ? rawurlencode($name) : $name) . '=' . ($encode ? rawurlencode($value) : $value);
+			}
 		}
-		return implode('&', $processedParameters);
+		return implode('&', $queryStringParts);
+	}
+
+	private static function arrayKsortRecursive(&$array) {
+		uksort($array, array(self, 'compareArrayKeys'));
+		foreach ($array as $key => $value) {
+			if (is_array($value) && !empty($value)) {
+				self::arrayKsortRecursive($value);
+				$array[$key] = $value;
+			}
+		}
+	}
+
+	private static function compareArrayKeys($a, $b) {
+		$a = strtolower($a);
+		$b = strtolower($b);
+		return strcmp($a, $b);
 	}
 
 	/**
@@ -54,7 +84,13 @@ class tx_naworkuri_helper {
 	 * @return string
 	 */
 	public function sanitize_uri($uri) {
-		setlocale(LC_ALL, tx_naworkuri_helper::getLocale());
+		$locale = self::getLocale();
+		/* settings locales as in tsfe */
+		setlocale(LC_COLLATE, $locale);
+		setlocale(LC_CTYPE, $locale);
+		setlocale(LC_MONETARY, $locale);
+		setlocale(LC_TIME, $locale);
+
 		$uri = $this->uriTransliterate($uri);
 		$uri = strip_tags($uri);
 		$uri = strtolower($uri);
@@ -123,6 +159,8 @@ class tx_naworkuri_helper {
 	 */
 	function uri_make_wellformed($uri) {
 		$uri = preg_replace('/[\-]+/', '-', $uri);
+		$uri = preg_replace('/\/-/', '/', $uri);
+		$uri = preg_replace('/-\//', '/', $uri);
 		$uri = preg_replace('/[\/]+/', '/', $uri);
 		$uri = preg_replace('/\-+/', '-', $uri);
 		$uri = preg_replace('/^[\/]+/u', '', $uri);
@@ -185,15 +223,15 @@ class tx_naworkuri_helper {
 	}
 
 	public static function getLocale() {
-		$encoding = $GLOBALS['TSFE']->config['config']['locale_all'];
-		if (empty($encoding)) {
+		$locale = $GLOBALS['TSFE']->config['config']['locale_all'];
+		if (empty($locale)) {
 			$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
-			$encoding = $extConf['default_locale'];
+			$locale = $extConf['default_locale'];
 		}
-		if (empty($encoding)) {
-			$encoding = 'en_US';
+		if (empty($locale)) {
+			$locale = 'en_US';
 		}
-		return $encoding;
+		return $locale;
 	}
 
 	/**
@@ -270,7 +308,7 @@ class tx_naworkuri_helper {
 			'details' => $msg,
 			'error' => $severity,
 			'tstamp' => time()
-		), array(
+			), array(
 			'error',
 			'tstamp'
 		));

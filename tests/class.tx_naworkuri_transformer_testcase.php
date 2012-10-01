@@ -1,6 +1,6 @@
 <?php
 
-require_once (t3lib_extMgm::extPath('nawork_uri').'/lib/class.tx_naworkuri_transformer.php');
+require_once (t3lib_extMgm::extPath('nawork_uri') . '/lib/class.tx_naworkuri_transformer.php');
 
 class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 
@@ -36,7 +36,7 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 		$orgParams = array();
 		$encodedParams = array();
 		$this->db->store_lastBuiltQuery = 1;
-	 	$result = $this->transformer->params2uri_pagepath($orgParams, $unencodedParams, $encodedParams);
+		$result = $this->transformer->params2uri_pagepath($orgParams, $unencodedParams, $encodedParams);
 		$this->assertEquals($expectedPath, $result['id']);
 	}
 
@@ -110,27 +110,27 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 				'id=16',
 				'sub-3/sub-3-1/sub-3-1-5/',
 			),
-			'page id 10, cHash 123, first existing' => array(
+			'page id 10, no_cache 1, first existing' => array(
 				array(
 					'id=10',
 				),
-				'id=10&cHash=123',
+				'id=10&no_cache=1',
 				'sub-2/sub-2-4-1/',
 			),
-			'page id 10, cHash 123, both existing' => array(
+			'page id 10, no_cache 1, both existing' => array(
 				array(
 					'id=10',
-					'id=10&L=0&cHash=123',
+					'id=10&L=0&no_cache=1',
 				),
-				'id=10&L=0&cHash=123',
+				'id=10&L=0&no_cache=1',
 				'sub-2/sub-2-4-1/',
 			),
-			'page id 10, cHash 456' => array(
+			'page id 10, no_cache 2, two equal urls existing' => array(
 				array(
 					'id=10',
-					'id=10&cHash=123&L=0',
+					'id=10&no_cache=1',
 				),
-				'id=10&cHash=456&L=0',
+				'id=10&no_cache=2',
 				'sub-2/sub-2-4-2/',
 			),
 			'page title with comma' => array(
@@ -147,14 +147,12 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 	 */
 	public function params2uriReturnsCorrectPath($preparedUris, $params, $expectedResult) {
 		$uris = array();
-		foreach($preparedUris as $uri) {
+		foreach ($preparedUris as $uri) {
 			$uris[$uri] = $this->transformer->params2uri($uri);
-
 		}
 		$result = $this->transformer->params2uri($params);
 		$this->assertEquals($expectedResult, $result);
 	}
-
 
 	public function params2uri_uripartsReturnsCorrectTranslationProvider() {
 		return array(
@@ -190,16 +188,16 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 		$this->assertEquals($expected, $result);
 	}
 
-	public function params2uri_predefinedpartsReturnsCorrectTranslationProvider(){
+	public function params2uri_predefinedpartsReturnsCorrectTranslationProvider() {
 		return array(
 			array(
 				array(
-					'number'=>123,
+					'number' => 123,
 					'predef_uri_value' => 1,
 					'no_cache' => 'no_cache',
 					'not_encoded_params' => 'not_encoded_value'
 				),
-				array('predef_uri_value'=>'predef_uri_part','number'=>'number-123')
+				array('predef_uri_value' => 'predef_uri_part', 'number' => 'number-123')
 			),
 		);
 	}
@@ -210,30 +208,27 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 	 * @dataProvider params2uri_predefinedpartsReturnsCorrectTranslationProvider
 	 *
 	 */
-	public function params2uri_predefinedpartsReturnsCorrectTranslation($params, $expected_parts, $error=''){
+	public function params2uri_predefinedpartsReturnsCorrectTranslation($params, $expected_parts, $error = '') {
 		$encoded_params = array();
 		$parts = $this->transformer->params2uri_predefinedparts($params, $params, $encoded_params);
 		$this->assertEquals(
-			$expected_parts ,
-			$parts,
-			$error
+			$expected_parts, $parts, $error
 		);
-
 	}
 
-	public function params2uri_valuemapsReturnCorrectTranslationProvider(){
+	public function params2uri_valuemapsReturnCorrectTranslationProvider() {
 		return array(
 			array(
 				array('L' => 0),
 				array()
 			),
 			array(
-				array('L'=>1,'type'=>50,'not_encoded_params' => 'not_encoded_value'),
-				array('L'=>'en','type'=>'text'),
+				array('L' => 1, 'type' => 50, 'not_encoded_params' => 'not_encoded_value'),
+				array('L' => 'en', 'type' => 'text'),
 			),
 			array(
-				array( 'L'=>1,'type'=>0,'not_encoded_params' => 'not_encoded_value'),
-				array('L'=>'en'),
+				array('L' => 1, 'type' => 0, 'not_encoded_params' => 'not_encoded_value'),
+				array('L' => 'en'),
 			),
 		);
 	}
@@ -246,14 +241,12 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 	 * @param unknown_type $utf_8_string
 	 * @param unknown_type $transliterated_string
 	 */
-	public function params2uri_valuemapsReturnsCorrectTranslation($params, $expected_parts, $error=''){
+	public function params2uri_valuemapsReturnsCorrectTranslation($params, $expected_parts, $error = '') {
 		$encoded_params = array();
 		$parts = $this->transformer->params2uri_valuemaps($params, $params, $encoded_params);
 
 		$this->assertEquals(
-			$expected_parts,
-			$parts,
-			$error
+			$expected_parts, $parts, $error
 		);
 	}
 
@@ -292,18 +285,17 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 					'L' => 0,
 				),
 			),
-			'three encoded(id,L,cHash) and no unencoded parameters' => array(
-				'id=8&cHash=123&L=0',
+			'three encoded(id,L,no_cache) and no unencoded parameters' => array(
+				'id=8&no_cache=1&L=0',
 				'sub-2/sub-2-2/',
 				array(
 					'id' => 8,
 					'L' => 0,
-					'cHash' => 123,
+					'no_cache' => 1,
 				),
 			),
 		);
 	}
-
 
 	/**
 	 * General Path encoding tests
@@ -330,7 +322,7 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 		$this->assertEquals(array(
 			'id' => '10',
 			'L' => '0',
-		), $this->transformer->uri2params('home.html'));
+			), $this->transformer->uri2params('home.html'));
 	}
 
 	/**
@@ -355,5 +347,7 @@ class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
 		$this->db->exec_DELETEquery('test_tx_naworkuri_uri', 'uid=1');
 		$this->assertEquals('sub-3-1/', $this->transformer->params2uri('id=4&no_cache=1'));
 	}
+
 }
+
 ?>

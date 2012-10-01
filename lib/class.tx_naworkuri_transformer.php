@@ -384,7 +384,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 						} else {
 							$dbres = $GLOBALS['TYPO3_DB']->exec_SELECT_mm_query($selectFields, $table, $mmTable, $foreignTable, $where_part, '', '', 1);
 						}
-						/* 
+						/*
 						 * if the query for a record with sys_language_uid 0 returns nothing let's try it with the current language
 						 * this must be added to avoid an empty uri part if e.g. a news record is only available in english
 						 */

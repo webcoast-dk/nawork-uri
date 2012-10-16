@@ -15,7 +15,6 @@ class tx_naworkuri implements t3lib_Singleton {
 	function uri2params($params, $ref) {
 		global $TYPO3_CONF_VARS;
 
-
 		if (
 				$params['pObj']->siteScript
 				&& substr($params['pObj']->siteScript, 0, 9) != 'index.php'
@@ -297,7 +296,7 @@ class tx_naworkuri implements t3lib_Singleton {
 				$ignoreTimeout = true;
 				try {
 					$uri = $translator->params2uri($params, $dontCreateNewUrls, $ignoreTimeout);
-					if (!($_SERVER['REQUEST_METHOD'] == 'POST') && ($path == 'index.php' || $path == '') && $uri !== false && $uri != $GLOBALS['TSFE']->siteScript) {
+					if ($_SERVER['REQUEST_METHOD'] == 'GET' && ($path == 'index.php' || $path == '') && $uri !== false && $uri != $GLOBALS['TSFE']->siteScript) {
 						$uri = tx_naworkuri_helper::finalizeUrl($uri, TRUE); // TRUE is for redirect, this applies "/" by default and the baseURL if set
 						tx_naworkuri_helper::sendRedirect($uri, $configReader->getRedirectStatus());
 						exit;

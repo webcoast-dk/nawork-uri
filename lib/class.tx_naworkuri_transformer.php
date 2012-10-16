@@ -49,7 +49,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	 * @param boolean $multidomain
 	 * @param string $domain
 	 */
-	public function __construct($config, $multidomain=false, $domain = '') {
+	public function __construct($config, $multidomain = false, $domain = '') {
 		$this->db = $GLOBALS['TYPO3_DB'];
 		// read configuration
 		$this->config = $config;
@@ -126,7 +126,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		}
 
 		/* we must have an integer id so if it is now lookit up */
-		if(!t3lib_div::testInt($params['id'])) {
+		if (!t3lib_div::testInt($params['id'])) {
 			$params['id'] = tx_naworkuri_helper::aliasToId($params['id']);
 		}
 
@@ -164,8 +164,8 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		$cachedUri = $this->cache->findCachedUrl($encodableParameters, $this->domain, $this->language);
 		if ($cachedUri !== FALSE) {
 			/* compute the unencoded parameters */
-			if(count($unencodableParameters) > 0) {
-				$cachedUri .= '?'.tx_naworkuri_helper::implode_parameters($unencodableParameters);
+			if (count($unencodableParameters) > 0) {
+				$cachedUri .= '?' . tx_naworkuri_helper::implode_parameters($unencodableParameters);
 			}
 			/* append the anchor if not empty */
 			if ($anchor) {
@@ -375,7 +375,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 					$where_part = str_replace('###', $unencoded_params[$param_name], $where);
 
 					if (!empty($where_part) && !empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
-						$where_part .= ' AND ' . $GLOBALS['TCA'][$table]['ctrl']['languageField'] . '=0';
+						$where_part .= ' AND (' . $GLOBALS['TCA'][$table]['ctrl']['languageField'] . '=0 OR ' . $GLOBALS['TCA'][$table]['ctrl']['languageField'] . '=-1)';
 					}
 
 					if (!empty($table)) {
@@ -416,7 +416,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 							}
 						}
 						$value = trim($value);
-						if(empty($value)) {
+						if (empty($value)) {
 							$value = $unencoded_params[$param_name];
 						}
 						Tx_NaworkUri_Cache_TransformationCache::setTransformation($param_name, $unencoded_params[$param_name], $value, $this->language);

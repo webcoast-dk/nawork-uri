@@ -276,7 +276,7 @@ class tx_naworkuri_cache {
 	private function makeOldUrl($domain, $pageId, $language, $parameters, $excludeUid = FALSE) {
 		$domainConstraint = '';
 		if (!empty($domain)) {
-			$domain = ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
+			$domainConstraint = ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
 		}
 		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'hash_params=' . $this->db->fullQuoteStr(md5(tx_naworkuri_helper::implode_parameters($parameters, FALSE)), $this->config->getUriTable()) . $domainConstraint . ' AND page_uid=' . intval($pageId) . ' AND sys_language_uid=' . intval($language) . ($excludeUid !== FALSE ? ' AND uid!=' . intval($excludeUid) : '') . ' AND type=0', array(
 			'type' => self::TX_NAWORKURI_URI_TYPE_OLD,

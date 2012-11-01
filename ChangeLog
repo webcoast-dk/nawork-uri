@@ -1,3 +1,10 @@
+2.1.31:
+* corrects misspelled variable name for domain constraint in make old function
+* fixes parameter diff when evaluating encodable and unencodable parameters, array_diff was used but array_diff_key compares keys and must be used here
+* fixes sql error when a parameter value is empty, checks before transformation
+* fixes domain value for redirects: it was not saved as a string, this is fixed via postProcess hook in TCEmain
+* removes itemProcFunc for domain list in url record
+
 2.1.30:
 * FIX: Redirects must not be made if request method is anything but GET
 * FIX: Records with language uid -1 (all) was not found

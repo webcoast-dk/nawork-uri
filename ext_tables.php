@@ -80,4 +80,6 @@ t3lib_extMgm::allowTableOnStandardPages('tx_naworkuri_uri');
 if (TYPO3_MODE == 'BE') {
 	t3lib_extMgm::addModule('web', 'txnaworkuriM1', '', t3lib_extMgm::extPath($_EXTKEY) . 'mod1/');
 }
+
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass']['tx_naworkuri_uriSave'] = 'EXT:naworkuri/Classes/UserFunc/UriSave.php:Tx_NaworkUri_UserFunc_UriSave';
 ?>

@@ -76,13 +76,19 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			return;
 		$append = (string) $this->config->getAppend();
 		list($path, $params) = t3lib_div::trimExplode('?', $uri);
+		// save the original path to check that if the "slashed" one does not return anything
+		$orgPath = '';
+		$path = urldecode($path);
 		if (!empty($path) && $append == '/' && substr($path, -strlen($append)) != $append && !preg_match('/\.\w{3,5}\d?$/', $path)) {
+			$orgPath = $path;
 			$path .= (string) $this->config->getAppend();
 		}
-		$path = urldecode($path);
 
 		// look into the db
 		$cache = $this->cache->read_path($path, $this->domain);
+		if ($cache === FALSE && !empty($orgPath)) { // if we don't get a url try with the original path if it is not empty
+			$cache = $this->cache->read_path($orgPath, $this->domain);
+		}
 		if ($cache['type'] > 0) {
 			throw new Tx_NaworkUri_Exception_UrlIsRedirectException($cache);
 		}
@@ -340,7 +346,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			$value = '';
 
 			$param_name = (string) $uripart->parameter;
-			if ($param_name && isset($unencoded_params[$param_name])) {
+			if ($param_name && array_key_exists($param_name, $unencoded_params) && strlen($unencoded_params[$param_name]) > 0) {
 				try {
 					$value = Tx_NaworkUri_Cache_TransformationCache::getTransformation($param_name, $unencoded_params[$param_name], $this->language);
 				} catch (Tx_NaworkUri_Exception_TransformationValueNotFoundException $ex) {

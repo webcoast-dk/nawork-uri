@@ -1,3 +1,6 @@
+2.1.32:
+* fixes endless redirects: query string must be url decoded for further processing
+
 2.1.31:
 * corrects misspelled variable name for domain constraint in make old function
 * fixes parameter diff when evaluating encodable and unencodable parameters, array_diff was used but array_diff_key compares keys and must be used here

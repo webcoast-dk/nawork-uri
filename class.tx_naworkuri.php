@@ -16,9 +16,9 @@ class tx_naworkuri implements t3lib_Singleton {
 		global $TYPO3_CONF_VARS;
 
 		if (
-				$params['pObj']->siteScript
-				&& substr($params['pObj']->siteScript, 0, 9) != 'index.php'
-				&& substr($params['pObj']->siteScript, 0, 1) != '?'
+			$params['pObj']->siteScript
+			&& substr($params['pObj']->siteScript, 0, 9) != 'index.php'
+			&& substr($params['pObj']->siteScript, 0, 1) != '?'
 		) {
 
 			$uri = $params['pObj']->siteScript;
@@ -116,8 +116,8 @@ class tx_naworkuri implements t3lib_Singleton {
 	function params2uri(&$link, $ref) {
 		global $TYPO3_CONF_VARS;
 		if (
-				$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1
-				&& $link['LD']['url']
+			$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1
+			&& $link['LD']['url']
 		) {
 			list($path, $params) = explode('?', $link['LD']['totalURL']);
 			$params = rawurldecode(html_entity_decode($params));
@@ -150,8 +150,8 @@ class tx_naworkuri implements t3lib_Singleton {
 				/* log unique failure to belog */
 				tx_naworkuri_helper::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . tx_naworkuri_helper::implode_parameters($ex->getParameters()), tx_naworkuri_helper::LOG_SEVERITY_ERROR);
 				$totalURL = 'index.php';
-				if(!empty($params)) {
-					$totalURL .= '?'.tx_naworkuri_helper::implode_parameters(tx_naworkuri_helper::explode_parameters($params));
+				if (!empty($params)) {
+					$totalURL .= '?' . tx_naworkuri_helper::implode_parameters(tx_naworkuri_helper::explode_parameters($params));
 				}
 				$totalURL = tx_naworkuri_helper::finalizeUrl($totalURL);
 				$link['LD']['totalURL'] = $totalURL;
@@ -159,8 +159,8 @@ class tx_naworkuri implements t3lib_Singleton {
 				/* log db errors to belog */
 				tx_naworkuri_helper::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', tx_naworkuri_helper::LOG_SEVERITY_ERROR);
 				$totalURL = 'index.php';
-				if(!empty($params)) {
-					$totalURL .= '?'.tx_naworkuri_helper::implode_parameters(tx_naworkuri_helper::explode_parameters($params));
+				if (!empty($params)) {
+					$totalURL .= '?' . tx_naworkuri_helper::implode_parameters(tx_naworkuri_helper::explode_parameters($params));
 				}
 				$totalURL = tx_naworkuri_helper::finalizeUrl($totalURL);
 				$link['LD']['totalURL'] = $totalURL;
@@ -218,12 +218,13 @@ class tx_naworkuri implements t3lib_Singleton {
 			}
 			tx_naworkuri_helper::sendRedirect($uri, 301);
 		} elseif (
-				$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1
-				&& empty($_GET['ADMCMD_prev'])
-				&& $GLOBALS['TSFE']->config['config']['tx_naworkuri.']['redirect'] == 1
-				&& $GLOBALS['TSFE']->siteScript
+			$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1
+			&& empty($_GET['ADMCMD_prev'])
+			&& $GLOBALS['TSFE']->config['config']['tx_naworkuri.']['redirect'] == 1
+			&& $GLOBALS['TSFE']->siteScript
 		) {
 			list($path, $params) = explode('?', $GLOBALS['TSFE']->siteScript);
+			$params = rawurldecode(html_entity_decode($params)); // decode the query string because it is expected by the further processing functions
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, $extConf['MULTIDOMAIN']);
@@ -302,12 +303,12 @@ class tx_naworkuri implements t3lib_Singleton {
 						exit;
 					}
 				} catch (Tx_NaworkUri_Exception_UrlIsNotUniqueException $ex) {
-                    /* log unique failure to belog */
-                    tx_naworkuri_helper::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . tx_naworkuri_helper::implode_parameters($ex->getParameters()), tx_naworkuri_helper::LOG_SEVERITY_ERROR);
-                } catch (Tx_NaworkUri_Exception_DbErrorException $ex) {
-                    /* log db errors to belog */
-                    tx_naworkuri_helper::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', tx_naworkuri_helper::LOG_SEVERITY_ERROR);
-                }
+					/* log unique failure to belog */
+					tx_naworkuri_helper::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . tx_naworkuri_helper::implode_parameters($ex->getParameters()), tx_naworkuri_helper::LOG_SEVERITY_ERROR);
+				} catch (Tx_NaworkUri_Exception_DbErrorException $ex) {
+					/* log db errors to belog */
+					tx_naworkuri_helper::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', tx_naworkuri_helper::LOG_SEVERITY_ERROR);
+				}
 			}
 		}
 	}

@@ -165,6 +165,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		}
 
 		$this->language = $params['L'];
+//		debug($parameters);
 		/* find cached urls with the given parameters from the current domain */
 		list($encodableParameters, $unencodableParameters) = tx_naworkuri_helper::filterConfiguredParameters($params);
 		$cachedUri = $this->cache->findCachedUrl($encodableParameters, $this->domain, $this->language);
@@ -354,7 +355,8 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 					$table = (string) $uripart->table;
 					$field = (string) $uripart->field;
-					$selectFields = (string) $uripart->selectFields;
+					/* make sure we select uid and pid for the record, that is needed for the language overlay */
+					$selectFields = implode(',', array_merge(array('uid', 'pid'), t3lib_div::trimExplode(',', (string) $uripart->selectFields)));
 					$foreignTable = (string) $uripart->foreignTable;
 					$mmTable = (string) $uripart->mmTable;
 					$where = (string) $uripart->where;
@@ -383,7 +385,6 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 					if (!empty($where_part) && !empty($GLOBALS['TCA'][$table]['ctrl']['languageField'])) {
 						$where_part .= ' AND (' . $GLOBALS['TCA'][$table]['ctrl']['languageField'] . '=0 OR ' . $GLOBALS['TCA'][$table]['ctrl']['languageField'] . '=-1)';
 					}
-
 					if (!empty($table)) {
 						if (empty($selectFields) || empty($foreignTable) || empty($mmTable)) {
 							$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(empty($selectFields) ? '*' : $selectFields, $table, $where_part, '', '', 1);
@@ -493,7 +494,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 						break; // no page found
 					}
 
-// translate pagepath if needed
+					// translate pagepath if needed
 					if ($this->language > 0) {
 						$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'pages_language_overlay', 'pid=' . $id . ' AND deleted=0 AND sys_language_uid=' . $this->language, '', '', 1);
 						$translated_row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres);

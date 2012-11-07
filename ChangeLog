@@ -1,3 +1,6 @@
+2.1.33:
+* fixes not working overlay when selectFields are given: uid and pid are needed for the overlay to work, so we have to make sure that they are selected
+
 2.1.32:
 * fixes endless redirects: query string must be url decoded for further processing
 

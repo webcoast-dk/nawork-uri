@@ -357,6 +357,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 					$field = (string) $uripart->field;
 					/* make sure we select uid and pid for the record, that is needed for the language overlay */
 					$selectFields = implode(',', array_merge(array('uid', 'pid'), t3lib_div::trimExplode(',', (string) $uripart->selectFields)));
+					$fallback = (string) $uripart->fallback;
 					$foreignTable = (string) $uripart->foreignTable;
 					$mmTable = (string) $uripart->mmTable;
 					$where = (string) $uripart->where;
@@ -423,8 +424,12 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 							}
 						}
 						$value = trim($value);
+						/* if we have not found a transformation for the current value */
 						if (empty($value)) {
 							$value = $unencoded_params[$param_name];
+							if (!empty($fallback) && strpos($fallback, '###') !== FALSE) { // if we have a fallback set, and we have the marker "###" in it replace this with the original value and use it as an uri part
+								$value = str_replace('###', $value, $fallback);
+							}
 						}
 						Tx_NaworkUri_Cache_TransformationCache::setTransformation($param_name, $unencoded_params[$param_name], $value, $this->language);
 					}

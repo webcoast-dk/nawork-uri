@@ -1,3 +1,6 @@
+2.1.34:
+* adds fallback property to the uri part configuration for the case that there is no result in the database
+
 2.1.33:
 * fixes not working overlay when selectFields are given: uid and pid are needed for the overlay to work, so we have to make sure that they are selected
 

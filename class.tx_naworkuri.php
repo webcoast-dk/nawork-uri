@@ -50,13 +50,14 @@ class tx_naworkuri implements t3lib_Singleton {
 									if (t3lib_div::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
 										$curl = curl_init();
 										curl_setopt($curl, CURLOPT_URL, $configReader->getPageNotFoundConfigBehaviorValue());
-										curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+										curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
+										curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
 										curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
 										curl_setopt($curl, CURLOPT_TIMEOUT, 30);
 										curl_setopt($curl, CURLOPT_USERAGENT, 'nawork_uri');
 										$res = $this->curl_exec_follow($curl);
 									} else {
-										$res = '404 not found! The 404 Page URL ' . $configReader->getPageNotFoundConfigBehaviorValue() . ' seems to cause a redirect loop.';
+										$res = '404 not found! The 404 Page URL ' . $configReader->getPageNotFoundConfigBehaviorValue() . ' seems to cause a loop.';
 									}
 									break;
 								case 'redirect':

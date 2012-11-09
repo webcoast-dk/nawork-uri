@@ -95,10 +95,10 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 
 	public function getPageNotFoundConfigStatus() {
 		$status = '';
-		foreach($this->config->pagenotfound->children() as $child) {
-			if($child->getName() == 'status') {
-				if(empty($status) || (string)$child->attributes()->domain == tx_naworkuri_helper::getCurrentDomain()) {
-					$status = (string)$child;
+		foreach ($this->config->pagenotfound->children() as $child) {
+			if ($child->getName() == 'status') {
+				if (empty($status) || (string) $child->attributes()->domain == tx_naworkuri_helper::getCurrentDomain()) {
+					$status = (string) $child;
 				}
 			}
 		}
@@ -107,10 +107,13 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 
 	public function getPageNotFoundConfigBehaviorType() {
 		$type = '';
-		foreach($this->config->pagenotfound->children() as $child) {
-			if($child->getName() == 'behavior') {
-				if(empty($behavior) || (string)$child->attributes()->domain == tx_naworkuri_helper::getCurrentDomain()) {
-					$type = (string)$child->attributes()->type;
+		foreach ($this->config->pagenotfound->children() as $child) {
+			if ($child->getName() == 'behavior') {
+				if ((string) $child->attributes()->domain == t3lib_div::getIndpEnv('HTTP_HOST') && (int) $child->attributes()->ignoreMasterDomain === 1) {
+					return (string) $child->attributes()->type;
+				}
+				if (empty($behavior) || (string) $child->attributes()->domain == tx_naworkuri_helper::getCurrentDomain()) {
+					$type = (string) $child->attributes()->type;
 				}
 			}
 		}
@@ -119,10 +122,13 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 
 	public function getPageNotFoundConfigBehaviorValue() {
 		$behavior = '';
-		foreach($this->config->pagenotfound->children() as $child) {
-			if($child->getName() == 'behavior') {
-				if(empty($behavior) || (string)$child->attributes()->domain == tx_naworkuri_helper::getCurrentDomain()) {
-					$behavior = (string)$child;
+		foreach ($this->config->pagenotfound->children() as $child) {
+			if ($child->getName() == 'behavior') {
+				if ((string) $child->attributes()->domain == t3lib_div::getIndpEnv('HTTP_HOST') && (int) $child->attributes()->ignoreMasterDomain === 1) {
+					return (string) $child;
+				}
+				if (empty($behavior) || (string) $child->attributes()->domain == tx_naworkuri_helper::getCurrentDomain()) {
+					$behavior = (string) $child;
 				}
 			}
 		}
@@ -169,7 +175,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 	}
 
 	public function getTransliterations() {
-		if($this->config->transliteration instanceof SimpleXMLElement) {
+		if ($this->config->transliteration instanceof SimpleXMLElement) {
 			return $this->config->transliteration->children();
 		}
 		return array();

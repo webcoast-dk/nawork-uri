@@ -104,10 +104,11 @@ class tx_naworkuri_cache {
 	}
 
 	/**
-	 * Find an old url based on the domain and path. It will be reused with new parameters
+	 * Find an old url based on the domain and path. It will be reused with new parameters.
+	 * If no old url is found, this function looks for a url on a hidden or deleted page.
 	 *
-	 * @param type $domain
-	 * @param type $path
+	 * @param string $domain
+	 * @param string $path
 	 * @return type
 	 */
 	public function findOldUrl($domain, $path) {
@@ -116,6 +117,11 @@ class tx_naworkuri_cache {
 			$domainCondition = ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
 		}
 		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'hash_path="' . md5($path) . '" AND type=1' . $domainCondition, '', '', 1);
+		if (is_array($urls) && count($urls) > 0) {
+			return $urls[0];
+		}
+		/* try to find a url on a deleted or hidden page */
+		$urls = $this->db->exec_SELECTgetRows('u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.page_uid=p.uid AND (p.deleted=1 OR p.hidden=1) AND u.hash_path="' . md5($path) . '"' . $domainCondition, '', '', 1);
 		if (is_array($urls) && count($urls) > 0) {
 			return $urls[0];
 		}

@@ -1,3 +1,6 @@
+2.1.36:
+* fixes "-1" urls because deleted or hidden pages have them, in the findOldUrl function we try to find a url on a hidden or deleted page if we haven't found one, the normal way
+
 2.1.35:
 * introduces new attribute "ignoreMasterDomain" of type int in behavior tag in page not found configuration
 * adds check for a 404 setting for the real current domain where the masterdomain should be ignored when getting behaviour type and value

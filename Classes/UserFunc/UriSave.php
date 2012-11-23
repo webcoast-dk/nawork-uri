@@ -22,15 +22,13 @@ class Tx_NaworkUri_UserFunc_UriSave {
 	 * @param t3lib_TCEmain $tceMain A reference to the TCEmain object
 	 */
 	public function processDatamap_postProcessFieldArray($status, $table, $id, &$fieldArray, &$tceMain) {
-		if ($table == 'tx_naworkuri_uri' && t3lib_div::testInt($id)) {
-			debug($fieldArray);
+		if ($table == 'tx_naworkuri_uri') {
 			if (array_key_exists('domain', $fieldArray) && t3lib_div::testInt($fieldArray['domain'])) {
 				$domain = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('*', 'sys_domain', 'uid=' . intval($fieldArray['domain']));
 				if (is_array($domain)) {
 					$fieldArray['domain'] = $domain['domainName'];
 				}
 			}
-			debug($fieldArray);
 		}
 	}
 

@@ -1,3 +1,8 @@
+2.1.37:
+* fixes empty 404 page due to curl not following redirects, curl follows one redirect now
+* fixes redirects not saved correctly on create, due to id check for integer failed
+* fixes current domain not beeing display but first one, when editing a redirect
+
 2.1.36:
 * fixes "-1" urls because deleted or hidden pages have them, in the findOldUrl function we try to find a url on a hidden or deleted page if we haven't found one, the normal way
 

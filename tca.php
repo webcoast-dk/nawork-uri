@@ -28,8 +28,11 @@ $TCA['tx_naworkuri_uri'] = Array(
 			'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.domain',
 			'config' => Array(
 				'type' => 'select',
+				'form_type' => 'user',
+				'userFunc' => 'EXT:nawork_uri/Classes/UserFunc/DomainItemFunc.php:Tx_NaworkUri_UserFunc_DomainItemFunc->drawForm',
 				'foreign_table' => 'sys_domain',
 				'foreign_table_where' => 'AND tx_naworkuri_masterDomain=0',
+//				'itemsProcFunc' => 'EXT:nawork_uri/Classes/UserFunc/DomainItemFunc.php:Tx_NaworkUri_UserFunc_DomainItemFunc->alterItems'
 			)
 		),
 		'path' => Array(

@@ -118,7 +118,7 @@ tx.naworkuri.PageUris = Ext.extend(Ext.grid.GridPanel, {
 					width: 32,
 					renderer: function(flag) {
 						if(flag.length > 0) {
-							return '<img src="/typo3/gfx/flags/' + flag + '" alt="" height="13" width="21" />';
+							return '<img src="/typo3/gfx/flags/' + flag + '.gif" alt="" height="12" width="20" />';
 						}
 						return '';
 					},

@@ -3,8 +3,6 @@
 $extPath = t3lib_extMgm::extPath('nawork_uri');
 $libsPath = t3lib_extMgm::extPath('nawork_uri') . 'lib/';
 
-var_dump(PATH_typo3);
-
 return array(
 	'tx_naworkuri_configreader' => $libsPath . 'class.tx_naworkuri_configReader.php',
 	'tx_naworkuri_basic_tc' => $libsPath . '../tests/class.tx_naworkuri_basic_tc.php',

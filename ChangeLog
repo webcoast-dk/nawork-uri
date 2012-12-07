@@ -1,3 +1,8 @@
+2.1.38:
+* fixes double encoding of append not encoded parameters
+* fixes missing language icons
+* note: empty 404 fix in 2.1.37 was not needed, was already working
+
 2.1.37:
 * fixes empty 404 page due to curl not following redirects, curl follows one redirect now
 * fixes redirects not saved correctly on create, due to id check for integer failed

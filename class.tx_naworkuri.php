@@ -91,6 +91,7 @@ class tx_naworkuri implements t3lib_Singleton {
 						}
 					}
 					$newUrl = parse_url($url['redirect_path']);
+					debug($newUrl);
 					$requestUrl = parse_url(t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'));
 					if (empty($newUrl['scheme']))
 						$newUrl['scheme'] = $requestUrl['scheme'];
@@ -102,6 +103,9 @@ class tx_naworkuri implements t3lib_Singleton {
 					$queryParams = array_merge(tx_naworkuri_helper::explode_parameters($requestUrl['query']), tx_naworkuri_helper::explode_parameters($newUrl['query']));
 					if (!empty($queryParams)) {
 						$uri .= '?' . tx_naworkuri_helper::implode_parameters($queryParams);
+					}
+					if (array_key_exists('fragment', $newUrl) && !empty($newUrl['fragment'])) {
+						$uri .= '#' . $newUrl['fragment'];
 					}
 					tx_naworkuri_helper::sendRedirect($uri, $url['redirect_mode']);
 				}
@@ -218,6 +222,9 @@ class tx_naworkuri implements t3lib_Singleton {
 			$queryParams = array_merge(tx_naworkuri_helper::explode_parameters($requestUrl['query']), tx_naworkuri_helper::explode_parameters($newUrl['query']));
 			if (!empty($queryParams)) {
 				$uri .= '?' . tx_naworkuri_helper::implode_parameters($queryParams);
+			}
+			if (array_key_exists('fragment', $newUrl) && !empty($newUrl['fragment'])) {
+				$uri .= '#' . $newUrl['fragment'];
 			}
 			tx_naworkuri_helper::sendRedirect($uri, 301);
 		} elseif (

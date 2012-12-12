@@ -1,3 +1,7 @@
+2.1.39:
+* fixes missing fragment (anchor) on redirect (type=2)
+* fixes missing fragment (anchor) on redirect old urls (type=1)
+
 2.1.38:
 * fixes double encoding of append not encoded parameters
 * fixes missing language icons

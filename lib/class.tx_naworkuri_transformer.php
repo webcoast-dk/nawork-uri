@@ -355,8 +355,13 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 					$table = (string) $uripart->table;
 					$field = (string) $uripart->field;
-					/* make sure we select uid and pid for the record, that is needed for the language overlay */
-					$selectFields = implode(',', array_merge(array('uid', 'pid'), t3lib_div::trimExplode(',', (string) $uripart->selectFields)));
+					$selectFields = '*';
+					/* if select fields are set, use them instead of "*" */
+					$configSelectFields = (string) $uripart->selectFields;
+					if (!empty($configSelectFields)) {
+						/* make sure we select uid and pid for the record, that is needed for the language overlay */
+						$selectFields = implode(',', array_merge(array('uid', 'pid'), t3lib_div::trimExplode(',', (string) $uripart->selectFields)));
+					}
 					$fallback = (string) $uripart->fallback;
 					$foreignTable = (string) $uripart->foreignTable;
 					$mmTable = (string) $uripart->mmTable;

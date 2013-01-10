@@ -86,8 +86,10 @@ class tx_naworkuri_helper {
 	public function sanitize_uri($uri) {
 		$locale = self::getLocale();
 		/* settings locales as in tsfe */
+		if (strpos(strtolower($locale), 'tr') === FALSE) {
+			setlocale(LC_CTYPE, $locale);
+		}
 		setlocale(LC_COLLATE, $locale);
-		setlocale(LC_CTYPE, $locale);
 		setlocale(LC_MONETARY, $locale);
 		setlocale(LC_TIME, $locale);
 

@@ -1,3 +1,6 @@
+2.1.41:
+* fixes PHP Fatal Errors with turkish locales: do not set LC_CTYPE for turkish locales like typo3 does in tsfe
+
 2.1.40:
 * fixes wrong select fields, should be "*" by default and only overwritten if there are set in configuration
 * fixes debug message when saving a record, because extension name for hook was wrong

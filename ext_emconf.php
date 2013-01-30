@@ -15,7 +15,7 @@ $EM_CONF[$_EXTKEY] = array(
 	'description' => 'Create nice looking URLs like RealURL or CoolURI. It follows the concept of cooluri creating and caching the urls. Requirements: PHP 5+ with SimpleXML, cURL! MySQL 4.1+.',
 	'category' => 'fe',
 	'shy' => 0,
-	'version' => '2.1.40',
+	'version' => '2.2-dev',
 	'dependencies' => '',
 	'conflicts' => '',
 	'priority' => '',
@@ -34,7 +34,7 @@ $EM_CONF[$_EXTKEY] = array(
 	'CGLcompliance_note' => '',
 	'constraints' => array(
 		'depends' => array(
-			'typo3' => '4.4.0-0.0.0',
+			'typo3' => '4.7.0-0.0.0',
 		),
 		'conflicts' => array(
 		),

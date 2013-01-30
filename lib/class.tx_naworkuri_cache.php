@@ -73,8 +73,8 @@ class tx_naworkuri_cache {
 			$domainCondition = ' AND u.domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
 		}
 		$urls = $this->db->exec_SELECTgetRows(
-			'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.page_uid=' . intval($uid) . ' AND sys_language_uid=' . intval($language) . ' AND hash_params="' . md5(tx_naworkuri_helper::implode_parameters($params, FALSE)) . '" ' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND p.uid=u.page_uid AND type=0 AND ( u.tstamp > ' . (time() - $this->timeout) . ' OR locked=1 )', // lets find type 0 urls only from the cache
-			'', '', '1'
+				'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.page_uid=' . intval($uid) . ' AND sys_language_uid=' . intval($language) . ' AND hash_params="' . md5(tx_naworkuri_helper::implode_parameters($params, FALSE)) . '" ' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND p.uid=u.page_uid AND type=0 AND ( u.tstamp > ' . (time() - $this->timeout) . ' OR locked=1 )', // lets find type 0 urls only from the cache
+				'', '', '1'
 		);
 		if (is_array($urls) && count($urls) > 0) {
 			return $urls[0]['path'];
@@ -198,7 +198,7 @@ class tx_naworkuri_cache {
 			$domainCondition = ' AND u.domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
 		}
 		$uris = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
-			'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.hash_path="' . $hash_path . '"' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND (p.uid=u.page_uid OR u.type=2)'
+				'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.hash_path="' . $hash_path . '"' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND (p.uid=u.page_uid OR u.type=2)', '', '', '1'
 		);
 
 		if (is_array($uris) && count($uris) > 0) {
@@ -218,24 +218,24 @@ class tx_naworkuri_cache {
 	public function createUrl($page, $language, $domain, $parameters, $path, $originalPath) {
 		$parameters = tx_naworkuri_helper::implode_parameters($parameters, FALSE);
 		$result = @$this->db->exec_INSERTquery($this->config->getUriTable(), array(
-				'pid' => $this->config->getStoragePage(),
-				'page_uid' => intval($page),
-				'tstamp' => time(),
-				'crdate' => time(),
-				'sys_language_uid' => intval($language),
-				'domain' => $domain,
-				'path' => $path,
-				'hash_path' => md5($path),
-				'params' => $parameters,
-				'hash_params' => md5($parameters),
-				'original_path' => $originalPath
-				), array(
-				'pid',
-				'page_uid',
-				'tstamp',
-				'crdate',
-				'sys_language_uid'
-			));
+					'pid' => $this->config->getStoragePage(),
+					'page_uid' => intval($page),
+					'tstamp' => time(),
+					'crdate' => time(),
+					'sys_language_uid' => intval($language),
+					'domain' => $domain,
+					'path' => $path,
+					'hash_path' => md5($path),
+					'params' => $parameters,
+					'hash_params' => md5($parameters),
+					'original_path' => $originalPath
+						), array(
+					'pid',
+					'page_uid',
+					'tstamp',
+					'crdate',
+					'sys_language_uid'
+				));
 		if (!$result) {
 			throw new Tx_NaworkUri_Exception_DbErrorException($this->db->sql_error());
 		}
@@ -264,7 +264,7 @@ class tx_naworkuri_cache {
 			'hash_params' => md5($parameters),
 			'type' => intval($type),
 			'tstamp' => time()
-			), array(
+				), array(
 			'page_uid',
 			'sys_language_uid',
 			'type',
@@ -287,7 +287,7 @@ class tx_naworkuri_cache {
 		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'hash_params=' . $this->db->fullQuoteStr(md5(tx_naworkuri_helper::implode_parameters($parameters, FALSE)), $this->config->getUriTable()) . $domainConstraint . ' AND page_uid=' . intval($pageId) . ' AND sys_language_uid=' . intval($language) . ($excludeUid !== FALSE ? ' AND uid!=' . intval($excludeUid) : '') . ' AND type=0', array(
 			'type' => self::TX_NAWORKURI_URI_TYPE_OLD,
 			'tstamp' => time()
-			), array(
+				), array(
 			'type',
 			'tstamp')
 		);

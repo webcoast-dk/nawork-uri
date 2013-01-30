@@ -78,7 +78,16 @@ $TCA['tx_naworkuri_uri'] = Array(
 t3lib_extMgm::allowTableOnStandardPages('tx_naworkuri_uri');
 
 if (TYPO3_MODE == 'BE') {
-	t3lib_extMgm::addModule('web', 'txnaworkuriM1', '', t3lib_extMgm::extPath($_EXTKEY) . 'mod1/');
-}
+	t3lib_extMgm::addModule('txnaworkuriM1', '', '', t3lib_extMgm::extPath('nawork_uri') . 'Configuration/Module/');
 
+	Tx_Extbase_Utility_Extension::registerModule($_EXTKEY, 'txnaworkuriM1', 'url', '', array(
+		'Url' => 'index,ajaxLoadUrls'
+			), array(
+		'access' => 'user,group',
+		'icon' => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/module.png',
+		'labels' => 'LLL:EXT:' . $_EXTKEY . '/Resources/Private/Language/locallang_mod_url.xml',
+	));
+	
+	t3lib_extMgm::addStaticFile($_EXTKEY, 'Configuration/Module/', 'n@work URI Module');
+}
 ?>

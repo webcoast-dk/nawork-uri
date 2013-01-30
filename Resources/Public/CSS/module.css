@@ -1,0 +1,128 @@
+div#typo3-inner-docbody {
+	padding: 0 10px;
+}
+
+#typo3-inner-docbody * {
+	margin: 0;
+	padding: 0;
+}
+
+.docheader-row2-left h1 {
+	font-size: 16px;
+	margin: 0;
+}
+
+#typo3-inner-docbody h2 {
+
+}
+
+#typo3-inner-docbody #url_module {
+	overflow: hidden;
+}
+
+#typo3-inner-docbody #url_module #filter {
+	margin: 10px 0;
+}
+
+#typo3-inner-docbody .filter_option {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+#typo3-inner-docbody .filter_option label {
+    font-weight: bold;
+}
+
+#typo3-inner-docbody .filter_option label.checkbox {
+    font-style: italic;
+    font-weight: normal;
+}
+
+#typo3-inner-docbody .filter_option input[type="text"] {
+    font-style: italic;
+}
+
+#typo3-inner-docbody .filter_option input[type="checkbox"] {
+    margin-left: 8px;
+    margin-right: 3px;
+    vertical-align: middle;
+}
+
+#typo3-inner-docbody .filter_option input[type="checkbox"] {
+    margin-left: 0;
+}
+
+#typo3-inner-docbody #url_module #table_outer {
+	width: 100%;
+}
+
+#typo3-inner-docbody #url_module #table_head {
+	border-color: #585858;
+	border-style: solid;
+	border-width: 0 2px;
+	background-color: #585858;
+	color: #fff;
+}
+
+#typo3-inner-docbody #url_module #table_body {
+	border-color: #585858;
+	border-style: solid;
+	border-width: 0 2px 2px;
+	overflow-y: auto;
+}
+
+#typo3-inner-docbody #url_module table {
+	border-spacing: 0;
+	width: 100%;
+}
+
+#typo3-inner-docbody #url_module tbody {
+	background-color: #fff;
+}
+
+#typo3-inner-docbody #url_module table tr {
+}
+
+#typo3-inner-docbody #url_module table tr th {
+	border-right: 2px solid #585858;
+	padding: 5px 0;
+}
+
+#typo3-inner-docbody #url_module table tr th.resizeable:hover {
+	border-right-color: #dadada;
+}
+
+#typo3-inner-docbody #url_module table tr td {
+	border-bottom: 1px solid #585858;
+	border-right: 1px solid #585858;
+	height: 22px;
+	vertical-align: middle;
+}
+
+#typo3-inner-docbody #url_module table td.uid {
+
+}
+
+#typo3-inner-docbody #url_module table td.language {
+
+}
+
+#typo3-inner-docbody #url_module table td.path {
+
+}
+
+#typo3-inner-docbody #url_module table td.parameters {
+
+}
+#typo3-inner-docbody #url_module table td.domain {
+
+}
+
+#typo3-inner-docbody #url_module table td.locked {
+
+}
+
+
+#typo3-inner-docbody #url_module #pagination {
+	margin-bottom: 5px;
+}

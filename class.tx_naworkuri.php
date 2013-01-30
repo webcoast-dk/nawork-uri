@@ -16,9 +16,9 @@ class tx_naworkuri implements t3lib_Singleton {
 		global $TYPO3_CONF_VARS;
 
 		if (
-			$params['pObj']->siteScript
-			&& substr($params['pObj']->siteScript, 0, 9) != 'index.php'
-			&& substr($params['pObj']->siteScript, 0, 1) != '?'
+				$params['pObj']->siteScript
+				&& substr($params['pObj']->siteScript, 0, 9) != 'index.php'
+				&& substr($params['pObj']->siteScript, 0, 1) != '?'
 		) {
 
 			$uri = $params['pObj']->siteScript;
@@ -32,6 +32,9 @@ class tx_naworkuri implements t3lib_Singleton {
 			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, $extConf['MULTIDOMAIN']);
 			try {
 				$uri_params = $translator->uri2params($uri);
+				if (!is_array($uri_params) && !empty($parameters)) {
+					$translator->uri2params($uri . '?' . $parameters);
+				}
 				/* should the path be converted to lowercase to treat uppercase paths like normal paths */
 				if (($configReader->getCheckForUpperCaseURI() && $uri == strtolower($uri)) || !$configReader->getCheckForUpperCaseURI()) {
 					if (is_array($uri_params)) { // uri found
@@ -91,7 +94,6 @@ class tx_naworkuri implements t3lib_Singleton {
 						}
 					}
 					$newUrl = parse_url($url['redirect_path']);
-					debug($newUrl);
 					$requestUrl = parse_url(t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'));
 					if (empty($newUrl['scheme']))
 						$newUrl['scheme'] = $requestUrl['scheme'];
@@ -100,7 +102,7 @@ class tx_naworkuri implements t3lib_Singleton {
 					if (substr($newUrl['path'], 0, 1) != '/')
 						$newUrl['path'] = '/' . $newUrl['path'];
 					$uri = $newUrl['scheme'] . '://' . $newUrl['host'] . $newUrl['path'];
-					$queryParams = array_merge(tx_naworkuri_helper::explode_parameters($requestUrl['query']), tx_naworkuri_helper::explode_parameters($newUrl['query']));
+					$queryParams = tx_naworkuri_helper::explode_parameters($newUrl['query']); // use only query string from redirect target and discard the given one
 					if (!empty($queryParams)) {
 						$uri .= '?' . tx_naworkuri_helper::implode_parameters($queryParams);
 					}
@@ -123,8 +125,8 @@ class tx_naworkuri implements t3lib_Singleton {
 	function params2uri(&$link, $ref) {
 		global $TYPO3_CONF_VARS;
 		if (
-			$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1
-			&& $link['LD']['url']
+				$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1
+				&& $link['LD']['url']
 		) {
 			list($path, $params) = explode('?', $link['LD']['totalURL']);
 			$params = rawurldecode(html_entity_decode($params));
@@ -228,10 +230,10 @@ class tx_naworkuri implements t3lib_Singleton {
 			}
 			tx_naworkuri_helper::sendRedirect($uri, 301);
 		} elseif (
-			$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1
-			&& empty($_GET['ADMCMD_prev'])
-			&& $GLOBALS['TSFE']->config['config']['tx_naworkuri.']['redirect'] == 1
-			&& $GLOBALS['TSFE']->siteScript
+				$GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1
+				&& empty($_GET['ADMCMD_prev'])
+				&& $GLOBALS['TSFE']->config['config']['tx_naworkuri.']['redirect'] == 1
+				&& $GLOBALS['TSFE']->siteScript
 		) {
 			list($path, $params) = explode('?', $GLOBALS['TSFE']->siteScript);
 			$params = rawurldecode(html_entity_decode($params)); // decode the query string because it is expected by the further processing functions

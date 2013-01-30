@@ -1,0 +1,24 @@
+<f:for each="{urls}" as="url">
+	<tr>
+		<td class="uid">{url.uid}</td>
+		<td class="language">
+	<f:if condition="{url.language.flag}">
+		<f:then>
+			<img src="/typo3/gfx/flags/{url.language.flag}.gif" width="20" height="12" alt="{url.language.title}" />
+		</f:then>
+		<f:else>
+			{url.language.title}
+		</f:else>
+	</f:if>
+</td>
+<td class="path">{url.path}</td>
+<td class="parameters">{url.parameters}</td>
+<td class="domain">{url.domain.domainName}</td>
+<td class="locked">
+<f:if condition="{url.locked}">
+	<f:then>x</f:then>
+	<f:else>-</f:else>
+</f:if>
+</td>
+</tr>
+</f:for>

@@ -89,6 +89,12 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		if ($cache === FALSE && !empty($orgPath)) { // if we don't get a url try with the original path if it is not empty
 			$cache = $this->cache->read_path($orgPath, $this->domain);
 		}
+		if ($cache === FALSE && !empty($params)) {
+			$cache = $this->cache->read_path($path . '?' . $params, $this->domain);
+			if ($cache === FALSE && !empty($orgPath)) {
+				$cache = $this->cache->read_path($orgPath . '?' . $params, $this->domain);
+			}
+		}
 		if ($cache['type'] > 0) {
 			throw new Tx_NaworkUri_Exception_UrlIsRedirectException($cache);
 		}

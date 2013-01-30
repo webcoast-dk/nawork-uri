@@ -11,15 +11,14 @@ $TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapC
 $TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass']['tx_naworkuri_uriSave'] = 'EXT:nawork_uri/Classes/UserFunc/UriSave.php:Tx_NaworkUri_UserFunc_UriSave';
 /* add an additional cache clearing function to the menu */
 $TYPO3_CONF_VARS['SC_OPTIONS']['additionalBackendItems']['cacheActions']['tx_naworkuri'] = 'EXT:nawork_uri/Classes/Cache/tx_naworkuri_cache_clearcachemenu.php:tx_naworkuri_cache_clearcachemenu';
-
-$TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::getpageinfo'] = 'EXT:nawork_uri/classes/ajax/class.tx_naworkuri_PageInfo.php:tx_naworkuri_PageInfo->getPageInfo';
-$TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::getpageuris'] = 'EXT:nawork_uri/classes/ajax/class.tx_naworkuri_PageInfo.php:tx_naworkuri_PageInfo->getPageUris';
-$TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::modpageuris'] = 'EXT:nawork_uri/classes/ajax/class.tx_naworkuri_PageInfo.php:tx_naworkuri_PageInfo->modPageUris';
-$TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::searchpageuris'] = 'EXT:nawork_uri/classes/ajax/class.tx_naworkuri_PageInfo.php:tx_naworkuri_PageInfo->searchPageUris';
-$TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::getlanguages'] = 'EXT:nawork_uri/classes/ajax/class.tx_naworkuri_PageInfo.php:tx_naworkuri_PageInfo->getLanguages';
-$TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::checkpathunique'] = 'EXT:nawork_uri/Classes/Validation/class.tx_naworkuri_path.php:tx_naworkuri_path->checkPathUnique';
-$TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::clearUrlCache'] = 'EXT:nawork_uri/Classes/Cache/ClearCache.php:&Tx_NaworkUri_Cache_ClearCache->clearUrlCache';
-
+//
+//$TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::getpageinfo'] = 'EXT:nawork_uri/classes/ajax/class.tx_naworkuri_PageInfo.php:tx_naworkuri_PageInfo->getPageInfo';
+//$TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::getpageuris'] = 'EXT:nawork_uri/classes/ajax/class.tx_naworkuri_PageInfo.php:tx_naworkuri_PageInfo->getPageUris';
+//$TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::modpageuris'] = 'EXT:nawork_uri/classes/ajax/class.tx_naworkuri_PageInfo.php:tx_naworkuri_PageInfo->modPageUris';
+//$TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::searchpageuris'] = 'EXT:nawork_uri/classes/ajax/class.tx_naworkuri_PageInfo.php:tx_naworkuri_PageInfo->searchPageUris';
+//$TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::getlanguages'] = 'EXT:nawork_uri/classes/ajax/class.tx_naworkuri_PageInfo.php:tx_naworkuri_PageInfo->getLanguages';
+//$TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::checkpathunique'] = 'EXT:nawork_uri/Classes/Validation/class.tx_naworkuri_path.php:tx_naworkuri_path->checkPathUnique';
+//$TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::clearUrlCache'] = 'EXT:nawork_uri/Classes/Cache/ClearCache.php:&Tx_NaworkUri_Cache_ClearCache->clearUrlCache';
 
 $TYPO3_CONF_VARS['SC_OPTIONS']['tce']['formevals']['tx_naworkuri_path'] = 'EXT:nawork_uri/Classes/Validation/class.tx_naworkuri_path.php';
 

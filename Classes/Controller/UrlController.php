@@ -35,6 +35,9 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 	 * @var Tx_NaworkUri_Domain_Repository_LanguageRepository
 	 */
 	protected $languageRepository;
+	protected $userSettingsKey = 'tx_naworkuri_moduleUrl';
+	protected $userSettings = NULL;
+	protected $userSettingsUpdated = FALSE;
 
 	public function initializeAction() {
 		$this->pageId = intval(t3lib_div::_GP('id'));
@@ -46,6 +49,12 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 		$this->urlRepository = $this->objectManager->get('Tx_NaworkUri_Domain_Repository_UrlRepository');
 		$this->domainRepository = $this->objectManager->get('Tx_NaworkUri_Domain_Repository_DomainRepository');
 		$this->languageRepository = $this->objectManager->get('Tx_NaworkUri_Domain_Repository_LanguageRepository');
+		$this->loadUserSettings();
+	}
+
+	protected function callActionMethod() {
+		parent::callActionMethod();
+		$this->storeUserSettings();
 	}
 
 	public function indexAction() {
@@ -54,6 +63,7 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 		}
 		$this->view->assign('domains', $this->domainRepository->findAll());
 		$this->view->assign('languages', $this->languageRepository->findAll());
+		$this->view->assign('userSettings', json_encode($this->userSettings));
 	}
 
 	public function noPageIdAction() {
@@ -63,14 +73,14 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 	/**
 	 *
 	 * @param Tx_NaworkUri_Domain_Model_Domain $domain
-	 * @param Tx_NaworkUri_Domain_Model_Language $language
+	 * @param mixed $language
 	 * @param array $types
 	 * @param string $scope
 	 * @param string $path
 	 * @param int $offset
 	 * @param int $limit
 	 */
-	public function ajaxLoadUrlsAction(Tx_NaworkUri_Domain_Model_Domain $domain = NULL, Tx_NaworkUri_Domain_Model_Language $language = NULL, $types = array(), $scope = NULL, $path = NULL, $offset = NULL, $limit = NULL) {
+	public function ajaxLoadUrlsAction(Tx_NaworkUri_Domain_Model_Domain $domain = NULL, $language = NULL, $types = array(), $scope = NULL, $path = NULL, $offset = NULL, $limit = NULL) {
 		/* @var $filter Tx_NaworkUri_Domain_Model_Filter */
 		$filter = $this->objectManager->get('Tx_NaworkUri_Domain_Model_Filter');
 		$filter->setPageId($this->pageId);
@@ -79,7 +89,7 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 			$filter->setDomain($domain);
 		}
 
-		if ($language instanceof Tx_NaworkUri_Domain_Model_Language) {
+		if ($language > -1) {
 			$filter->setLanguage($language);
 		}
 
@@ -101,14 +111,77 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 			$filter->setOffset($offset);
 		}
 
-		if ($limit != NULL) {
+		if ($limit != NULL && $limit > 0) {
 			$filter->setLimit($limit);
+			$this->setUserSettings('filter.pageSize', $limit);
 		}
+
 		$this->view->assign('urls', $this->urlRepository->findUrlsByFilter($filter));
 		return json_encode(array(
-			'html' => $this->view->render(),
-			'count' => $this->urlRepository->countUrlsByFilter($filter)
-		));
+				'html' => $this->view->render(),
+				'count' => $this->urlRepository->countUrlsByFilter($filter)
+			));
+	}
+
+	/**
+	 *
+	 * @param string $key
+	 * @param mixed $value
+	 */
+	public function updateSettingsAction($key, $value) {
+		$this->setUserSettings($key, $value);
+	}
+
+	private function loadUserSettings() {
+		/* @var $BE_USER t3lib_beUserAuth */
+		global $BE_USER;
+		$this->userSettings = $BE_USER->getModuleData($this->userSettingsKey);
+		if ($this->userSettings == NULL || !is_array($this->userSettings)) {
+			$this->userSettings = array(
+				'filter' => array(
+					'pageSize' => 0,
+					'domain' => -1,
+					'language' => -1,
+					'scope' => 'page'
+				),
+				'columnWidth' => array(
+					'path' => 0
+				)
+			);
+			$BE_USER->pushModuleData($this->userSettingsKey, $this->userSettings);
+		}
+	}
+
+	private function storeUserSettings() {
+		/* @var $BE_USER t3lib_beUserAuth */
+		global $BE_USER;
+		if ($this->userSettingsUpdated) {
+			$BE_USER->pushModuleData($this->userSettingsKey, $this->userSettings);
+		}
+	}
+
+	private function setUserSettings($key, $value) {
+		$keyParts = t3lib_div::trimExplode('.', $key, TRUE);
+		$tmp = array(
+			$this->userSettings
+		);
+		$settingsKeyNotFound = FALSE;
+		foreach ($keyParts as $index => $p) {
+			if (array_key_exists($p, $tmp[$index])) {
+				$tmp[($index + 1)] = $tmp[$index][$p];
+			} else {
+				$settingsKeyNotFound = FALSE;
+			}
+		}
+		if (!$settingsKeyNotFound) {
+			$tmp[count($tmp) - 1] = $value;
+			$keyParts = array_reverse($keyParts);
+			foreach ($keyParts as $index => $revPart) {
+				$tmp[count($tmp) - $index - 2][$revPart] = $tmp[count($tmp) - $index - 1];
+			}
+			$this->userSettings = $tmp[0];
+			$this->userSettingsUpdated = TRUE;
+		}
 	}
 
 }

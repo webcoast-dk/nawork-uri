@@ -81,13 +81,13 @@ if (TYPO3_MODE == 'BE') {
 	t3lib_extMgm::addModule('txnaworkuriM1', '', '', t3lib_extMgm::extPath('nawork_uri') . 'Configuration/Module/');
 
 	Tx_Extbase_Utility_Extension::registerModule($_EXTKEY, 'txnaworkuriM1', 'url', '', array(
-		'Url' => 'index,ajaxLoadUrls'
+		'Url' => 'index,ajaxLoadUrls,updateSettings'
 			), array(
 		'access' => 'user,group',
 		'icon' => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/module.png',
 		'labels' => 'LLL:EXT:' . $_EXTKEY . '/Resources/Private/Language/locallang_mod_url.xml',
 	));
-	
+
 	t3lib_extMgm::addStaticFile($_EXTKEY, 'Configuration/Module/', 'n@work URI Module');
 }
 ?>

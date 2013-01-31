@@ -58,7 +58,7 @@ class Tx_NaworkUri_Domain_Model_Filter extends Tx_Extbase_DomainObject_AbstractE
 	 *
 	 * @var int
 	 */
-	protected $limit = 10;
+	protected $limit = 0;
 
 	public function getPageId() {
 		return $this->pageId;

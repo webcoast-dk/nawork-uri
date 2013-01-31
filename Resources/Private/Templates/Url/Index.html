@@ -43,7 +43,7 @@
 
 			<div class="filter_option">
 				<label for="path"><f:translate key="label_filter_path" default="Path:" /></label>
-				<f:form.textfield id="path" value="" placeholder="[Filter by path]"/>
+				<input type="text" id="path" value="" placeholder="[Filter by path]" autocomplete="off"/>
 			</div>
 		</div>
 		<div id="table_outer">
@@ -51,39 +51,49 @@
 				<table>
 					<thead>
 						<tr>
-							<th class="uid resizeable">UID</th>
-							<th class="language">L</th>
-							<th class="path">Path</th>
-							<th class="parameters">Parameters</th>
-							<th class="domain">Domain</th>
-							<th class="locked">Locked</th>
+							<th class="uid fixedwidth" data-cellClassName="uid"></th>
+							<th class="language fixedwidth">L</th>
+							<th class="path resizeable" data-cellClassName="path">Path</th>
+							<th class="parameters" data-cellClassName="parameters">Parameters</th>
+							<th class="domain minwidth" data-cellClassName="domain">Domain</th>
+							<th class="locked fixedwidth"></th>
+							<th class="scrollbarFiller fixedwidth"></th>
 						</tr>
 					</thead>
 				</table>
 			</div>
 			<div id="table_body">
 				<table>
+					<thead>
+						<tr>
+							<th class="uid"></th>
+							<th class="language"></th>
+							<th class="path"></th>
+							<th class="parameters"></th>
+							<th class="domain"></th>
+							<th class="locked"></th>
+						</tr>
+					</thead>
 					<tbody>
 					</tbody>
 				</table>
 			</div>
 		</div>
 		<div id="pagination">
-			<a href="javascript:;" id="pagination_first">|&lt;</a>
-			<a href="javascript:;" id="pagination_previous">&lt;&lt;</a>
-			<a href="javascript:;" id="pagination_next">&gt;&gt;</a>
-			<a href="javascript:;" id="pagination_last">&gt;|</a>
+			<a href="javascript:;" id="pagination_first" class="icon first"></a>
+			<a href="javascript:;" id="pagination_previous" class="icon previous"></a>
+			<a href="javascript:;" id="pagination_next" class="icon next"></a>
+			<a href="javascript:;" id="pagination_last" class="icon last"></a>
 			<label for="pagination_pageSize">
 				<f:translate key="label_pagination_pagesize" default="URLs per page:" />
 			</label>
-			<select id="pagination_pageSize">
+			<select id="pagination_pageSize" autocomplete="off">
 				<option value="10">10</option>
 				<option value="20">20</option>
 				<option value="30">30</option>
 				<option value="40">40</option>
 				<option value="50">50</option>
 				<option value="100">100</option>
-				<option value="-1"><f:translate key="label_pagination_pagesize_all" default="All" /></option>
 			</select>
 			<label>
 				<f:translate key="label_pagination_pages" default="Showing page" />
@@ -99,6 +109,7 @@
 			<span id="pagination_urlcount_to">0</span>
 			<f:translate key="label_pagination_urls_of" default="of" />
 			<span id="pagination_urlcount_of">0</span>
+			<a href="javascript:;" id="pagination_reload" class="icon refresh"></a>
 		</div>
 	</section>
 	<script type="text/javascript">
@@ -106,9 +117,13 @@
 					if($.fn.UrlModule){
 						$("#url_module").UrlModule({
 							"mode": "urls",
-							"ajaxUrl": "]]>{f:uri.action(action: 'ajaxLoadUrls', additionalParams: '{ajax: 1}')}<![CDATA["
+							"ajaxUrl": "]]>{f:uri.action(action: 'ajaxLoadUrls', additionalParams: '{ajax: 1}')}<![CDATA[",
+							"settingsUrl": "]]>{f:uri.action(action: 'updateSettings', additionalParams: '{ajax: 1}')}<![CDATA[",
+							"settings": ]]><f:format.raw>{userSettings}</f:format.raw><![CDATA[,
+							"errorMessage": "]]><f:translate key="message_error" default="An error occured while loading the urls, change the filter to try other settings" /><![CDATA[",
+							"loadingMessage": "]]><f:translate key="message_loading" default="Loading urls... please wait..." /><![CDATA["
 						});
 					}
-				})(jQuery)]]>
+			})(jQuery)]]>
 	</script>
 </f:section>

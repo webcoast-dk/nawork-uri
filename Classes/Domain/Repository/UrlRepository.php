@@ -14,8 +14,8 @@ class Tx_NaworkUri_Domain_Repository_UrlRepository extends Tx_NaworkUri_Domain_R
 
 	public function findUrlsByFilter(Tx_NaworkUri_Domain_Model_Filter $filter) {
 		$query = $this->buildUrlQueryByFilter($filter);
-		$query->setOffset((int) $filter->getOffset());
 		if ($filter->getLimit() > 0) {
+			$query->setOffset((int) $filter->getOffset());
 			$query->setLimit((int) $filter->getLimit());
 		}
 		return $query->setOrderings(array('path' => Tx_Extbase_Persistence_QueryInterface::ORDER_ASCENDING))->execute();
@@ -52,7 +52,7 @@ class Tx_NaworkUri_Domain_Repository_UrlRepository extends Tx_NaworkUri_Domain_R
 			$constraints[] = $query->equals('domain', $filter->getDomain());
 		}
 
-		if ($filter->getLanguage() instanceof Tx_NaworkUri_Domain_Model_Language) {
+		if ($filter->getLanguage() > -1) {
 			$constraints[] = $query->equals('sysLanguageUid', $filter->getLanguage());
 		}
 
@@ -91,6 +91,10 @@ class Tx_NaworkUri_Domain_Repository_UrlRepository extends Tx_NaworkUri_Domain_R
 			default:
 				$constraints[] = $query->equals('pageUid', $filter->getPageId());
 				break;
+		}
+		$path = $filter->getPath();
+		if(!empty($path)) {
+			$constraints[] = $query->like('path', str_replace('*', '%', $path));
 		}
 		$constraints[] = $query->logicalNot($query->equals('type', 2)); // we do not want redirects in this result
 		if (count($constraints) > 0) {

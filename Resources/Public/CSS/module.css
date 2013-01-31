@@ -92,19 +92,38 @@ div#typo3-inner-docbody {
 	border-right-color: #dadada;
 }
 
-#typo3-inner-docbody #url_module table tr td {
+#typo3-inner-docbody #url_module table thead th {
+	padding: 0;
+	text-align: center;
+}
+
+#typo3-inner-docbody #url_module table tr td,
+#typo3-inner-docbody #url_module table tr td.icon{
 	border-bottom: 1px solid #585858;
 	border-right: 1px solid #585858;
 	height: 22px;
 	vertical-align: middle;
+	white-space: nowrap;
 }
 
-#typo3-inner-docbody #url_module table td.uid {
-
+#typo3-inner-docbody #url_module table .uid {
+	width: 16px;
 }
 
-#typo3-inner-docbody #url_module table td.language {
+#typo3-inner-docbody #url_module table .url {
+	background-position: -96px center;
+}
 
+#typo3-inner-docbody #url_module table .old {
+	background-position: -128px center;
+}
+
+#typo3-inner-docbody #url_module table .locked {
+	background-position: -112px center;
+}
+
+#typo3-inner-docbody #url_module table .language {
+	width: 20px;
 }
 
 #typo3-inner-docbody #url_module table td.path {
@@ -114,15 +133,60 @@ div#typo3-inner-docbody {
 #typo3-inner-docbody #url_module table td.parameters {
 
 }
-#typo3-inner-docbody #url_module table td.domain {
-
+#typo3-inner-docbody #url_module table .domain {
+	padding: 0 5px;
+	white-space: nowrap;
 }
 
-#typo3-inner-docbody #url_module table td.locked {
+#typo3-inner-docbody #url_module table td.message {
+	font-weight: bold;
+	text-align: center;
+}
 
+#typo3-inner-docbody #url_module .tx_naworkuri_loadingLayer {
+	background-color: #666;
+	color: #eee;
+	display: none;
+	font-size: 2em;
+	font-weight: bold;
+	opacity: 0.7;
+	position: absolute;
+	text-align: center;
+}
+
+#typo3-inner-docbody #url_module .tx_naworkuri_loadingLayer p {
+	margin-top: 100px;
 }
 
 
 #typo3-inner-docbody #url_module #pagination {
 	margin-bottom: 5px;
+}
+
+#typo3-inner-docbody #url_module .icon {
+	background-image: url('../Icons/sprite.png');
+	background-repeat: no-repeat;
+	display: inline-block;
+	height: 16px;
+	vertical-align: middle;
+	width: 16px;
+}
+
+#typo3-inner-docbody #url_module #pagination .first {
+}
+
+#typo3-inner-docbody #url_module #pagination .previous {
+	background-position: -16px center;
+}
+
+#typo3-inner-docbody #url_module #pagination .next {
+	background-position: -32px center;
+}
+
+#typo3-inner-docbody #url_module #pagination .last {
+	background-position: -48px center;
+}
+
+#typo3-inner-docbody #url_module #pagination .refresh {
+	background-position: -64px center;
 }

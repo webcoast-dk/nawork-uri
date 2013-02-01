@@ -241,7 +241,7 @@
 							url: options.settingsUrl,
 							dataType: "json",
 							data: {
-								tx_naworkuri_txnaworkurim1_naworkuriurl: {
+								tx_naworkuri_web_naworkuritxnaworkuriuri: {
 									key: "columnWidth." + selectedHeaderCell.attr("data-cellClassName"),
 									value: selectedHeaderCell.width()
 								}
@@ -321,6 +321,17 @@
 				}
 			});
 
+			module.on("initializeTableRows", function() {
+				tableContent.find("tr").each(function(rowIndex, row) {
+					row = $(row);
+					row.on("contextmenu", function(ev) {
+						ev.preventDefault();
+						ev.stopImmediatePropagation();
+						console.debug(ev);
+					});
+				})
+			});
+
 			module.on('loadUrls', function() {
 				if(request != null) {
 					request.abort();
@@ -337,7 +348,7 @@
 					url: options.ajaxUrl,
 					dataType: "json",
 					data: {
-						tx_naworkuri_txnaworkurim1_naworkuriurl: {
+						tx_naworkuri_web_naworkuritxnaworkuriuri: {
 							domain: filter.domain.value,
 							types: filter.types.value,
 							language: filter.language.value,
@@ -361,6 +372,7 @@
 							loadingLayer.css({
 								"display": "none"
 							});
+							module.trigger("initializeTableRows");
 						}
 					}
 				});

@@ -1,7 +1,7 @@
 <f:if condition="{f:count(subject: '{urls}')} > 0">
 	<f:then>
 		<f:for each="{urls}" as="url">
-			<tr>
+			<tr data-uid="{url.uid}">
 			<f:if condition="{url.locked}">
 				<f:then><td class="uid icon locked" title="ID: {url.uid}"></td></f:then>
 				<f:else>

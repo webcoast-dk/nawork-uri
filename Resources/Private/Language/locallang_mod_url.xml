@@ -6,7 +6,7 @@
 	</meta>
 	<data type="array">
 		<languageKey index="en" type="array">
-			<label index="mlang_tabs_tab">URL Tool</label>
+			<label index="mlang_tabs_tab">URL management</label>
 			<label index="mlang_labels_tabdescr">This module is used to view existing urls and alter or delete them.</label>
 			<label index="mlang_labels_tablabel">URL management tool</label>
 

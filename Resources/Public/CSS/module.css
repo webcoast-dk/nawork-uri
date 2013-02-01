@@ -127,11 +127,11 @@ div#typo3-inner-docbody {
 }
 
 #typo3-inner-docbody #url_module table td.path {
-
+	padding: 0 5px;
 }
 
 #typo3-inner-docbody #url_module table td.parameters {
-
+	padding: 0 5px;
 }
 #typo3-inner-docbody #url_module table .domain {
 	padding: 0 5px;

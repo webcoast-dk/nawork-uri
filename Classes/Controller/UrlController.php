@@ -129,7 +129,11 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 	 * @param mixed $value
 	 */
 	public function updateSettingsAction($key, $value) {
-		$this->setUserSettings($key, $value);
+		if (!empty($key) && !empty($value)) {
+			$this->setUserSettings($key, $value);
+			return '0';
+		}
+		return '1';
 	}
 
 	private function loadUserSettings() {

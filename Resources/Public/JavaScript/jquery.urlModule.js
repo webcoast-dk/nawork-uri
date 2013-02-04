@@ -50,6 +50,7 @@
 			$("#table_body").append(loadingLayer);
 			var request = null;
 			var settingsRequest = null;
+			var contextMenuRequest = null;
 
 
 			/* initialize domain filter */
@@ -327,9 +328,99 @@
 					row.on("contextmenu", function(ev) {
 						ev.preventDefault();
 						ev.stopImmediatePropagation();
-						console.debug(ev);
+						if(contextMenuRequest != null) {
+							contextMenuRequest.abort();
+						}
+						$.ajax({
+							url: row.attr("data-contextmenuurl"),
+							dataType: "html",
+							success: function(response, status, request) {
+								if($.trim(response).length > 0) {
+									if($("#tx_naworkuri_contextMenu").length > 0) {
+										$("#tx_naworkuri_contextMenu").remove();
+									}
+									$("#table_body").append($(response));
+									$("#tx_naworkuri_contextMenu").css({
+										display: "blocK",
+										left: ev.pageX,
+										top: ev.pageY - $("#table_body").position().top
+									});
+									module.trigger("initializeContextMenu");
+								}
+							}
+						})
+					});
+					row.on("click", function(ev) {
+						ev.preventDefault();
+						ev.stopImmediatePropagation();
+						module.trigger("closeContextMenu");
 					});
 				})
+			});
+
+			module.on("closeContextMenu", function(ev) {
+				if($("#tx_naworkuri_contextMenu").length > 0) {
+					$("#tx_naworkuri_contextMenu").remove();
+				}
+			});
+
+			module.on("initializeContextMenu", function() {
+				var cm = $("#tx_naworkuri_contextMenu");
+				cm.find(".show").click(function(ev) {
+					var popup = window.open(window.location.protocol + "//" + (window.location.host ? window.location.host : window.location.hostname) + "/" + $(this).attr("data-path"), "tx_naworkuri_preview");
+					popup.focus();
+					module.trigger("closeContextMenu");
+				});
+				cm.find(".lock").click(function(ev) {
+					if(request != null && request.abort) {
+						request.abort();
+					}
+					request = $.ajax({
+						url: $(this).attr("data-ajaxurl"),
+						dataType: "html",
+						success: function(response, status, request) {
+							if($.trim(response).length == 0) {
+								module.trigger("loadUrls");
+							}
+						}
+					});
+					module.trigger("closeContextMenu");
+				});
+				cm.find(".unlock").click(function(ev) {
+					if(request != null && request.abort) {
+						request.abort();
+					}
+					request = $.ajax({
+						url: $(this).attr("data-ajaxurl"),
+						dataType: "html",
+						success: function(response, status, request) {
+							if($.trim(response).length == 0) {
+								module.trigger("loadUrls");
+							}
+						}
+					});
+					module.trigger("closeContextMenu");
+				});
+				cm.find(".edit").click(function(ev) {
+					window.location.href = "alt_doc.php?returnUrl=" + encodeURIComponent(window.location.href) + "&edit[tx_naworkuri_uri][" + $(this).attr("data-uid") + "]=edit";
+				});
+				cm.find(".delete").click(function(ev) {
+					if(window.confirm("Do you really want to delete the url \"" + $(this).attr("data-path") + "\"?")) {
+						if(request != null && request.abort) {
+							request.abort();
+						}
+						request = $.ajax({
+							url: $(this).attr("data-ajaxurl"),
+							dataType: "html",
+							success: function(response, status, request) {
+								if($.trim(response).length == 0) {
+									module.trigger("loadUrls");
+								}
+							}
+						});
+					}
+					module.trigger("closeContextMenu");
+				});
 			});
 
 			module.on('loadUrls', function() {

@@ -183,21 +183,52 @@ class tx_naworkuri_helper {
 
 	public static function getCurrentDomain() {
 		$config = t3lib_div::makeInstance('tx_naworkuri_configReader');
+		/* @var $db t3lib_db */
 		$db = $GLOBALS['TYPO3_DB'];
+		$domain = 0;
 		if ($config->isMultiDomainEnabled()) {
-			$domain = t3lib_div::getIndpEnv('TYPO3_HOST_ONLY');
-			$domainRes = $db->exec_SELECTgetRows('tx_naworkuri_masterDomain', $config->getDomainTable(), 'domainName LIKE \'' . $domain . '\'');
-			if ($domainRes) {
-				$uid = $domainRes[0]['tx_naworkuri_masterDomain'];
-				$domainRes = $db->exec_SELECTgetRows('domainName', $config->getDomainTable(), 'uid=' . intval($uid));
-				if (is_array($domainRes) && count($domainRes) > 0) {
-					$domain = $domainRes[0]['domainName'];
+			$domainName = t3lib_div::getIndpEnv('HTTP_HOST');
+			$domainRes = $db->exec_SELECTgetRows('uid,tx_naworkuri_masterDomain', $config->getDomainTable(), 'domainName LIKE \'' . $domainName . '\'', 'hidden=0');
+			if ($domainRes && count($domainRes)) {
+				$domain = $domainRes[0]['uid'];
+				if (intval($domainRes[0]['tx_naworkuri_masterDomain']) > 0) {
+					$domain = intval($domainRes[0]['tx_naworkuri_masterDomain']);
+					$continue = TRUE;
+					do {
+						$domainRes = $db->exec_SELECTgetRows('uid,tx_naworkuri_masterDomain', $config->getDomainTable(), 'uid=' . intval($domain));
+						if (is_array($domainRes) && count($domainRes) > 0) {
+							if (intval($domainRes[0]['tx_naworkuri_masterDomain']) > 0) {
+								$domain = intval($domainRes[0]['tx_naworkuri_masterDomain']);
+							} else {
+								$domain = $domainRes[0]['uid'];
+								$continue = FALSE;
+							}
+						}
+					} while ($continue);
 				}
+			} else { // try to find the first domain record
+				$domain = static::findDomainRecursive();
 			}
-		} else {
-			$domain = '';
 		}
 		return $domain;
+	}
+
+	private static function findDomainRecursive($pid = 0) {
+		/* @var $db t3lib_db */
+		$db = $GLOBALS['TYPO3_DB'];
+		/* @var $config tx_naworkuri_configReader */
+		$config = t3lib_div::makeInstance('tx_naworkuri_configReader');
+		$pagesRes = $db->exec_SELECTgetRows('uid', $config->getPageTable(), 'pid=' . intval($pid), NULL, 'sorting ASC');
+		if (is_array($pagesRes)) {
+			foreach ($pagesRes as $pageRec) {
+				$domainRes = $db->exec_SELECTgetRows('uid', $config->getDomainTable(), 'pid=' . intval($pageRec['uid']) . ' AND tx_naworkuri_masterDomain < 1', NULL, 'sorting ASC', '1');
+				if ($domainRes && count($domainRes) > 0) {
+					return $domainRes[0]['uid'];
+				} else {
+					return static::findDomainRecursive($pageRec['uid']);
+				}
+			}
+		}
 	}
 
 	/**

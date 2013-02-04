@@ -41,12 +41,22 @@ class Tx_NaworkUri_Domain_Model_Url extends Tx_Extbase_DomainObject_AbstractEnti
 	 * @var boolean
 	 */
 	protected $locked;
-	
+
 	/**
 	 *
 	 * @var int
 	 */
 	protected $pageUid;
+
+	/**
+	 * URL type
+	 * 0: normal
+	 * 1: old
+	 * 2: redirect
+	 *
+	 * @var int
+	 */
+	protected $type;
 
 	public function getLanguage() {
 		return $this->language;
@@ -66,6 +76,14 @@ class Tx_NaworkUri_Domain_Model_Url extends Tx_Extbase_DomainObject_AbstractEnti
 
 	public function getLocked() {
 		return $this->locked;
+	}
+
+	public function getType() {
+		return $this->type;
+	}
+
+	public function setLocked($locked) {
+		$this->locked = $locked;
 	}
 
 }

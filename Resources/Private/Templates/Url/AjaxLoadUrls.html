@@ -1,7 +1,7 @@
 <f:if condition="{f:count(subject: '{urls}')} > 0">
 	<f:then>
 		<f:for each="{urls}" as="url">
-			<tr data-uid="{url.uid}">
+			<tr data-uid="{url.uid}" data-contextMenuUrl="{f:uri.action(action: 'contextMenu', arguments: '{url: \'{url.uid}\'}', additionalParams: '{ajax: 1}')}">
 			<f:if condition="{url.locked}">
 				<f:then><td class="uid icon locked" title="ID: {url.uid}"></td></f:then>
 				<f:else>

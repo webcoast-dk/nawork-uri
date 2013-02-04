@@ -190,3 +190,52 @@ div#typo3-inner-docbody {
 #typo3-inner-docbody #url_module #pagination .refresh {
 	background-position: -64px center;
 }
+
+#tx_naworkuri_contextMenu {
+	background-color: #fff;
+	box-shadow: 0 1px 5px 3px #999;
+	left: 0;
+	top: 0;
+	position: absolute;
+}
+
+#tx_naworkuri_contextMenu div {
+	border-bottom: 1px solid #999;
+	color: #555;
+	font-size: 0.9em;
+	font-weight: bold;
+	margin: 0 3px;
+	padding: 7px 5px 5px 3px;
+}
+
+#tx_naworkuri_contextMenu div:hover {
+	background-color: #ddd;
+}
+
+#tx_naworkuri_contextMenu div:last-child {
+	border-bottom: none;
+}
+
+#typo3-inner-docbody #url_module #tx_naworkuri_contextMenu .icon {
+	margin-right: 2px;
+}
+
+#typo3-inner-docbody #url_module #tx_naworkuri_contextMenu .show .icon {
+	background-position: -144px center;
+}
+
+#typo3-inner-docbody #url_module #tx_naworkuri_contextMenu .edit .icon {
+	background-position: -192px center;
+}
+
+#typo3-inner-docbody #url_module #tx_naworkuri_contextMenu .lock .icon {
+	background-position: -80px center;
+}
+
+#typo3-inner-docbody #url_module #tx_naworkuri_contextMenu .unlock .icon {
+	background-position: -176px center;
+}
+
+#typo3-inner-docbody #url_module #tx_naworkuri_contextMenu .delete .icon {
+	background-position: -161px center;
+}

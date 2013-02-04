@@ -41,6 +41,11 @@ $tempColumns = array(
 			'size' => '1',
 			'minitems' => '0',
 			'maxitems' => '1',
+			'wizards' => array(
+				'suggest' => array(
+					'type' => 'suggest'
+				)
+			)
 		),
 	),
 );
@@ -59,7 +64,7 @@ $TCA['tx_naworkuri_uri'] = Array(
 		'cruser_id' => 'cruser_id',
 		'languageField' => 'sys_language_uid',
 		'sortby' => 'crdate',
-		'delete' => '',
+//		'delete' => '',
 		'rootLevel' => '-1',
 		'enablecolumns' => array(
 		),
@@ -81,7 +86,7 @@ if (TYPO3_MODE == 'BE') {
 //	t3lib_extMgm::addModule('txnaworkuriM1', '', '', t3lib_extMgm::extPath('nawork_uri') . 'Configuration/Module/');
 
 	Tx_Extbase_Utility_Extension::registerModule($_EXTKEY, 'web', 'tx_naworkuri_uri', '', array(
-		'Url' => 'index,ajaxLoadUrls,updateSettings'
+		'Url' => 'index,ajaxLoadUrls,updateSettings,contextMenu,lockToggle,delete'
 			), array(
 		'access' => 'user,group',
 		'icon' => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/module.png',

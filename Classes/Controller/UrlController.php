@@ -136,6 +136,36 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 		return '1';
 	}
 
+	/**
+	 *
+	 * @param Tx_NaworkUri_Domain_Model_Url $url
+	 */
+	public function contextMenuAction(Tx_NaworkUri_Domain_Model_Url $url) {
+		$this->view->assign('url', $url);
+	}
+
+	/**
+	 * Toggle the lock state of an url
+	 *
+	 * @param Tx_NaworkUri_Domain_Model_Url $url
+	 * @return string
+	 */
+	public function lockToggleAction(Tx_NaworkUri_Domain_Model_Url $url) {
+		$url->setLocked(!$url->getLocked());
+		return '';
+	}
+
+	/**
+	 * Delete a url
+	 *
+	 * @param Tx_NaworkUri_Domain_Model_Url $url
+	 * @return string
+	 */
+	public function deleteAction(Tx_NaworkUri_Domain_Model_Url $url) {
+		$this->urlRepository->remove($url);
+		return '';
+	}
+
 	private function loadUserSettings() {
 		/* @var $BE_USER t3lib_beUserAuth */
 		global $BE_USER;

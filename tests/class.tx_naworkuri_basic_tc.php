@@ -301,23 +301,24 @@ class tx_naworkuri_basic_tc extends tx_phpunit_testcase {
 	protected function setupDomain() {
 		$this->db->sql_query(
 				"CREATE TABLE `test_sys_domain` (
-				  `uid` int(11) unsigned NOT NULL AUTO_INCREMENT,
-				  `pid` int(11) unsigned NOT NULL DEFAULT '0',
-				  `tstamp` int(11) unsigned NOT NULL DEFAULT '0',
-				  `hidden` tinyint(4) unsigned NOT NULL DEFAULT '0',
-				  `domainName` varchar(80) NOT NULL DEFAULT '',
-				  `redirectTo` varchar(120) NOT NULL DEFAULT '',
-				  `sorting` int(10) unsigned NOT NULL DEFAULT '0',
-				  `prepend_params` int(10) NOT NULL DEFAULT '0',
-				  `crdate` int(11) unsigned NOT NULL DEFAULT '0',
-				  `cruser_id` int(11) unsigned NOT NULL DEFAULT '0',
-				  `redirectHttpStatusCode` int(4) unsigned NOT NULL DEFAULT '301',
-				  `forced` tinyint(3) unsigned NOT NULL DEFAULT '0',
-				  `domainMaster` int(11) DEFAULT '0',
-				  PRIMARY KEY (`uid`),
-				  KEY `parent` (`pid`),
-				  KEY `tx_realurl` (`domainName`,`hidden`)
-				) ENGINE=MyISAM DEFAULT CHARSET=utf8;");
+					`uid` int(11) unsigned NOT NULL AUTO_INCREMENT,
+					`pid` int(11) unsigned NOT NULL DEFAULT '0',
+					`tstamp` int(11) unsigned NOT NULL DEFAULT '0',
+					`crdate` int(11) unsigned NOT NULL DEFAULT '0',
+					`cruser_id` int(11) unsigned NOT NULL DEFAULT '0',
+					`hidden` tinyint(4) unsigned NOT NULL DEFAULT '0',
+					`domainName` varchar(80) NOT NULL DEFAULT '',
+					`redirectTo` varchar(255) DEFAULT '',
+					`sorting` int(10) unsigned NOT NULL DEFAULT '0',
+					`prepend_params` int(10) NOT NULL DEFAULT '0',
+					`redirectHttpStatusCode` int(4) unsigned NOT NULL DEFAULT '301',
+					`forced` tinyint(3) unsigned NOT NULL DEFAULT '0',
+					`tx_naworkuri_masterDomain` int(11) DEFAULT '0',
+					`tx_multidomainpublishing_pagetype` int(11) NOT NULL DEFAULT '0',
+					`tx_multidomainpublishing_mode` int(11) NOT NULL DEFAULT '0',
+					PRIMARY KEY (`uid`),
+					KEY `parent` (`pid`)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 
 		$this->db->exec_INSERTquery('test_sys_domain', array(
 			'pid' => '1',
@@ -328,7 +329,13 @@ class tx_naworkuri_basic_tc extends tx_phpunit_testcase {
 			'pid' => '1',
 			'domainName' => 'test.local',
 			'sorting' => '2',
-			'domainMaster' => 1,
+			'tx_naworkuri_masterDomain' => 1,
+		));
+		$this->db->exec_INSERTquery('test_sys_domain', array(
+			'pid' => '1',
+			'domainName' => 'test.foo',
+			'sorting' => '3',
+			'tx_naworkuri_masterDomain' => 2,
 		));
 	}
 

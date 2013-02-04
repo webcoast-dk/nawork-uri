@@ -2,9 +2,10 @@
 
 require_once (t3lib_extMgm::extPath('nawork_uri') . '/lib/class.tx_naworkuri_helper.php');
 
-class tx_naworkuri_helper_testcase extends tx_phpunit_testcase {
+class tx_naworkuri_helper_testcase extends tx_naworkuri_basic_tc {
 
-	protected function setUp() {
+	public function setUp() {
+		parent::setUp();
 		$this->test_subject = new tx_naworkuri_helper();
 		$this->configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', 'typo3conf/ext/nawork_uri/tests/test_UriConf.xml');
 	}
@@ -15,6 +16,7 @@ class tx_naworkuri_helper_testcase extends tx_phpunit_testcase {
 	 */
 	public function tearDown() {
 		unset($this->test_subject);
+		parent::tearDown();
 	}
 
 	public function provider_test_param_implode() {
@@ -152,6 +154,24 @@ class tx_naworkuri_helper_testcase extends tx_phpunit_testcase {
 	 */
 	public function test_uri_make_wellformed($uri, $res, $error = '') {
 		$this->assertEquals($this->test_subject->uri_make_wellformed($uri), $res, $error);
+	}
+
+	/**
+	 * @test
+	 * @dataProvider getCurrentDomainProvider
+	 */
+	public function getCurrentDomain($domainToSet, $domainUidToRetreive) {
+		$_SERVER['HTTP_HOST'] = $domainToSet;
+		$this->assertEquals($domainUidToRetreive, tx_naworkuri_helper::getCurrentDomain());
+	}
+
+	public function getCurrentDomainProvider() {
+		return array(
+			'master domain' => array('test.test', 1),
+			'one level non master' => array('test.local', 1),
+			'two levels non master' => array('test.foo', 1),
+			'non existing domain' => array('test.doesnotexit', 1)
+		);
 	}
 
 }

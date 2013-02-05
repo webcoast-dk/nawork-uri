@@ -51,7 +51,8 @@
 			var request = null;
 			var settingsRequest = null;
 			var contextMenuRequest = null;
-
+			var tableMaxWidth = 0;
+			var scrollBarWidth = 0;
 
 			/* initialize domain filter */
 			filter.domain.object = module.find("#domain");
@@ -163,17 +164,18 @@
 				var tableBody = module.find("#table_body");
 				var pagination = module.find("#pagination");
 				tableBody.css({
-					"height": w.height() - tableBody.offset().top - (tableBody.outerHeight(true) - tableBody.height()) - pagination.outerHeight(true)
+					"height": w.height() - tableBody.offset().top - (tableBody.outerHeight(true) - tableBody.innerHeight()) - (tableOuter.outerHeight(true) - tableOuter.innerHeight()) - pagination.outerHeight(true)
 				});
+				module.trigger("initializeCellWidth");
 			});
 			module.trigger("bodyResize");
 			$(window).on("resize", function() {
 				module.trigger("bodyResize");
-			})
+			});
 
 			/* initialize table header */
 			var selectedHeaderCell = null;
-			var dragStart = 0;
+			var lastDraggedPosition = 0;
 			var resizeableTableHeaders = {
 
 			};
@@ -205,14 +207,58 @@
 						}
 					}
 					if(selectedHeaderCell != null && ev.buttons == 1) {
-						if((ev.pageX - selectedHeaderCell.position().left) >= resizeableTableHeaders[selectedHeaderCell.attr("data-cellClassName")].minWidth) {
+						/* shrink */
+						if(ev.pageX < lastDraggedPosition) {
 							selectedHeaderCell.css({
-								"width": ev.pageX - selectedHeaderCell.position().left
+								"width": selectedHeaderCell.width() + (ev.pageX - lastDraggedPosition)
 							});
 							resizeableTableHeaders[selectedHeaderCell.attr("data-cellClassName")].resizer.css({
-								"width": ev.pageX - selectedHeaderCell.position().left
+								"width": resizeableTableHeaders[selectedHeaderCell.attr("data-cellClassName")] + (ev.pageX - lastDraggedPosition)
 							});
+							var nextResizeable = selectedHeaderCell.find("+ .resizeable");
+							if(nextResizeable.length > 0) {
+								var cellClass = nextResizeable.attr("data-cellClassName");
+								if(cellClass && cellClass.length > 0) {
+									if(resizeableTableHeaders[cellClass].resizer.length > 0) {
+										nextResizeable.css({
+											"width": nextResizeable.width() - (ev.pageX - lastDraggedPosition)
+										});
+										resizeableTableHeaders[cellClass].resizer.css({
+											"width": resizeableTableHeaders[cellClass].resizer.width() - (ev.pageX - lastDraggedPosition)
+										});
+									}
+								}
+							}
+							console.log("shrink");
+						} else {
+							if(module.find("#table_body table").outerWidth() < tableMaxWidth - scrollBarWidth) {
+								var newWidth = ev.pageX - selectedHeaderCell.position().left
+								selectedHeaderCell.css({
+									"width": newWidth - (selectedHeaderCell.innerWidth() - selectedHeaderCell.width())
+								});
+								resizeableTableHeaders[selectedHeaderCell.attr("data-cellClassName")].resizer.css({
+									"width": newWidth
+								});
+								options.settings.columnWidth[selectedHeaderCell.attr("data-cellClassName")].customWidth = newWidth;
+							} else {
+								var nextResizeable = selectedHeaderCell.find("+ .resizeable");
+								if(nextResizeable.length > 0) {
+									var cellClass = nextResizeable.attr("data-cellClassName");
+									if(cellClass && cellClass.length > 0) {
+										if(resizeableTableHeaders[cellClass].resizer.length > 0) {
+											nextResizeable.css({
+												"width": nextResizeable.width() - (ev.pageX - selectedHeaderCell.position().left - selectedHeaderCell.width()) - (nextResizeable.innerWidth() - nextResizeable.width())
+											});
+											resizeableTableHeaders[cellClass].resizer.css({
+												"width": nextResizeable.width() - (ev.pageX - selectedHeaderCell.position().left - selectedHeaderCell.width())
+											});
+										}
+									}
+								}
+							}
+							console.log("grow");
 						}
+						lastDraggedPosition = ev.pageX;
 					}
 				});
 
@@ -228,7 +274,7 @@
 						}
 						if(ev.pageX > dimensions.x2 - 5) {
 							selectedHeaderCell = thElement;
-							dragStart = ev.pageX;
+							lastDraggedPosition = ev.pageX;
 						}
 					}
 				});
@@ -250,76 +296,112 @@
 						});
 						selectedHeaderCell = null;
 					}
-					dragStart = 0;
+					lastDraggedPosition = 0;
 				});
 			});
 
 			/* initialize cell width */
 			module.on("initializeCellWidth", function() {
+				tableMaxWidth = $("#table_outer").width();
 				/* check if we have a scroll bar and set filler cell's width */
 				if(module.find("#table_body").height() < module.find("#table_body table").height()) {
 					var scrollbarFilllerCell = module.find("#table_head .scrollbarFiller");
-					var diff = module.find("#table_head table").width() - module.find("#table_body table").width() - (scrollbarFilllerCell.outerWidth() - scrollbarFilllerCell.innerWidth());
+					/* find scrollbar width */
+					var testElement = $("<div style=\"position: absolute; top: -999; overflow: scroll; height: 100px; width: 100px;\"><div></div></div>");
+					$(document.body).append(testElement);
+					scrollBarWidth = testElement.width() - testElement.find("div").width();
 					scrollbarFilllerCell.css({
-						"width": diff
+						"width": scrollBarWidth - (scrollbarFilllerCell.outerWidth() - scrollbarFilllerCell.innerWidth())
 					});
+					testElement.remove();
 				} else {
 					module.find("#table_head .scrollbarFiller").css({
 						"width": 0
 					});
 				}
-				for(var header in resizeableTableHeaders) {
-					var element = resizeableTableHeaders[header].element;
-					var className = $.trim(element.attr("data-cellClassName"));
-					var defaultWidth = element.width();
-					/* evaluate min width for header */
-					element.css({
-						"width": 0
-					});
-					var minWidth = element.width();
-					element.css({
-						"width": "auto"
-					});
-					/* evaluate min width for cells */
-					var cells = module.find("#table_body tbody td." + className);
-					cells.css({
-						"width": 0
-					});
-					cells.each(function(cellIndex, cell) {
-						cell = $(cell);
-						minWidth = Math.max(minWidth, cell.width());
-					});
-					cells.css({
-						"width":"auto"
-					});
-					if(element.hasClass("minwidth")) {
-						element.css({
-							"width": minWidth
+				var shrinkColumns = module.find("#table_body table").width() > module.find("#table_body").width();
+				module.find("#table_head table").css({
+					"width": "auto"
+				});
+				module.find("#table_body table").css({
+					"width": "auto"
+				});
+				module.find("#table_head .minwidth").each(function(columnIndex, column) {
+					column = $(column);
+					var cellClass = column.attr("data-cellClassName");
+					if(cellClass && cellClass.length > 0) {
+						var headerWidth = column.innerWidth();
+						var cellWidth = 0;
+						module.find("#table_body tbody ." + cellClass).each(function(cellIndex, cell) {
+							cellWidth = Math.max(cellWidth, $(cell).innerWidth());
 						});
-						module.find("#table_body thead ." + className).css({
-							"width": minWidth
+						var columnWidth = Math.max(headerWidth, cellWidth);
+						column.css({
+							"width": columnWidth - (column.innerWidth() - column.width())
 						});
-					} else if(element.hasClass("resizeable")) {
-						resizeableTableHeaders[header].minWidth = minWidth;
-						//						var customWidth = parseInt(resizeableTableHeaders[header].element.attr("data-customWidth"));
-						var customWidth = parseInt(options.settings.columnWidth[className]);
-						if(customWidth > 0 && customWidth > minWidth) {
-							resizeableTableHeaders[header].element.css({
-								"width": customWidth
+						module.find("#table_body thead ." + cellClass).css({
+							"width": columnWidth
+						});
+					}
+				});
+				if(shrinkColumns) {
+					module.find("#table_head table").css({
+						"width":"100%"
+					});
+				}
+
+				module.find("#table_head .dynamic").css({
+					"width": "auto"
+				})
+				module.find("#table_head .dynamic").each(function(columnIndex, column) {
+					column = $(column);
+					var cellClass = column.attr("data-cellClassName");
+					if(cellClass && cellClass.length > 0) {
+						var headerWidth = column.innerWidth();
+						var columnWidth = 0;
+						if(!shrinkColumns) {
+							var cellWidth = 0;
+							module.find("#table_body tbody ." + cellClass).each(function(cellIndex, cell) {
+								cellWidth = Math.max(cellWidth, $(cell).innerWidth());
 							});
-							resizeableTableHeaders[header].resizer.css({
-								"width": customWidth
+							columnWidth = Math.max(columnWidth, cellWidth);
+						}
+						columnWidth = Math.max(headerWidth, columnWidth);
+						column.css({
+							"width": columnWidth - (column.innerWidth() - column.width())
+						});
+						module.find("#table_body thead ." + cellClass).css({
+							"width": columnWidth
+						});
+					}
+				});
+				if(shrinkColumns) {
+					module.find("#table_body table").css({
+						"width": "100%"
+					});
+				}
+				/* if there are resizable columns, try to apply the saved width */
+				module.find("#table_head .resizeable").each(function(columnIndex, column) {
+					column = $(column);
+					var currentWidth = column.width();
+					if(options.settings.columnWidth[column.attr("data-cellClassName")] && options.settings.columnWidth[column.attr("data-cellClassName")].length > 0) {
+						if(module.find("#table_body thead ." + column.attr("data-cellClassName")).length > 0) {
+							column.css({
+								"width": options.settings.columnWidth[column.attr("data-cellClassName")] - (column.innerWidth() - column.width())
 							});
-						} else {
-							resizeableTableHeaders[header].element.css({
-								"width": defaultWidth
-							});
-							resizeableTableHeaders[header].resizer.css({
-								"width": defaultWidth
-							});
+							/* if the table is too wide, reset the css to the value before; else set the resizer th to the new width */
+							if(module.find("#table_body table").width() > module.find("#table_body").width()) {
+								column.css({
+									"width": currentWidth - (column.innerWidth() - column.width())
+								});
+							} else {
+								module.find("#table_body thead ." + column.attr("data-cellClassName")).css({
+									"width": options.settings.columnWidth[column.attr("data-cellClassName")]
+								});
+							}
 						}
 					}
-				}
+				});
 			});
 
 			module.on("initializeTableRows", function() {

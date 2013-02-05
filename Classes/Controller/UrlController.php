@@ -201,21 +201,18 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 		);
 		$settingsKeyNotFound = FALSE;
 		foreach ($keyParts as $index => $p) {
-			if (array_key_exists($p, $tmp[$index])) {
-				$tmp[($index + 1)] = $tmp[$index][$p];
-			} else {
-				$settingsKeyNotFound = FALSE;
+			if (!array_key_exists($p, $tmp[$index])) {
+				$tmp[$index][$p] = ($index < count($keyParts) - 1) ? array() : $value;
 			}
+			$tmp[($index + 1)] = $tmp[$index][$p];
 		}
-		if (!$settingsKeyNotFound) {
-			$tmp[count($tmp) - 1] = $value;
-			$keyParts = array_reverse($keyParts);
-			foreach ($keyParts as $index => $revPart) {
-				$tmp[count($tmp) - $index - 2][$revPart] = $tmp[count($tmp) - $index - 1];
-			}
-			$this->userSettings = $tmp[0];
-			$this->userSettingsUpdated = TRUE;
+		$tmp[count($tmp) - 1] = $value;
+		$keyParts = array_reverse($keyParts);
+		foreach ($keyParts as $index => $revPart) {
+			$tmp[count($tmp) - $index - 2][$revPart] = $tmp[count($tmp) - $index - 1];
 		}
+		$this->userSettings = $tmp[0];
+		$this->userSettingsUpdated = TRUE;
 	}
 
 }

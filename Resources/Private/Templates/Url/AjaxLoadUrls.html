@@ -1,16 +1,16 @@
 <f:if condition="{f:count(subject: '{urls}')} > 0">
 	<f:then>
 		<f:for each="{urls}" as="url">
-			<tr data-uid="{url.uid}" data-contextMenuUrl="{f:uri.action(action: 'contextMenu', arguments: '{url: \'{url.uid}\'}', additionalParams: '{ajax: 1}')}">
+			<tr class="db_list_normal" data-uid="{url.uid}" data-contextMenuUrl="{f:uri.action(action: 'contextMenu', arguments: '{url: \'{url.uid}\'}', additionalParams: '{ajax: 1}')}">
 			<f:if condition="{url.locked}">
-				<f:then><td class="uid icon locked" title="ID: {url.uid}"></td></f:then>
+				<f:then><td class="uid locked" title="ID: {url.uid}"><span class="icon"></span></td></f:then>
 				<f:else>
 					<f:if condition="{url.type} == 1">
 						<f:then>
-							<td class="uid icon old" title="ID: {url.uid}"></td>
+							<td class="uid old" title="ID: {url.uid}"><span class="icon"></span></td>
 						</f:then>
 						<f:else>
-							<td class="uid icon url" title="ID: {url.uid}"></td>
+							<td class="uid url" title="ID: {url.uid}"><span class="icon"></span></td>
 						</f:else>
 					</f:if>
 				</f:else>

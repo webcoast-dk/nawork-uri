@@ -1,3 +1,8 @@
+2.1.42: Compatability update for TYPO3 CMS 6.0
+* SimpleXMLElement can not be serialized so it must be deleted before serialization and re-instantiated on wake up
+* t3lib_div::testInt is not available anymore, so we must replace it with MathUtility::canBeInterpretedAsInteger if available (means 6.0)
+* add tx_naworkuri_cache to ext_autoload.php
+
 2.1.41:
 * fixes PHP Fatal Errors with turkish locales: do not set LC_CTYPE for turkish locales like typo3 does in tsfe
 

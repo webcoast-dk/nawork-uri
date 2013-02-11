@@ -137,10 +137,8 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			$params = $orgParams;
 		}
 
-		/* we must have an integer id so if it is now lookit up */
-		if (!t3lib_div::testInt($params['id'])) {
-			$params['id'] = tx_naworkuri_helper::aliasToId($params['id']);
-		}
+		/* we must have an integer id so lets look it up */
+		$params['id'] = tx_naworkuri_helper::aliasToId($params['id']);
 
 		/* check if type should be casted to int to avoid strange behavior when creating links */
 		if ($this->config->getCastTypeToInt()) {

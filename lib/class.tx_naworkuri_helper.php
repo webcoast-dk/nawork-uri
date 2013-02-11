@@ -320,8 +320,14 @@ class tx_naworkuri_helper {
 	}
 
 	public static function aliasToId($alias) {
-		if (t3lib_div::testInt($alias)) {
-			return $alias;
+		if (class_exists('\TYPO3\CMS\Core\Utility\MathUtility')) { // compatibility for 6.0
+			if (\TYPO3\CMS\Core\Utility\MathUtility::canBeInterpretedAsInteger($params['id'])) {
+				return $alias;
+			}
+		} else {
+			if (t3lib_div::testInt($alias)) {
+				return $alias;
+			}
 		}
 		$db = $GLOBALS['TYPO3_DB'];
 		$configuration = t3lib_div::makeInstance('tx_naworkuri_configReader');

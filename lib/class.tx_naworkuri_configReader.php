@@ -35,6 +35,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 	 * @var SimpleXMLElement
 	 */
 	protected $config;
+	protected $configFile;
 	protected $extConfig;
 	protected $tables = array(
 		'uri' => 'tx_naworkuri_uri',
@@ -44,9 +45,24 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 
 	public function __construct($configFile = '') {
 		global $TYPO3_CONF_VARS;
+		$this->configFile = $configFile;
 		$this->config = new SimpleXMLElement(PATH_site . $configFile, null, true);
 		$this->extConfig = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 		$this->validateConfig();
+	}
+
+	public function __sleep() {
+		$this->config = NULL;
+		unset($this->config);
+		return array(
+			'configFile',
+			'extConfig',
+			'tables'
+		);
+	}
+
+	public function __wakeup() {
+		$this->config = new SimpleXMLElement(PATH_site . $this->configFile, null, true);
 	}
 
 	public function getStoragePage() {

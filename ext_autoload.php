@@ -15,6 +15,7 @@ return array(
 	'tx_naworkuri_cache' => $libsPath . 'class.tx_naworkuri_cache.php',
 	'tx_naworkuri_cache_transformationcache' => $extPath . 'Classes/Cache/TransformationCache.php',
 	'tx_naworkuri_command_naworkuricommandcontroller' => $extPath . 'Classes/Command/NaworkUriCommandController.php',
+	'tx_naworkuri_service_pathmonitorservice' => $extPath . 'Classes/Service/PathMonitorService.php',
 	'backend_cacheactionshook' => PATH_typo3 . 'interfaces/interface.backend_cacheActionsHook.php',
 
 );

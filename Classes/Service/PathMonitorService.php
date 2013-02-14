@@ -24,8 +24,8 @@ class Tx_Naworkuri_Service_PathMonitorService {
 				CURLOPT_RETURNTRANSFER => TRUE,
 				CURLOPT_FOLLOWLOCATION => FALSE,
 				CURLOPT_MAXREDIRS => 0,
-				CURLOPT_HEADER => TRUE,
-				CURLOPT_NOBODY => TRUE
+				CURLOPT_HEADER => TRUE
+				//CURLOPT_NOBODY => TRUE
 			)
 		);
 
@@ -53,7 +53,7 @@ class Tx_Naworkuri_Service_PathMonitorService {
 	 * @param $path
 	 * @param $expectedStatus
 	 * @param $expectedRedirect
-	 * @param $https
+	 * @param $https use https
 	 * @return Tx_Extbase_Error_Result
 	 */
 	public function testPath($path, $expectedStatus = NULL, $expectedRedirect = NULL, $https = FALSE) {
@@ -68,10 +68,11 @@ class Tx_Naworkuri_Service_PathMonitorService {
 
 		curl_setopt($this->cUrl, CURLOPT_URL, $url);
 		$response = curl_exec($this->cUrl);
+		list($header, $body) = explode("\n\n", $response, 2);
 
 		// extract response headers
 		$responseHeaders = array();
-		$headerLines = explode("\n", $response);
+		$headerLines = explode("\n", $header);
 		foreach($headerLines as $headerLine) {
 			list($header, $value) = explode (': ', $headerLine, 2);
 			if ($header && $value) {

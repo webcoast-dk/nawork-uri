@@ -92,13 +92,13 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 
 					if ($verbose == TRUE || ($outputErrors == TRUE && $pathResult->hasErrors())) {
 
-						$this->outputLine( ' -> ' . $domain . $path);
+						$this->outputLine($pathesTotal . '. ' . $domain . $path);
 
 						if ($verbose == TRUE) {
 							$pathNoticesFlattened = $pathResult->getFlattenedNotices();
 							foreach ($pathNoticesFlattened as $pathNotices) {
 								foreach ($pathNotices as $pathNotice) {
-									$this->outputLine( '    -> SUCCESS ' . $pathNotice->render());
+									$this->outputLine( '  -> SUCCESS ' . $pathNotice->render());
 								}
 							}
 						}
@@ -108,7 +108,7 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 							$pathErrorMessages = array();
 							foreach ($pathErrorsFlattened as $pathErrors) {
 								foreach ($pathErrors as $pathError) {
-									$this->outputLine( '    -> ERROR ' . $pathError->render());
+									$this->outputLine( '  -> ERROR ' . $pathError->render());
 									$pathErrorMessages[] = $pathError->render();
 								}
 							}

@@ -5,6 +5,11 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 	/**
 	 * Monitor the stored pathes
 	 *
+	 * The pathes are read from a csv file that contains the columns path, status and redirect.
+	 * The first line of the csv file is used to identify the different columns. Additional columns
+	 * are allowed. If the result is exported as csv the original csv values will be preserved and
+	 * the columns result and message are appended.
+	 *
 	 * @param NULL|string $domain domain for testing the pathes
 	 * @param NULL|string $user http-user (leave empty if no http-auth is needed)
 	 * @param NULL|string $password http-basic password (leave empty if no http-auth is needed)
@@ -55,30 +60,51 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 
 			// ignore first line
 			$csvHeader = fgetcsv($inputPathFileHandle);
-			$csvHeader[5] = 'Test Result';
-			$csvHeader[6] = 'Messages';
+
+			// detect column numbers from first csv line
+			$pathColumnNumber = array_search('path', $csvHeader);
+			if ($pathColumnNumber !== FALSE) {
+				$this->outputLine(" - reading status from column " . $pathColumnNumber);
+			} else {
+				$this->outputLine("No path column found. I quit now.");
+				$this->quit();
+			}
+
+			$statusColumnNumber = array_search('status', $csvHeader);
+			if ($statusColumnNumber !== FALSE) {
+				$this->outputLine(" - reading status from column " . $statusColumnNumber);
+			}
+
+			$redirectColumnNumber = array_search('redirect', $csvHeader);
+			if ($redirectColumnNumber !== FALSE) {
+				$this->outputLine(" - reading redirects from column " . $redirectColumnNumber);
+			}
 
 			if ($outputCSVHandle) {
+				$resultColumnNumber = count($csvHeader);
+				$messageColumnNumber = count($csvHeader) + 1;
+				$csvHeader[$resultColumnNumber] = 'result';
+				$csvHeader[$messageColumnNumber] = 'messages';
 				fputcsv($outputCSVHandle, $csvHeader);
 			}
 
 			// read csv line by line and perform test
 			while ($pathArray = fgetcsv($inputPathFileHandle)){
-				$path = $pathArray[0];
+				$path = $pathArray[$pathColumnNumber];
 				if ($path) {
+
 					$pathesTotal ++;
-					$expectedStatus = $pathArray[3] ? $pathArray[3] : NULL;
-					$expectedRedirect = $pathArray[4] ?  $pathArray[4] : NULL;
+					$expectedStatus = ($statusColumnNumber !== FALSE) ? $pathArray[$statusColumnNumber] : NULL;
+					$expectedRedirect = ($redirectColumnNumber !== FALSE) ?  $pathArray[$redirectColumnNumber] : NULL;
 
 					// perform test
 					$pathResult = $urlMonitor->testPath($path, $expectedStatus, $expectedRedirect);
 
-					// add result columns
-					$pathArray[5] = '';
-					$pathArray[6] = '';
+					$outputCsvStatus = '';
+					$outputCsvMessage = '';
 
 					if ($pathResult->hasErrors()) {
-						$pathArray[5] = 'ERROR';
+						$outputCsvStatus = 'ERROR';
 						$pathesWithError ++;
 						if ($pathResult->forProperty('STATUS')->hasErrors()) {
 							$pathesWithStatusError ++;
@@ -87,13 +113,11 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 							$pathesWithRedirectError ++;
 						}
 					} else {
-						$pathArray[5] = 'OK';
+						$outputCsvStatus = 'OK';
 					}
 
 					if ($verbose == TRUE || ($outputErrors == TRUE && $pathResult->hasErrors())) {
-
 						$this->outputLine($pathesTotal . '. ' . $domain . $path);
-
 						if ($verbose == TRUE) {
 							$pathNoticesFlattened = $pathResult->getFlattenedNotices();
 							foreach ($pathNoticesFlattened as $pathNotices) {
@@ -112,7 +136,7 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 									$pathErrorMessages[] = $pathError->render();
 								}
 							}
-							$pathArray[6] = implode (' : ', $pathErrorMessages);
+							$outputCsvMessage = implode (' : ', $pathErrorMessages);
 						}
 
 						// flush buffer to show results immediately
@@ -121,6 +145,9 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 					}
 
 					if ($outputCSVHandle) {
+						// add result columns
+						$pathArray[$resultColumnNumber] = $outputCsvStatus;
+						$pathArray[$messageColumnNumber] = $outputCsvMessage;
 						fputcsv($outputCSVHandle, $pathArray);
 					}
 				}

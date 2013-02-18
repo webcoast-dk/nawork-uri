@@ -54,7 +54,7 @@ class Tx_Naworkuri_Service_PathMonitorService {
 	 * @param $expectedStatus
 	 * @param $expectedRedirect
 	 * @param $https use https
-	 * @return Tx_Extbase_Error_Result
+	 * @return Tx_naworkuri_Domain_Model_PathTestResult
 	 */
 	public function testPath($path, $expectedStatus = NULL, $expectedRedirect = NULL, $https = FALSE) {
 
@@ -63,8 +63,6 @@ class Tx_Naworkuri_Service_PathMonitorService {
 		} else {
 			$url = 'http://' . $this->domain . $path;
 		}
-
-		$result = new Tx_Extbase_Error_Result();
 
 		curl_setopt($this->cUrl, CURLOPT_URL, $url);
 		$response = curl_exec($this->cUrl);
@@ -80,39 +78,55 @@ class Tx_Naworkuri_Service_PathMonitorService {
 			}
 		}
 
+		$pathTestResult = new Tx_naworkuri_Domain_Model_PathTestResult();
+
 		if ($response === FALSE) {
-			$result->forProperty('HTTP')->addError(new Tx_Extbase_Error_Error('HTTP Request for url ' . $this->domain . $path .' failed'));
-			return $result;
+			$pathTestResult->setSuccess(FALSE);
+			return $pathTestResult;
 		} else {
-			$result->forProperty('HTTP')->addNotice(new Tx_Extbase_Error_Notice('HTTP Request worked'));
+			$pathTestResult->setSuccess(TRUE);
 		}
 
 		if ($expectedStatus) {
 			$httpStatusCode = curl_getinfo($this->cUrl, CURLINFO_HTTP_CODE);
-			if ($expectedStatus != $httpStatusCode) {
-				$result->forProperty('STATUS')->addError(new Tx_Extbase_Error_Error('Wrong HTTP->Status ' . $httpStatusCode . ' (expected ' . $expectedStatus . ')'));
+			$pathTestResult->setStatus($httpStatusCode);
+			if ($httpStatusCode == $expectedStatus){
+				$pathTestResult->setStatusSuccess(TRUE);
+				$pathTestResult->addInfo("http ok");
 			} else {
-				$result->forProperty('STATUS')->addNotice(new Tx_Extbase_Error_Notice('HTTP->Status is ' . $httpStatusCode . ' as expected'));
+				$pathTestResult->setStatusSuccess(FALSE);
+				$pathTestResult->setSuccess(FALSE);
+				$pathTestResult->addInfo("http fail");
 			}
 		}
 
 		if ($expectedRedirect) {
 
-			if (strpos('http://', $expectedRedirect) !== 0 && strpos('https://', $expectedRedirect) !== 0) {
-				$expectedRedirect = 'http://' . $this->domain . $expectedRedirect;
+			$redirect = $responseHeaders['Location'];
+
+			// strip current domain
+			if (strpos('http://' .  $this->domain, $expectedRedirect) === 0) {
+				$expectedRedirect = str_replace('http://' .  $this->domain, '', $expectedRedirect);
 			}
 
-			if ($responseHeaders['Location'] && $responseHeaders['Location'] == $expectedRedirect) {
-				$result->forProperty('REDIRECT')->addNotice(new Tx_Extbase_Error_Notice('HTTP->Redirect is ' . $responseHeaders['Location'] . ' as expected'));
-			} else if (!$responseHeaders['Location']) {
-				$result->forProperty('REDIRECT')->addError(new Tx_Extbase_Error_Error('No HTTP->Redirect found (expected ' . $expectedRedirect . ')'));
+			if (strpos('http://' .  $this->domain, $redirect) === 0){
+				$redirect = str_replace('http://' .  $this->domain, '', $redirect);
+			}
+
+			$pathTestResult->setRedirect($redirect);
+
+			if ($redirect && $expectedRedirect == $expectedRedirect) {
+				$pathTestResult->setRedirectSuccess(TRUE);
+				$pathTestResult->addInfo("redirect ok");
 			} else {
-				$result->forProperty('REDIRECT')->addError(new Tx_Extbase_Error_Error('Wrong HTTP->Redirect ' . $responseHeaders['Location'] . ' (expected ' . $expectedRedirect . ')'));
+				$pathTestResult->setSuccess(FALSE);
+				$pathTestResult->setRedirectSuccess(FALSE);
+				$pathTestResult->addInfo("redirect fail");
 
 			}
 		}
 
-		return $result;
+		return $pathTestResult;
 	}
 
 }

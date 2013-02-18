@@ -35,6 +35,7 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 		// find matching path-csv files
 
 		$pathesTotal = 0;
+		$pathesOk = 0;
 		$pathesWithError = 0;
 		$pathesWithStatusError = 0;
 		$pathesWithRedirectError = 0;
@@ -81,12 +82,16 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 			}
 
 			if ($outputCSVHandle) {
-				$resultColumnNumber = count($csvHeader);
-				$messageColumnNumber = count($csvHeader) + 1;
-				$csvHeader[$resultColumnNumber] = 'result';
-				$csvHeader[$messageColumnNumber] = 'messages';
+				$resultSuccessColumnNumber = count($csvHeader);
+				$resultStatusColumnNumber = count($csvHeader) + 1;
+				$resultRedirectColumnNumber = count($csvHeader) + 2;
+				$csvHeader[$resultSuccessColumnNumber] = 'result-sucess';
+				$csvHeader[$resultStatusColumnNumber] = 'result-status';
+				$csvHeader[$resultRedirectColumnNumber] = 'result-redirect';
 				fputcsv($outputCSVHandle, $csvHeader);
 			}
+
+			$this->outputLine();
 
 			// read csv line by line and perform test
 			while ($pathArray = fgetcsv($inputPathFileHandle)){
@@ -94,49 +99,49 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 				if ($path) {
 
 					$pathesTotal ++;
+
 					$expectedStatus = ($statusColumnNumber !== FALSE) ? $pathArray[$statusColumnNumber] : NULL;
 					$expectedRedirect = ($redirectColumnNumber !== FALSE) ?  $pathArray[$redirectColumnNumber] : NULL;
 
 					// perform test
-					$pathResult = $urlMonitor->testPath($path, $expectedStatus, $expectedRedirect);
+					$pathTestResult = $urlMonitor->testPath($path, $expectedStatus, $expectedRedirect);
 
-					$outputCsvStatus = '';
-					$outputCsvMessage = '';
-
-					if ($pathResult->hasErrors()) {
-						$outputCsvStatus = 'ERROR';
-						$pathesWithError ++;
-						if ($pathResult->forProperty('STATUS')->hasErrors()) {
-							$pathesWithStatusError ++;
-						}
-						if ($pathResult->forProperty('REDIRECT')->hasErrors()) {
-							$pathesWithRedirectError ++;
-						}
+					if ($pathTestResult->getSuccess() == TRUE)  {
+						$pathesOk ++;
 					} else {
-						$outputCsvStatus = 'OK';
+						$pathesWithError ++;
 					}
 
-					if ($verbose == TRUE || ($outputErrors == TRUE && $pathResult->hasErrors())) {
+					if ($pathTestResult->getStatusSuccess() == FALSE) {
+						$pathesWithStatusError ++;
+					}
+
+					if ($pathTestResult->getRedirectSuccess() == FALSE)  {
+						$pathesWithRedirectError ++;
+					}
+
+					// create cli output
+					if ($verbose == TRUE || ($outputErrors == TRUE && $pathTestResult->getSuccess() == FALSE)) {
 						$this->outputLine($pathesTotal . '. ' . $domain . $path);
-						if ($verbose == TRUE) {
-							$pathNoticesFlattened = $pathResult->getFlattenedNotices();
-							foreach ($pathNoticesFlattened as $pathNotices) {
-								foreach ($pathNotices as $pathNotice) {
-									$this->outputLine( '  -> SUCCESS ' . $pathNotice->render());
+
+						if ($expectedStatus) {
+							if ($verbose == TRUE || ($outputErrors == TRUE && $pathTestResult->getStatusSuccess() == FALSE)) {
+								$message = $pathTestResult->getStatus();
+								if ($expectedStatus != $pathTestResult->getStatus()){
+									$message .= ' expected ' . $expectedStatus;
 								}
+								$this->outputLine(' - ' . ($pathTestResult->getStatusSuccess() ? 'OK' : 'ERROR') . ' -> STATUS: ' . $message . ' ');
 							}
 						}
 
-						if ($pathResult->hasErrors()) {
-							$pathErrorsFlattened = $pathResult->getFlattenedErrors();
-							$pathErrorMessages = array();
-							foreach ($pathErrorsFlattened as $pathErrors) {
-								foreach ($pathErrors as $pathError) {
-									$this->outputLine( '  -> ERROR ' . $pathError->render());
-									$pathErrorMessages[] = $pathError->render();
+						if ($expectedRedirect) {
+							if ($verbose == TRUE || ($outputErrors == TRUE && $pathTestResult->getRedirectSuccess() == FALSE)) {
+								$message = $pathTestResult->getRedirect();
+								if ($expectedRedirect != $pathTestResult->getRedirect()){
+									$message .= ' expected "' . $expectedRedirect;
 								}
+								$this->outputLine(' - ' . ($pathTestResult->getRedirectSuccess() ? 'OK' : 'ERROR') . ' -> REDIRECT: ' . $message . ' ');
 							}
-							$outputCsvMessage = implode (' : ', $pathErrorMessages);
 						}
 
 						// flush buffer to show results immediately
@@ -144,10 +149,11 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 						$this->response->setContent('');
 					}
 
+					// write csv if any is given
 					if ($outputCSVHandle) {
-						// add result columns
-						$pathArray[$resultColumnNumber] = $outputCsvStatus;
-						$pathArray[$messageColumnNumber] = $outputCsvMessage;
+						$pathArray[$resultSuccessColumnNumber] = $pathTestResult->getSuccess() ? 'OK' : 'ERROR';
+						$pathArray[$resultStatusColumnNumber] = $pathTestResult->getStatus();
+						$pathArray[$resultRedirectColumnNumber] = $pathTestResult->getRedirect();
 						fputcsv($outputCSVHandle, $pathArray);
 					}
 				}
@@ -165,7 +171,7 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 			// show total result
 		$this->outputLine();
 		$this->outputLine("Total results for " . $pathesTotal . ' pathes:');
-		$this->outputLine(" - OK: " . ($pathesTotal - $pathesWithError));
+		$this->outputLine(" - OK: " . $pathesOk);
 		$this->outputLine(" - Errors: " . $pathesWithError);
 		$this->outputLine(" - Status-Errors: " . $pathesWithStatusError);
 		$this->outputLine(" - Redirect-Errors: " . $pathesWithRedirectError );

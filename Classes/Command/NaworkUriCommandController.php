@@ -18,8 +18,9 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 	 * @param NULL|string $outputErrors during execution
  	 * @param NULL|string $outputCSV output the result as csv to the given file
 	 * @param bool $verbose show more informations during run
+	 * @param int $sleep sleep the given number of seconds after each test to protect the tested server
 	 */
-	public function monitorPathesCommand($domain = NULL, $user = NULL, $password = NULL, $sslNoVerify = FALSE, $pathFile = NULL, $outputErrors = FALSE, $outputCSV = NULL , $verbose = FALSE) {
+	public function monitorPathesCommand($domain = NULL, $user = NULL, $password = NULL, $sslNoVerify = FALSE, $pathFile = NULL, $outputErrors = FALSE, $outputCSV = NULL , $verbose = FALSE, $sleep = 0) {
 
 		// get domain from extension-configuration if not given directly
 		// $domain = 'tivoli.dev.work.de';
@@ -155,6 +156,11 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 						$pathArray[$resultStatusColumnNumber] = $pathTestResult->getStatus();
 						$pathArray[$resultRedirectColumnNumber] = $pathTestResult->getRedirect();
 						fputcsv($outputCSVHandle, $pathArray);
+					}
+
+					// sleep the given number of seconds
+					if ($sleep > 0) {
+						sleep($sleep);
 					}
 				}
 			}

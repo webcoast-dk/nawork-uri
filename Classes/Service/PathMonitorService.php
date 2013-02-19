@@ -100,20 +100,17 @@ class Tx_Naworkuri_Service_PathMonitorService {
 			}
 		}
 
+		$redirect = $responseHeaders['Location'];
+		if (strpos('http://' .  $this->domain, $redirect) === 0){
+			$redirect = str_replace('http://' .  $this->domain, '', $redirect);
+		}
+		$pathTestResult->setRedirect($redirect);
+
 		if ($expectedRedirect) {
 
-			$redirect = $responseHeaders['Location'];
-
-			// strip current domain
 			if (strpos('http://' .  $this->domain, $expectedRedirect) === 0) {
 				$expectedRedirect = str_replace('http://' .  $this->domain, '', $expectedRedirect);
 			}
-
-			if (strpos('http://' .  $this->domain, $redirect) === 0){
-				$redirect = str_replace('http://' .  $this->domain, '', $redirect);
-			}
-
-			$pathTestResult->setRedirect($redirect);
 
 			if ($redirect && $expectedRedirect == $expectedRedirect) {
 				$pathTestResult->setRedirectSuccess(TRUE);

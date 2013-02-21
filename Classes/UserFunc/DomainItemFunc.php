@@ -28,7 +28,7 @@ class Tx_NaworkUri_UserFunc_DomainItemFunc {
 				$currentValue = $domains[0]['uid'];
 			}
 		}
-		$allDomains = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid,' . $TCA[$params['fieldConf']['config']['foreign_table']]['ctrl']['label'], $params['fieldConf']['config']['foreign_table'], 'hidden=0 ' . $params['fieldConf']['config']['foreign_table_where']);
+		$allDomains = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid,' . $TCA[$params['fieldConf']['config']['foreign_table']]['ctrl']['label'], $params['fieldConf']['config']['foreign_table'], '1=1 ' . $params['fieldConf']['config']['foreign_table_where']);
 		$hiddenInput = '<input type="hidden" value="' . $currentValue . '" name="' . $params['itemFormElName'] . '_selIconVal" />';
 		$selectBegin = '<select onchange="if (this.options[this.selectedIndex].value==\'--div--\') {this.selectedIndex=0;} TBE_EDITOR.fieldChanged(\'' . $params['table'] . '\',\'' . $params['row']['uid'] . '\',\'' . $params['field'] . '\',\'' . $params['itemFormElName'] . '\');" class="select" name="' . $params['itemFormElName'] . '" id="' . uniqid('tceforms-select-') . '">';
 		$selectEnd = '</select>';

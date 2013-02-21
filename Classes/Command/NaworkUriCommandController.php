@@ -14,26 +14,15 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 	 * @param NULL|string $user http-user (leave empty if no http-auth is needed)
 	 * @param NULL|string $password http-basic password (leave empty if no http-auth is needed)
 	 * @param bool $sslNoVerify don not veryfy ssl-peer
-	 * @param NULL|string $pathFile csv file to get the pathes (the first line is ignored, structure: path, __notes__, __notes___ , expected http-status, expected redirect target)
-	 * @param NULL|string $outputErrors during execution
- 	 * @param NULL|string $outputCSV output the result as csv to the given file
+	 * @param NULL|string $pathes csv file to get the pathes (the first line is ignored, structure: path, __notes__, __notes___ , expected http-status, expected redirect target)
+	 * @param NULL|string $errors during execution
+ 	 * @param NULL|string $output output the result as csv to the given file
 	 * @param bool $verbose show more informations during run
 	 * @param int $sleep sleep the given number of seconds after each test to protect the tested server
 	 */
-	public function monitorPathesCommand($domain = NULL, $user = NULL, $password = NULL, $sslNoVerify = FALSE, $pathFile = NULL, $outputErrors = FALSE, $outputCSV = NULL , $verbose = FALSE, $sleep = 0) {
+	public function monitorPathesCommand($domain = NULL, $user = NULL, $password = NULL, $sslNoVerify = FALSE, $pathes = NULL, $errors = FALSE, $output = NULL , $verbose = FALSE, $sleep = 0) {
 
-		// get domain from extension-configuration if not given directly
-		// $domain = 'tivoli.dev.work.de';
-
-		// get http credentials from extension-configuration if not given directly
-		// $user = NULL;
-		// $password = NULL;
-		// $sslNoVerify = TRUE;
-
-		// create monitor service
 		$urlMonitor = new \Tx_Naworkuri_Service_PathMonitorService($domain, $user, $password, $sslNoVerify);
-
-		// find matching path-csv files
 
 		$pathesTotal = 0;
 		$pathesOk = 0;
@@ -41,24 +30,14 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 		$pathesWithStatusError = 0;
 		$pathesWithRedirectError = 0;
 
-		$outputCSVHandle = NULL;
-		if (!is_null($outputCSV)) {
-			if (file_exists($outputCSV) && is_writable($outputCSV)) {
-				$outputCSVHandle = fopen($outputCSV, "w");
-			} else if (!file_exists($outputCSV)) {
-				$outputCSVHandle = fopen($outputCSV, "w");
-			}
-		}
+		if (file_exists($pathes)) {
 
-		// run test for every file
-		if (file_exists($pathFile)) {
-
-			if ($verbose == TRUE || $outputErrors == TRUE ) {
+			if ($verbose == TRUE || $errors == TRUE ) {
 				$this->outputLine();
-				$this->outputLine("reading pathes from: " . $pathFile);
+				$this->outputLine("reading pathes from: " . $pathes);
 			}
 
-			$inputPathFileHandle = fopen($pathFile, "r");
+			$inputPathFileHandle = fopen($pathes, "r");
 
 			// ignore first line
 			$csvHeader = fgetcsv($inputPathFileHandle);
@@ -82,14 +61,23 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 				$this->outputLine(" - reading redirects from column " . $redirectColumnNumber);
 			}
 
-			if ($outputCSVHandle) {
-				$resultSuccessColumnNumber = count($csvHeader);
-				$resultStatusColumnNumber = count($csvHeader) + 1;
-				$resultRedirectColumnNumber = count($csvHeader) + 2;
-				$csvHeader[$resultSuccessColumnNumber] = 'result-sucess';
-				$csvHeader[$resultStatusColumnNumber] = 'result-status';
-				$csvHeader[$resultRedirectColumnNumber] = 'result-redirect';
-				fputcsv($outputCSVHandle, $csvHeader);
+			$outputCSVHandle = NULL;
+			if (!is_null($output)) {
+				if (file_exists($output) && is_writable($output)) {
+					$outputCSVHandle = fopen($output, "w");
+				} else if (!file_exists($output)) {
+					$outputCSVHandle = fopen($output, "w");
+				}
+
+				if ($outputCSVHandle) {
+					$resultSuccessColumnNumber = count($csvHeader);
+					$resultStatusColumnNumber = count($csvHeader) + 1;
+					$resultRedirectColumnNumber = count($csvHeader) + 2;
+					$csvHeader[$resultSuccessColumnNumber] = 'result-sucess';
+					$csvHeader[$resultStatusColumnNumber] = 'result-status';
+					$csvHeader[$resultRedirectColumnNumber] = 'result-redirect';
+					fputcsv($outputCSVHandle, $csvHeader);
+				}
 			}
 
 			$this->outputLine();
@@ -122,11 +110,11 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 					}
 
 					// create cli output
-					if ($verbose == TRUE || ($outputErrors == TRUE && $pathTestResult->getSuccess() == FALSE)) {
+					if ($verbose == TRUE || ($errors == TRUE && $pathTestResult->getSuccess() == FALSE)) {
 						$this->outputLine($pathesTotal . '. ' . $domain . $path);
 
 						if ($expectedStatus) {
-							if ($verbose == TRUE || ($outputErrors == TRUE && $pathTestResult->getStatusSuccess() == FALSE)) {
+							if ($verbose == TRUE || ($errors == TRUE && $pathTestResult->getStatusSuccess() == FALSE)) {
 								$message = $pathTestResult->getStatus();
 								if ($expectedStatus != $pathTestResult->getStatus()){
 									$message .= ' expected ' . $expectedStatus;
@@ -136,7 +124,7 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 						}
 
 						if ($expectedRedirect) {
-							if ($verbose == TRUE || ($outputErrors == TRUE && $pathTestResult->getRedirectSuccess() == FALSE)) {
+							if ($verbose == TRUE || ($errors == TRUE && $pathTestResult->getRedirectSuccess() == FALSE)) {
 								$message = $pathTestResult->getRedirect();
 								if ($expectedRedirect != $pathTestResult->getRedirect()){
 									$message .= ' expected "' . $expectedRedirect;

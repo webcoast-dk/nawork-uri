@@ -29,6 +29,8 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 		$pathesWithError = 0;
 		$pathesWithStatusError = 0;
 		$pathesWithRedirectError = 0;
+		$pathesWithHttpsError = 0;
+
 
 		if (file_exists($pathes)) {
 
@@ -61,6 +63,11 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 				$this->outputLine(" - reading redirects from column " . $redirectColumnNumber);
 			}
 
+			$httpsColumnNumber = array_search('https', $csvHeader);
+			if ($httpsColumnNumber !== FALSE) {
+				$this->outputLine(" - reading force-https from column " . $httpsColumnNumber);
+			}
+
 			$outputCSVHandle = NULL;
 			if (!is_null($output)) {
 				if (file_exists($output) && is_writable($output)) {
@@ -73,9 +80,11 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 					$resultSuccessColumnNumber = count($csvHeader);
 					$resultStatusColumnNumber = count($csvHeader) + 1;
 					$resultRedirectColumnNumber = count($csvHeader) + 2;
+					$resultHttpsColumnNumber = count($csvHeader) + 3;
 					$csvHeader[$resultSuccessColumnNumber] = 'result-sucess';
 					$csvHeader[$resultStatusColumnNumber] = 'result-status';
 					$csvHeader[$resultRedirectColumnNumber] = 'result-redirect';
+					$csvHeader[$resultHttpsColumnNumber] = 'result-https';
 					fputcsv($outputCSVHandle, $csvHeader);
 				}
 			}
@@ -84,65 +93,109 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 
 			// read csv line by line and perform test
 			while ($pathArray = fgetcsv($inputPathFileHandle)){
+
+				// flush buffer to show results immediately
+				$this->response->send();
+				$this->response->setContent('');
+
 				$path = $pathArray[$pathColumnNumber];
 				if ($path) {
 
 					$pathesTotal ++;
+					// if ($pathesTotal > 10) break;
 
 					$expectedStatus = ($statusColumnNumber !== FALSE) ? $pathArray[$statusColumnNumber] : NULL;
 					$expectedRedirect = ($redirectColumnNumber !== FALSE) ?  $pathArray[$redirectColumnNumber] : NULL;
+					$expectedHttps = ($httpsColumnNumber !== FALSE) ?  $pathArray[$httpsColumnNumber] : FALSE;
 
 					// perform test
-					$pathTestResult = $urlMonitor->testPath($path, $expectedStatus, $expectedRedirect);
+					$pathTestResult = $urlMonitor->testPath($path, $expectedStatus, $expectedRedirect, $expectedHttps);
 
 					if ($pathTestResult->getSuccess() == TRUE)  {
 						$pathesOk ++;
 					} else {
 						$pathesWithError ++;
+
+						if ($pathTestResult->getStatusSuccess() === FALSE) {
+							$pathesWithStatusError ++;
+						}
+
+						if ($pathTestResult->getRedirectSuccess() === FALSE)  {
+							$pathesWithRedirectError ++;
+						}
+
+						if ($pathTestResult->getHttpsSuccess() === FALSE)  {
+							$pathesWithHttpsError ++;
+						}
+
 					}
 
-					if ($pathTestResult->getStatusSuccess() == FALSE) {
-						$pathesWithStatusError ++;
-					}
-
-					if ($pathTestResult->getRedirectSuccess() == FALSE)  {
-						$pathesWithRedirectError ++;
-					}
 
 					// create cli output
-					if ($verbose == TRUE || ($errors == TRUE && $pathTestResult->getSuccess() == FALSE)) {
+					if ($verbose == TRUE || $pathTestResult->getSuccess() == FALSE) {
+
 						$this->outputLine($pathesTotal . '. ' . $domain . $path);
 
 						if ($expectedStatus) {
-							if ($verbose == TRUE || ($errors == TRUE && $pathTestResult->getStatusSuccess() == FALSE)) {
-								$message = $pathTestResult->getStatus();
-								if ($expectedStatus != $pathTestResult->getStatus()){
-									$message .= ' expected ' . $expectedStatus;
+							if ($verbose == TRUE || $pathTestResult->getStatusSuccess() === FALSE) {
+								$statusSuccess = $pathTestResult->getStatusSuccess();
+								switch (TRUE) {
+									default:
+										$this->outputLine('   - INFO: Status is not determined');
+										break;
+									case ($statusSuccess === TRUE):
+										$this->outputLine('   - OK: Status is ' . $pathTestResult->getStatus() . ' as expected ');
+										break;
+									case ($statusSuccess === FALSE):
+										$this->outputLine('   - ERROR: Status is ' . $pathTestResult->getStatus() . ' but ' . $expectedStatus . ' is expected');
+										break;
 								}
-								$this->outputLine(' - ' . ($pathTestResult->getStatusSuccess() ? 'OK' : 'ERROR') . ' -> STATUS: ' . $message . ' ');
 							}
 						}
 
 						if ($expectedRedirect) {
-							if ($verbose == TRUE || ($errors == TRUE && $pathTestResult->getRedirectSuccess() == FALSE)) {
-								$message = $pathTestResult->getRedirect();
-								if ($expectedRedirect != $pathTestResult->getRedirect()){
-									$message .= ' expected "' . $expectedRedirect;
+							if ($verbose == TRUE || $pathTestResult->getRedirectSuccess() === FALSE) {
+								$redirectSuccess = $pathTestResult->getRedirectSuccess();
+								// print_r(array($pathTestResult,$redirectSuccess,($redirectSuccess === TRUE)));
+								switch (TRUE) {
+									default:
+										$this->outputLine('   - INFO: Redirect is not determined');
+										break;
+									case ($redirectSuccess === TRUE):
+										$this->outputLine('   - OK: Redirect is ' . $pathTestResult->getRedirect() . ' as expected');
+										break;
+									case ($redirectSuccess === FALSE):
+										$this->outputLine('   - ERROR: Redirect is ' . $pathTestResult->getRedirect() . ' but ' . $expectedRedirect . ' is expected');
+										break;
 								}
-								$this->outputLine(' - ' . ($pathTestResult->getRedirectSuccess() ? 'OK' : 'ERROR') . ' -> REDIRECT: ' . $message . ' ');
+
 							}
 						}
 
-						// flush buffer to show results immediately
-						$this->response->send();
-						$this->response->setContent('');
+						if ($expectedHttps == TRUE) {
+							if ($verbose == TRUE || $pathTestResult->getHttpsSuccess() === FALSE) {
+								$httpsSuccess = $pathTestResult->getHttpsSuccess();
+								switch (TRUE) {
+									default:
+										$this->outputLine('   - INFO: Https is not determined');
+										break;
+									case ($httpsSuccess === TRUE):
+										$this->outputLine('   - OK: Https is found');
+										break;
+									case ($httpsSuccess === FALSE):
+										$this->outputLine('   - ERROR: Https is not found');
+										break;
+								}
+							}
+						}
 					}
 
 					// write csv if any is given
 					if ($outputCSVHandle) {
-						$pathArray[$resultSuccessColumnNumber] = $pathTestResult->getSuccess() ? 'OK' : 'ERROR';
-						$pathArray[$resultStatusColumnNumber] = $pathTestResult->getStatus();
-						$pathArray[$resultRedirectColumnNumber] = $pathTestResult->getRedirect();
+						$pathArray[$resultSuccessColumnNumber] = '' . $pathTestResult->getSuccess() ? 'OK' : 'ERROR';
+						$pathArray[$resultStatusColumnNumber] = '' . $pathTestResult->getStatus();
+						$pathArray[$resultRedirectColumnNumber] = '' . $pathTestResult->getRedirect();
+						$pathArray[$resultHttpsColumnNumber] = '' . $pathTestResult->getHttpsSuccess();
 						fputcsv($outputCSVHandle, $pathArray);
 					}
 
@@ -169,6 +222,7 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 		$this->outputLine(" - Errors: " . $pathesWithError);
 		$this->outputLine(" - Status-Errors: " . $pathesWithStatusError);
 		$this->outputLine(" - Redirect-Errors: " . $pathesWithRedirectError );
+		$this->outputLine(" - HTTPS-Errors: " . $pathesWithHttpsError );
 
 		$this->quit();
 	}

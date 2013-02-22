@@ -3,9 +3,9 @@
 class Tx_naworkuri_Domain_Model_PathTestResult {
 
 	/**
-	 * @var bool
+	 * @var string
 	 */
-	protected $success = FALSE;
+	protected $url;
 
 	/**
 	 * @var int|null
@@ -13,24 +13,49 @@ class Tx_naworkuri_Domain_Model_PathTestResult {
 	protected $status;
 
 	/**
-	 * @var bool
-	 */
-	protected $statusSuccess = TRUE;
-
-	/**
 	 * @var null|string
 	 */
 	protected $redirect;
 
 	/**
-	 * @var bool
+	 * @var null|bool
 	 */
-	protected $redirectSuccess = TRUE;
+	protected $success = NULL;
+
+	/**
+	 * @var null|bool
+	 */
+	protected $statusSuccess = NULL;
+
+	/**
+	 * @var null|bool
+	 */
+	protected $redirectSuccess = NULL;
+
+	/**
+	 * @var null|bool
+	 */
+	protected $httpsSuccess = NULL;
 
 	/**
 	 * @var string
 	 */
-	protected $info;
+	protected $info = '';
+
+	/**
+	 * @param string $url
+	 */
+	public function setUrl($url) {
+		$this->url = $url;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getUrl() {
+		return $this->url;
+	}
+
 
 	/**
 	 * @param null|string $redirect
@@ -61,7 +86,7 @@ class Tx_naworkuri_Domain_Model_PathTestResult {
 	}
 
 	/**
-	 * @param boolean $success
+	 * @param boolean $redirectSuccess
 	 */
 	public function setSuccess($success) {
 		$this->success = $success;
@@ -71,7 +96,17 @@ class Tx_naworkuri_Domain_Model_PathTestResult {
 	 * @return boolean
 	 */
 	public function getSuccess() {
-		return $this->success;
+		$success = $this->success;
+		if ($this->statusSuccess === FALSE) {
+			$success = FALSE;
+		}
+		if ($this->redirectSuccess === FALSE) {
+			$success = FALSE;
+		}
+		if ($this->httpsSuccess === FALSE) {
+			$success = FALSE;
+		}
+		return $success;
 	}
 
 	/**
@@ -82,7 +117,7 @@ class Tx_naworkuri_Domain_Model_PathTestResult {
 	}
 
 	/**
-	 * @return boolean
+	 * @return null|boolean
 	 */
 	public function getRedirectSuccess() {
 		return $this->redirectSuccess;
@@ -96,18 +131,31 @@ class Tx_naworkuri_Domain_Model_PathTestResult {
 	}
 
 	/**
-	 * @return boolean
+	 * @return null|boolean
 	 */
 	public function getStatusSuccess() {
 		return $this->statusSuccess;
 	}
 
 	/**
+	 * @param boolean $httpsSuccess
+	 */
+	public function setHttpsSuccess($httpsSuccess) {
+		$this->httpsSuccess = $httpsSuccess;
+	}
+
+	/**
+	 * @return null|boolean
+	 */
+	public function getHttpsSuccess() {
+		return $this->httpsSuccess;
+	}
+
+	/**
 	 * @param string $info
 	 */
 	public function addInfo($info) {
-		if ($this->info) $this->info .= chr(10);
-		$this->info .= $info;
+		$this->info .= chr(10) . $info;
 	}
 
 	/**

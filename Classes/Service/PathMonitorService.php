@@ -50,25 +50,112 @@ class Tx_Naworkuri_Service_PathMonitorService {
 	/**
 	 * Test a path
 	 *
-	 * @param $path
-	 * @param $expectedStatus
-	 * @param $expectedRedirect
-	 * @param $https use https
+	 * @param string $path
+	 * @param int $expectedStatus
+	 * @param null|string $expectedRedirect
+	 * @param null|bool $expectedHttps use https
 	 * @return Tx_naworkuri_Domain_Model_PathTestResult
 	 */
-	public function testPath($path, $expectedStatus = NULL, $expectedRedirect = NULL, $https = FALSE) {
+	public function testPath($path, $expectedStatus = NULL, $expectedRedirect = NULL, $expectedHttps = FALSE) {
 
-		if ($https) {
-			$url = 'https://' . $this->domain . $path;
+		$url = 'http://' . $this->domain . $path;
+
+		// create result object
+		$pathTestResult = new Tx_naworkuri_Domain_Model_PathTestResult();
+		$pathTestResult->addInfo('expect'. $path . ' status:' . $expectedStatus . ' redirect:' . $expectedRedirect . ' https:' . $expectedHttps);
+		$pathTestResult->setUrl($url);
+
+		list($httpSuccess, $httpStatusCode, $httpLocation) = $this->executeCurlRequest($url);
+		$pathTestResult->addInfo('first request (' . $url . ') success:'. $httpSuccess . ' status:' . $httpStatusCode . ' location:' . $httpLocation);
+
+
+		if ($httpSuccess) {
+			$pathTestResult->setSuccess(TRUE);
 		} else {
-			$url = 'http://' . $this->domain . $path;
+			$pathTestResult->setSuccess(FALSE);
+			return $pathTestResult;
 		}
 
+		// test status of first request if redirect or https is set
+		if ($expectedRedirect || $expectedHttps) {
+			if (!($httpStatusCode > 300 && $httpStatusCode < 400)) {
+				$pathTestResult->setRedirectSuccess(FALSE);
+				$pathTestResult->setStatus($httpStatusCode);
+				$pathTestResult->setRedirect($httpLocation);
+				return $pathTestResult;
+			} else {
+				list($secondHttpSuccess, $secondHttpStatusCode, $secondHttpLocation) = $this->executeCurlRequest($httpLocation);
+				$httpSuccess = $secondHttpSuccess;
+				$httpStatusCode = $secondHttpStatusCode;
+				$pathTestResult->addInfo('second request (' . $httpLocation . ')success:'. $httpSuccess . ' status:' . $httpStatusCode . ' location:' . $secondHttpLocation);
+			}
+		}
+
+		$pathTestResult->setStatus($httpStatusCode);
+		$pathTestResult->setRedirect($httpLocation);
+
+		// test status
+		if ($expectedStatus) {
+
+			if ($expectedStatus == $httpStatusCode) {
+				$pathTestResult->setStatusSuccess(TRUE);
+			} else {
+				$pathTestResult->setStatusSuccess(FALSE);
+			}
+		}
+
+		// https
+		if (!$expectedRedirect && $expectedHttps == TRUE) {
+			if ($httpLocation == 'https://' .  $this->domain . $path) {
+				$pathTestResult->setHttpsSuccess(TRUE);
+			} else {
+				$pathTestResult->setHttpsSuccess(FALSE);
+			}
+		}
+
+		// redirect
+		if ($expectedRedirect) {
+			if ($httpLocation == 'http://' .  $this->domain . $expectedRedirect) {
+				$pathTestResult->setRedirectSuccess(TRUE);
+			} else {
+				$pathTestResult->setRedirectSuccess(FALSE);
+			}
+		}
+
+		// https && redirect
+		if ($expectedRedirect && $expectedHttps == TRUE) {
+
+			if ($httpLocation == 'http://' .  $this->domain . $expectedRedirect || $httpLocation == 'https://' .  $this->domain . $expectedRedirect  ) {
+				$pathTestResult->setRedirectSuccess(TRUE);
+			} else {
+				$pathTestResult->setRedirectSuccess(FALSE);
+			}
+
+			if (strpos($httpLocation, 'https://') === 0 ){
+				$pathTestResult->setHttpsSuccess(TRUE);
+			} else {
+				$pathTestResult->setHttpsSuccess(FALSE);
+			}
+		}
+
+		return $pathTestResult;
+	}
+
+	/**
+	 * @param $url
+	 */
+	protected function executeCurlRequest($url) {
 		curl_setopt($this->cUrl, CURLOPT_URL, $url);
 		$response = curl_exec($this->cUrl);
-		list($header, $body) = explode("\n\n", $response, 2);
+
+		// success
+		$httpSuccess = ($response === FALSE) ? FALSE : TRUE;
+
+		// status
+		$httpStatusCode = curl_getinfo($this->cUrl, CURLINFO_HTTP_CODE);
 
 		// extract response headers
+		list($header, $body) = explode("\n\n", $response, 2);
 		$responseHeaders = array();
 		$headerLines = explode("\n", $header);
 		foreach($headerLines as $headerLine) {
@@ -77,53 +164,8 @@ class Tx_Naworkuri_Service_PathMonitorService {
 				$responseHeaders[$header] = trim($value);
 			}
 		}
+		$hhtpLocation = $responseHeaders['Location'];
 
-		$pathTestResult = new Tx_naworkuri_Domain_Model_PathTestResult();
-
-		if ($response === FALSE) {
-			$pathTestResult->setSuccess(FALSE);
-			return $pathTestResult;
-		} else {
-			$pathTestResult->setSuccess(TRUE);
-		}
-
-		if ($expectedStatus) {
-			$httpStatusCode = curl_getinfo($this->cUrl, CURLINFO_HTTP_CODE);
-			$pathTestResult->setStatus($httpStatusCode);
-			if ($httpStatusCode == $expectedStatus){
-				$pathTestResult->setStatusSuccess(TRUE);
-				$pathTestResult->addInfo("http ok");
-			} else {
-				$pathTestResult->setStatusSuccess(FALSE);
-				$pathTestResult->setSuccess(FALSE);
-				$pathTestResult->addInfo("http fail");
-			}
-		}
-
-		$redirect = $responseHeaders['Location'];
-		if (strpos('http://' .  $this->domain, $redirect) === 0){
-			$redirect = str_replace('http://' .  $this->domain, '', $redirect);
-		}
-		$pathTestResult->setRedirect($redirect);
-
-		if ($expectedRedirect) {
-
-			if (strpos('http://' .  $this->domain, $expectedRedirect) === 0) {
-				$expectedRedirect = str_replace('http://' .  $this->domain, '', $expectedRedirect);
-			}
-
-			if ($redirect && $expectedRedirect == $expectedRedirect) {
-				$pathTestResult->setRedirectSuccess(TRUE);
-				$pathTestResult->addInfo("redirect ok");
-			} else {
-				$pathTestResult->setSuccess(FALSE);
-				$pathTestResult->setRedirectSuccess(FALSE);
-				$pathTestResult->addInfo("redirect fail");
-
-			}
-		}
-
-		return $pathTestResult;
+		return array($httpSuccess, $httpStatusCode, $hhtpLocation);
 	}
-
 }

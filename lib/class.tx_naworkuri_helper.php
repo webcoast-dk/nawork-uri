@@ -12,6 +12,21 @@ class tx_naworkuri_helper {
 	const LOG_SEVERITY_SECURITY = 3;
 
 	/**
+	 * Tests if the input can be interpreted as integer.
+	 *
+	 * !!!this is a direct copy of the according method from typo3 4.6!!!
+	 *
+	 * @param $var mixed Any input variable to test
+	 * @return boolean Returns TRUE if string is an integer
+	 */
+	public static function canBeInterpretedAsInteger($var) {
+		if ($var === '') {
+			return FALSE;
+		}
+		return (string) intval($var) === (string) $var;
+	}
+
+	/**
 	 * Explode URI Parameters
 	 *
 	 * @param string $param_string Parameter Part of URI
@@ -289,14 +304,8 @@ class tx_naworkuri_helper {
 	}
 
 	public static function aliasToId($alias) {
-		if (class_exists('\TYPO3\CMS\Core\Utility\MathUtility')) { // compatibility for 6.0
-			if (\TYPO3\CMS\Core\Utility\MathUtility::canBeInterpretedAsInteger($params['id'])) {
-				return $alias;
-			}
-		} else {
-			if (t3lib_div::testInt($alias)) {
-				return $alias;
-			}
+		if (tx_naworkuri_helper::canBeInterpretedAsInteger($alias)) {
+			return $alias;
 		}
 		$db = $GLOBALS['TYPO3_DB'];
 		$configuration = t3lib_div::makeInstance('tx_naworkuri_configReader');

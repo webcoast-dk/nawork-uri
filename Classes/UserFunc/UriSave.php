@@ -23,7 +23,7 @@ class Tx_NaworkUri_UserFunc_UriSave {
 	 */
 	public function processDatamap_postProcessFieldArray($status, $table, $id, &$fieldArray, &$tceMain) {
 		if ($table == 'tx_naworkuri_uri') {
-			if (array_key_exists('domain', $fieldArray) && is_numeric($fieldArray['domain'])) {
+			if (array_key_exists('domain', $fieldArray) && tx_naworkuri_helper::canBeInterpretedAsInteger($fieldArray['domain'])) {
 				$domain = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('*', 'sys_domain', 'uid=' . intval($fieldArray['domain']));
 				if (is_array($domain)) {
 					$fieldArray['domain'] = $domain['domainName'];

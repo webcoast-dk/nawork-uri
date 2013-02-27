@@ -258,7 +258,7 @@ class tx_naworkuri implements t3lib_Singleton {
 			/* check if type should be casted to int to avoid strange behavior when creating links */
 			if ($configReader->getCastTypeToInt()) {
 				$type = !empty($tempParams['type']) ? $tempParams['type'] : t3lib_div::_GP('type');
-				if (!empty($type) && !t3lib_div::testInt($type)) { // if type is not an int
+				if (!empty($type) && !tx_naworkuri_helper::canBeInterpretedAsInteger($type)) { // if type is not an int
 					unset($tempParams['type']); // unset type param to use system default
 					/* should we redirect if the parameter is wrong */
 					if ($configReader->getRedirectOnParameterDiff()) {
@@ -278,7 +278,7 @@ class tx_naworkuri implements t3lib_Singleton {
 			/* check if L should be casted to int to avoid strange behavior when creating links */
 			if ($configReader->getCastLToInt()) {
 				$L = !empty($tempParams['L']) ? $tempParams['L'] : t3lib_div::_GP('L');
-				if (!empty($L) && !t3lib_div::testInt($L)) { // if L is not an int
+				if (!empty($L) && !tx_naworkuri_helper::canBeInterpretedAsInteger($L)) { // if L is not an int
 					unset($tempParams['L']); // unset L param to use system default
 					/* should we redirect if the parameter is wrong */
 					if ($configReader->getRedirectOnParameterDiff()) {

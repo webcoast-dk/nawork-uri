@@ -312,7 +312,6 @@ class tx_naworkuri_helper {
 		/* @var $db t3lib_db */
 		/* @var $configuration tx_naworkuri_configReader */
 		$result = $db->exec_SELECTgetRows('uid', $configuration->getPageTable(), 'alias=' . $db->fullQuoteStr($alias, $configuration->getPageTable()) . ' AND deleted=0');
-		debug($result);
 		if (is_array($result) && count($result) > 0) {
 			return $result[0]['uid'];
 		}

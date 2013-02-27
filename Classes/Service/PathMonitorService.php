@@ -115,7 +115,7 @@ class Tx_Naworkuri_Service_PathMonitorService {
 
 		// redirect
 		if ($expectedRedirect) {
-			if ($httpLocation == 'http://' .  $this->domain . $expectedRedirect) {
+			if ($httpLocation == $expectedRedirect || $httpLocation == 'http://' .  $this->domain . $expectedRedirect) {
 				$pathTestResult->setRedirectSuccess(TRUE);
 			} else {
 				$pathTestResult->setRedirectSuccess(FALSE);
@@ -125,7 +125,7 @@ class Tx_Naworkuri_Service_PathMonitorService {
 		// https && redirect
 		if ($expectedRedirect && $expectedHttps == TRUE) {
 
-			if ($httpLocation == 'http://' .  $this->domain . $expectedRedirect || $httpLocation == 'https://' .  $this->domain . $expectedRedirect  ) {
+			if ($httpLocation == $expectedRedirect || $httpLocation == 'http://' .  $this->domain . $expectedRedirect || $httpLocation == 'https://' .  $this->domain . $expectedRedirect  ) {
 				$pathTestResult->setRedirectSuccess(TRUE);
 			} else {
 				$pathTestResult->setRedirectSuccess(FALSE);

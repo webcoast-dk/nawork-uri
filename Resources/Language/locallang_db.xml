@@ -16,6 +16,7 @@
 			<label index="tx_naworkuri_uri.type.1">Old URL</label>
 			<label index="tx_naworkuri_uri.type.2">Redirect</label>
 			<label index="tx_naworkuri_uri.domain">Domain</label>
+			<label index="tx_naworkuri_uri.page">Page</label>
 			<label index="tx_naworkuri_uri.path">Path</label>
 			<label index="tx_naworkuri_uri.params">Params</label>
 			<label index="tx_naworkuri_uri.locked">Locked</label>
@@ -37,6 +38,7 @@
 			<label index="tx_naworkuri_uri.type.1">Alte URL</label>
 			<label index="tx_naworkuri_uri.type.2">Weiterleitung</label>
 			<label index="tx_naworkuri_uri.domain">Domain</label>
+			<label index="tx_naworkuri_uri.page">Seite</label>
 			<label index="tx_naworkuri_uri.path">Pfad</label>
 			<label index="tx_naworkuri_uri.params">Parameter</label>
 			<label index="tx_naworkuri_uri.locked">Gesperrt</label>

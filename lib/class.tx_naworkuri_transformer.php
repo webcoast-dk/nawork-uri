@@ -290,12 +290,16 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 						$parts[$param_name] = trim($key);
 					} else if (!$value) {
 						if ($regex) {
-							$parts[$param_name] = preg_replace($regex, $unencoded_params[$param_name], trim($key));
+							if (preg_match($regex, $unencoded_params[$param_name])) {
+								$parts[$param_name] = preg_replace($regex, $key, $unencoded_params[$param_name]);
+								$encoded_params[$param_name] = $unencoded_params[$param_name];
+								unset($unencoded_params[$param_name]);
+							}
 						} else {
 							$parts[$param_name] = str_replace('###', $unencoded_params[$param_name], trim($key));
+							$encoded_params[$param_name] = $unencoded_params[$param_name];
+							unset($unencoded_params[$param_name]);
 						}
-						$encoded_params[$param_name] = $unencoded_params[$param_name];
-						unset($unencoded_params[$param_name]);
 					}
 				}
 			}

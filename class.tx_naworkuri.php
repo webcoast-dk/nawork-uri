@@ -91,7 +91,6 @@ class tx_naworkuri implements t3lib_Singleton {
 						}
 					}
 					$newUrl = parse_url($url['redirect_path']);
-					debug($newUrl);
 					$requestUrl = parse_url(t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'));
 					if (empty($newUrl['scheme']))
 						$newUrl['scheme'] = $requestUrl['scheme'];
@@ -207,7 +206,7 @@ class tx_naworkuri implements t3lib_Singleton {
 			if (!empty($this->redirectUrl['params'])) {
 				$newUrlParameters = array_merge($newUrlParameters, tx_naworkuri_helper::explode_parameters($this->redirectUrl['params']));
 			}
-			$newUrl = $translator->params2uri(tx_naworkuri_helper::implode_parameters($newUrlParameters), TRUE, TRUE);
+			$newUrl = $translator->params2uri(tx_naworkuri_helper::implode_parameters($newUrlParameters, FALSE), TRUE, TRUE);
 			$newUrl = tx_naworkuri_helper::finalizeUrl($newUrl, TRUE);
 			/* parse the current request url and prepend the scheme and host to the url */
 			$requestUrl = parse_url(t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'));

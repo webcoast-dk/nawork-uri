@@ -59,6 +59,8 @@ class tx_naworkuri_helper {
 	 * Implode URI Parameters
 	 *
 	 * @param array $params_array Parameter Array
+	 * @param boolean $encode Return the parameters url encoded or not, default is yes
+	 * 
 	 * @return string Imploded Parameters
 	 */
 	public static function implode_parameters($params_array, $encode = TRUE) {

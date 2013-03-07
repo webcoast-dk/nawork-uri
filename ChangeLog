@@ -1,3 +1,7 @@
+2.1.50:
+* fixes urls not generated correctly for redirect because of encoded parameters
+* add the possibility to use regular expresions for predefined parts
+
 2.1.49:
 * fixes unencoded parameters in database when a url is updated, that caused the parameter hash to be wrong and thereby the url might not recognized later
 

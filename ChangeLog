@@ -1,3 +1,6 @@
+2.1.49:
+* fixes unencoded parameters in database when a url is updated, that caused the parameter hash to be wrong and thereby the url might not recognized later
+
 2.1.47:
 * fixes alias not determined correctly: the query should not respect deleted pages
 

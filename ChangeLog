@@ -1,3 +1,6 @@
+2.1.51:
+* fixes page not found behavior not determined correctly: the first one without domain must be returned by default
+
 2.1.50:
 * fixes urls not generated correctly for redirect because of encoded parameters
 * add the possibility to use regular expresions for predefined parts

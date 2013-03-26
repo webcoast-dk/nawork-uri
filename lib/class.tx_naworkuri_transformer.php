@@ -143,7 +143,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		/* check if type should be casted to int to avoid strange behavior when creating links */
 		if ($this->config->getCastTypeToInt()) {
 			$type = !empty($params['type']) ? $params['type'] : t3lib_div::_GP('type');
-			if (!empty($type) && !t3lib_div::testInt($type)) { // if type is not an int
+			if (!empty($type) && !tx_naworkuri_helper::canBeInterpretedAsInteger($type)) { // if type is not an int
 				unset($params['type']); // remove type param to use systems default
 			}
 		}
@@ -151,7 +151,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		/* check if L should be casted to int to avoid strange behavior when creating links */
 		if ($this->config->getCastLToInt()) {
 			$L = !empty($params['L']) ? $params['L'] : t3lib_div::_GP('L');
-			if (!empty($L) && !t3lib_div::testInt($L)) { // if L is not an int
+			if (!empty($L) && !tx_naworkuri_helper::canBeInterpretedAsInteger($L)) { // if L is not an int
 				unset($params['L']); // remove L param to use system default
 			}
 		}
@@ -279,6 +279,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			if ($param_name && isset($unencoded_params[$param_name])) {
 				$value = (string) $part->value;
 				$key = (string) $part->attributes()->key;
+				$regex = (string) $part->attributes()->regex;
 
 				if (!$key) {
 					if (!$value && $value !== '0') {
@@ -294,9 +295,17 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 						unset($unencoded_params[$param_name]);
 						$parts[$param_name] = trim($key);
 					} else if (!$value) {
-						$parts[$param_name] = str_replace('###', $unencoded_params[$param_name], trim($key));
-						$encoded_params[$param_name] = $unencoded_params[$param_name];
-						unset($unencoded_params[$param_name]);
+						if ($regex) {
+							if (preg_match($regex, $unencoded_params[$param_name])) {
+								$parts[$param_name] = preg_replace($regex, $key, $unencoded_params[$param_name]);
+								$encoded_params[$param_name] = $unencoded_params[$param_name];
+								unset($unencoded_params[$param_name]);
+							}
+						} else {
+							$parts[$param_name] = str_replace('###', $unencoded_params[$param_name], trim($key));
+							$encoded_params[$param_name] = $unencoded_params[$param_name];
+							unset($unencoded_params[$param_name]);
+						}
 					}
 				}
 			}
@@ -466,7 +475,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 			// cast id to int and resolve aliases
 			if ($unencoded_params['id']) {
-				if (is_numeric($unencoded_params['id'])) {
+				if (tx_naworkuri_helper::canBeInterpretedAsInteger($unencoded_params['id'])) {
 					$unencoded_params['id'] = (int) $unencoded_params['id'];
 				} else {
 					$str = $GLOBALS['TYPO3_DB']->fullQuoteStr($unencoded_params['id'], $this->config->getPagePathTableName());

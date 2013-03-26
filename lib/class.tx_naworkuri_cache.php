@@ -256,7 +256,7 @@ class tx_naworkuri_cache {
 	 * @param int $type
 	 */
 	private function updateUrl($uid, $page, $language, $parameters, $type = self::TX_NAWORKURI_URI_TYPE_NORMAL) {
-		$parameters = tx_naworkuri_helper::implode_parameters($parameters);
+		$parameters = tx_naworkuri_helper::implode_parameters($parameters, FALSE);
 		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'uid=' . intval($uid), array(
 			'page_uid' => intval($page),
 			'sys_language_uid' => $language,

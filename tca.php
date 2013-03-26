@@ -10,6 +10,23 @@ $TCA['tx_naworkuri_uri'] = Array(
 	),
 	'feInterface' => $TCA['tx_naworkuri_uri']['feInterface'],
 	'columns' => Array(
+		'page_uid' => Array(
+			'exclude' => 1,
+			'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.page',
+			'config' => Array(
+				'allowed' => 'pages',
+				'internal_type' => 'db',
+				'maxitems' => 1,
+				'minitems' => 0,
+				'size' => 1,
+				'type' => 'group',
+				'wizards' => Array(
+					'suggest' => Array(
+						'type' => 'suggest'
+					)
+				)
+			)
+		),
 		'sys_language_uid' => array(
 			'exclude' => 1,
 			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.language',
@@ -114,13 +131,13 @@ $TCA['tx_naworkuri_uri'] = Array(
 	),
 	'types' => array(
 		'0' => array(
-			'showitem' => 'type,path, params, locked'
+			'showitem' => 'type, page_uid, path, params, locked'
 		),
 		'1' => array(
-			'showitem' => 'type,path'
+			'showitem' => 'type, page_uid, path'
 		),
 		'2' => array(
-			'showitem' => 'type,path, redirect_path, redirect_mode'
+			'showitem' => 'type, path, redirect_path, redirect_mode'
 		)
 	)
 );
@@ -130,10 +147,8 @@ $TCA['tx_naworkuri_uri'] = Array(
  */
 $confArray = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
 if ($confArray['MULTIDOMAIN']) {
-	$TCA['tx_naworkuri_uri']['types'] = Array(
-		'0' => Array('showitem' => 'domain, path, params, locked'),
-		'1' => array('showitem' => 'domain, path'),
-		'2' => array('showitem' => 'domain, path, redirect_path, redirect_mode')
-	);
+	$TCA['tx_naworkuri_uri']['types'][0]['showitem'] = 'domain, ' . $TCA['tx_naworkuri_uri']['types'][0]['showitem'];
+	$TCA['tx_naworkuri_uri']['types'][1]['showitem'] = 'domain, ' . $TCA['tx_naworkuri_uri']['types'][1]['showitem'];
+	$TCA['tx_naworkuri_uri']['types'][2]['showitem'] = 'domain, ' . $TCA['tx_naworkuri_uri']['types'][2]['showitem'];
 }
 ?>

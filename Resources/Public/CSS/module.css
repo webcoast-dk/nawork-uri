@@ -76,61 +76,54 @@ div#typo3-inner-docbody {
 	width: auto;
 }
 
-#typo3-inner-docbody #url_module #table_head table {
-	/*width: 100%;*/
+#typo3-inner-docbody #url_module table th,
+#typo3-inner-docbody #url_module table td {
+	border: transparent 0px none;
+	padding: 5px 3px;
+	text-align: left;
+	vertical-align: middle;
+}
+
+#typo3-inner-docbody #url_module #table_head table th {
+	font-weight: bold;
+}
+
+#typo3-inner-docbody #url_module #table_body table th {
+	padding-bottom: 0;
+	padding-top: 0;
+}
+
+#typo3-inner-docbody #url_module table .scrollbarFiller {
+	padding: 0;
+}
+
+#typo3-inner-docbody #url_module table .uid {
+	width: 16px;
+}
+
+#typo3-inner-docbody #url_module table .language {
+	width: 20px;
+}
+
+#typo3-inner-docbody #url_module table .domain {
+	white-space: nowrap;
 }
 
 #typo3-inner-docbody #url_module #table_body table {
 	table-layout: fixed;
-	/*width: 100%;*/
 }
 
 #typo3-inner-docbody #url_module tbody {
 	background-color: #fff;
 }
 
-#typo3-inner-docbody #url_module #table_head table tr th {
-	border: none;
-	padding: 5px 0;
-	text-align: left;
-}
-
 #typo3-inner-docbody #url_module #table_head table tr th.resizeable {
 	border-right: 2px solid transparent;
+	padding-right: 1px;
 }
 
 #typo3-inner-docbody #url_module #table_head table tr th.resizeable:hover {
 	border-right-color: #dadada;
-}
-
-#typo3-inner-docbody #url_module #table_head table tr th.uid {
-	width: 21px;
-}
-
-#typo3-inner-docbody #url_module #table_head table tr th.language {
-	padding-left: 5px;
-}
-
-#typo3-inner-docbody #url_module #table_head table tr th.path {
-	padding-left: 5px;
-}
-
-#typo3-inner-docbody #url_module table thead th {
-	padding: 0;
-	text-align: center;
-}
-
-#typo3-inner-docbody #url_module table tr td {
-/*#typo3-inner-docbody #url_module table tr td.icon{*/
-	height: 22px;
-	overflow: hidden;
-	vertical-align: middle;
-	white-space: nowrap;
-}
-
-#typo3-inner-docbody #url_module table .uid {
-	padding-left: 5px;
-	width: 16px;
 }
 
 #typo3-inner-docbody #url_module table .url .icon {
@@ -143,23 +136,6 @@ div#typo3-inner-docbody {
 
 #typo3-inner-docbody #url_module table .locked .icon {
 	background-position: -112px center;
-}
-
-#typo3-inner-docbody #url_module table .language {
-	padding-left: 5px;
-	width: 20px;
-}
-
-#typo3-inner-docbody #url_module table td.path {
-	padding: 0 5px;
-}
-
-#typo3-inner-docbody #url_module table td.parameters {
-	padding: 0 5px;
-}
-#typo3-inner-docbody #url_module table td.domain {
-	padding: 0 5px;
-	white-space: nowrap;
 }
 
 #typo3-inner-docbody #url_module table td.message {
@@ -182,11 +158,6 @@ div#typo3-inner-docbody {
 	margin-top: 100px;
 }
 
-
-#typo3-inner-docbody #url_module #pagination {
-	margin-bottom: 5px;
-}
-
 #typo3-inner-docbody #url_module .icon {
 	background-image: url('../Icons/sprite.png');
 	background-repeat: no-repeat;
@@ -194,6 +165,14 @@ div#typo3-inner-docbody {
 	height: 16px;
 	vertical-align: middle;
 	width: 16px;
+}
+
+#typo3-inner-docbody #url_module #pagination {
+	margin-bottom: 5px;
+}
+
+#typo3-inner-docbody #url_module #pagination span {
+	vertical-align: middle;
 }
 
 #typo3-inner-docbody #url_module #pagination .first {

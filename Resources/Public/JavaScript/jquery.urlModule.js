@@ -207,56 +207,28 @@
 						}
 					}
 					if(selectedHeaderCell != null && ev.buttons == 1) {
-						/* shrink */
-						if(ev.pageX < lastDraggedPosition) {
+						/*
+						 * works in both directions, because (ev.pageX - lastDraggedPosition) is negativ for shrinking and positiv for growing
+						 */
+						var selectedHeaderCellResizer = module.find("#table_body thead ." + selectedHeaderCell.attr("data-cellClassName"));
+						var nextHeaderCell = selectedHeaderCell.next(".resizeable");
+						var nextHeaderCellResizer = module.find("#table_body thead ." + nextHeaderCell.attr("data-cellClassName"));
+						var diff = (ev.pageX - lastDraggedPosition);
+						var selectedHeaderCellWidth = selectedHeaderCell.width() + diff;
+						var nextHeaderCellWidth = nextHeaderCell.width() - diff;
+						if(nextHeaderCell.length > 0) {
 							selectedHeaderCell.css({
-								"width": selectedHeaderCell.width() + (ev.pageX - lastDraggedPosition)
+								"width": selectedHeaderCellWidth
 							});
-							resizeableTableHeaders[selectedHeaderCell.attr("data-cellClassName")].resizer.css({
-								"width": resizeableTableHeaders[selectedHeaderCell.attr("data-cellClassName")] + (ev.pageX - lastDraggedPosition)
+							selectedHeaderCellResizer.css({
+								"width": selectedHeaderCellWidth
 							});
-							var nextResizeable = selectedHeaderCell.find("+ .resizeable");
-							if(nextResizeable.length > 0) {
-								var cellClass = nextResizeable.attr("data-cellClassName");
-								if(cellClass && cellClass.length > 0) {
-									if(resizeableTableHeaders[cellClass].resizer.length > 0) {
-										nextResizeable.css({
-											"width": nextResizeable.width() - (ev.pageX - lastDraggedPosition)
-										});
-										resizeableTableHeaders[cellClass].resizer.css({
-											"width": resizeableTableHeaders[cellClass].resizer.width() - (ev.pageX - lastDraggedPosition)
-										});
-									}
-								}
-							}
-							console.log("shrink");
-						} else {
-							if(module.find("#table_body table").outerWidth() < tableMaxWidth - scrollBarWidth) {
-								var newWidth = ev.pageX - selectedHeaderCell.position().left
-								selectedHeaderCell.css({
-									"width": newWidth - (selectedHeaderCell.innerWidth() - selectedHeaderCell.width())
-								});
-								resizeableTableHeaders[selectedHeaderCell.attr("data-cellClassName")].resizer.css({
-									"width": newWidth
-								});
-								options.settings.columnWidth[selectedHeaderCell.attr("data-cellClassName")].customWidth = newWidth;
-							} else {
-								var nextResizeable = selectedHeaderCell.find("+ .resizeable");
-								if(nextResizeable.length > 0) {
-									var cellClass = nextResizeable.attr("data-cellClassName");
-									if(cellClass && cellClass.length > 0) {
-										if(resizeableTableHeaders[cellClass].resizer.length > 0) {
-											nextResizeable.css({
-												"width": nextResizeable.width() - (ev.pageX - selectedHeaderCell.position().left - selectedHeaderCell.width()) - (nextResizeable.innerWidth() - nextResizeable.width())
-											});
-											resizeableTableHeaders[cellClass].resizer.css({
-												"width": nextResizeable.width() - (ev.pageX - selectedHeaderCell.position().left - selectedHeaderCell.width())
-											});
-										}
-									}
-								}
-							}
-							console.log("grow");
+							nextHeaderCell.css({
+								"width": nextHeaderCellWidth
+							});
+							nextHeaderCellResizer.css({
+								"width": nextHeaderCellWidth
+							});
 						}
 						lastDraggedPosition = ev.pageX;
 					}
@@ -284,6 +256,8 @@
 						if(settingsRequest != null) {
 							settingsRequest.abort();
 						}
+						options.settings.columnWidth[selectedHeaderCell.attr("data-cellClassName")] = selectedHeaderCell.width();
+						options.settings.columnWidth[selectedHeaderCell.next(".resizeable").attr("data-cellClassName")] = selectedHeaderCell.next(".resizeable").width();
 						settingsRequest = $.ajax({
 							url: options.settingsUrl,
 							dataType: "json",
@@ -292,9 +266,23 @@
 									key: "columnWidth." + selectedHeaderCell.attr("data-cellClassName"),
 									value: selectedHeaderCell.width()
 								}
+							},
+							success: function() {
+								settingsRequest = $.ajax({
+									url: options.settingsUrl,
+									dataType: "json",
+									data: {
+										tx_naworkuri_web_naworkuritxnaworkuriuri: {
+											key: "columnWidth." + selectedHeaderCell.next(".resizeable").attr("data-cellClassName"),
+											value: selectedHeaderCell.next(".resizeable").width()
+										}
+									},
+									complete: function() {
+										selectedHeaderCell = null;
+									}
+								})
 							}
 						});
-						selectedHeaderCell = null;
 					}
 					lastDraggedPosition = 0;
 				});
@@ -302,38 +290,29 @@
 
 			/* initialize cell width */
 			module.on("initializeCellWidth", function() {
-				tableMaxWidth = $("#table_outer").width();
 				/* check if we have a scroll bar and set filler cell's width */
 				if(module.find("#table_body").height() < module.find("#table_body table").height()) {
-					var scrollbarFilllerCell = module.find("#table_head .scrollbarFiller");
 					/* find scrollbar width */
 					var testElement = $("<div style=\"position: absolute; top: -999; overflow: scroll; height: 100px; width: 100px;\"><div></div></div>");
 					$(document.body).append(testElement);
 					scrollBarWidth = testElement.width() - testElement.find("div").width();
-					scrollbarFilllerCell.css({
-						"width": scrollBarWidth - (scrollbarFilllerCell.outerWidth() - scrollbarFilllerCell.innerWidth())
-					});
 					testElement.remove();
 				} else {
 					module.find("#table_head .scrollbarFiller").css({
 						"width": 0
 					});
 				}
-				var shrinkColumns = module.find("#table_body table").width() > module.find("#table_body").width();
-				module.find("#table_head table").css({
-					"width": "auto"
-				});
 				module.find("#table_body table").css({
-					"width": "auto"
+					"width":"auto"
 				});
-				module.find("#table_head .minwidth").each(function(columnIndex, column) {
+				module.find("#table_head .minwidth:not(.fixedwidth)").each(function(columnIndex, column) {
 					column = $(column);
 					var cellClass = column.attr("data-cellClassName");
 					if(cellClass && cellClass.length > 0) {
-						var headerWidth = column.innerWidth();
+						var headerWidth = column.width();
 						var cellWidth = 0;
 						module.find("#table_body tbody ." + cellClass).each(function(cellIndex, cell) {
-							cellWidth = Math.max(cellWidth, $(cell).innerWidth());
+							cellWidth = Math.max(cellWidth, $(cell).width());
 						});
 						var columnWidth = Math.max(headerWidth, cellWidth);
 						column.css({
@@ -344,64 +323,62 @@
 						});
 					}
 				});
-				if(shrinkColumns) {
-					module.find("#table_head table").css({
-						"width":"100%"
-					});
-				}
-
-				module.find("#table_head .dynamic").css({
-					"width": "auto"
-				})
+				module.find("#table_body table").css({
+					"width": "100%"
+				});
+				/* if there are resizable columns, try to apply the saved width */
+				var resizeableColumnWidthDifference = 0;
+				var resizeableColumnWidthTotal = 0;
+				var resizeableColumnWidthFromOptions = 0;
+				module.find("#table_head .resizeable").each(function(columnIndex, column) {
+					column = $(column);
+					if(options.settings.columnWidth[column.attr("data-cellClassName")] && options.settings.columnWidth[column.attr("data-cellClassName")].length > 0) {
+						if(module.find("#table_body thead ." + column.attr("data-cellClassName")).length > 0) {
+							resizeableColumnWidthDifference += options.settings.columnWidth[column.attr("data-cellClassName")] - parseInt(column.css("width"));
+							resizeableColumnWidthTotal += parseInt(column.css("width"));
+							resizeableColumnWidthFromOptions += parseInt(options.settings.columnWidth[column.attr("data-cellClassName")]);
+						}
+					}
+				});
 				module.find("#table_head .dynamic").each(function(columnIndex, column) {
 					column = $(column);
 					var cellClass = column.attr("data-cellClassName");
 					if(cellClass && cellClass.length > 0) {
-						var headerWidth = column.innerWidth();
-						var columnWidth = 0;
-						if(!shrinkColumns) {
-							var cellWidth = 0;
-							module.find("#table_body tbody ." + cellClass).each(function(cellIndex, cell) {
-								cellWidth = Math.max(cellWidth, $(cell).innerWidth());
-							});
-							columnWidth = Math.max(columnWidth, cellWidth);
-						}
+						var headerWidth = column.width();
+						var columnWidth = module.find("#table_body thead ." + cellClass).width();
 						columnWidth = Math.max(headerWidth, columnWidth);
+						if(options.settings.columnWidth[column.attr("data-cellClassName")] && options.settings.columnWidth[column.attr("data-cellClassName")].length > 0) {
+							columnWidth = Math.max(columnWidth, parseInt(options.settings.columnWidth[column.attr("data-cellClassName")]));
+						}
 						column.css({
-							"width": columnWidth - (column.innerWidth() - column.width())
+							"width": columnWidth
 						});
 						module.find("#table_body thead ." + cellClass).css({
 							"width": columnWidth
 						});
 					}
 				});
-				if(shrinkColumns) {
-					module.find("#table_body table").css({
-						"width": "100%"
+				module.find("#table_head table").css({
+					"width": module.find("#table_body table").width()
+				});
+				
+				var tableWidth = module.find("#table_body table").width();
+				var tableOuterWidth = module.find("#table_body").width() - scrollBarWidth - 1;
+				if(tableWidth > tableOuterWidth) {
+					var diff = tableWidth - tableOuterWidth;
+					module.find("#table_head .resizeable").each(function(columnIndex, column) {
+						column = $(column);
+						var percentage = options.settings.columnWidth[column.attr("data-cellClassName")] / resizeableColumnWidthFromOptions;
+						var columnWidth = column.width() - Math.ceil(diff * percentage);
+						/* if the table is too wide, reset the css to the value before; else set the resizer th to the new width */
+						column.css({
+							"width": columnWidth
+						});
+						module.find("#table_body thead ." + column.attr("data-cellClassName")).css({
+							"width": columnWidth
+						});
 					});
 				}
-				/* if there are resizable columns, try to apply the saved width */
-				module.find("#table_head .resizeable").each(function(columnIndex, column) {
-					column = $(column);
-					var currentWidth = column.width();
-					if(options.settings.columnWidth[column.attr("data-cellClassName")] && options.settings.columnWidth[column.attr("data-cellClassName")].length > 0) {
-						if(module.find("#table_body thead ." + column.attr("data-cellClassName")).length > 0) {
-							column.css({
-								"width": options.settings.columnWidth[column.attr("data-cellClassName")] - (column.innerWidth() - column.width())
-							});
-							/* if the table is too wide, reset the css to the value before; else set the resizer th to the new width */
-							if(module.find("#table_body table").width() > module.find("#table_body").width()) {
-								column.css({
-									"width": currentWidth - (column.innerWidth() - column.width())
-								});
-							} else {
-								module.find("#table_body thead ." + column.attr("data-cellClassName")).css({
-									"width": options.settings.columnWidth[column.attr("data-cellClassName")]
-								});
-							}
-						}
-					}
-				});
 			});
 
 			module.on("initializeTableRows", function() {

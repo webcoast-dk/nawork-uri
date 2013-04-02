@@ -1,8 +1,8 @@
 <div id="tx_naworkuri_contextMenu">
 	<div class="show" data-path="{url.path}"><span class="icon"></span><label><f:translate key="label_contextmenu_show" default="Open in new window" /></label></div>
+	<div class="edit" data-uid="{url.uid}"><span class="icon"></span><label><f:translate key="label_contextmenu_edit" default="Edit" /></label></div>
 	<f:if condition="{url.locked}">
 		<f:then>
-			<div class="edit" data-uid="{url.uid}"><span class="icon"></span><label><f:translate key="label_contextmenu_edit" default="Edit" /></label></div>
 			<div class="unlock" data-ajaxUrl="{f:uri.action(action: 'lockToggle', arguments: '{url: url}', additionalParams: '{ajax: 1}')}"><span class="icon"></span><label><f:translate key="label_contextmenu_unlock" default="Unlock" /></label></div>
 		</f:then>
 		<f:else>

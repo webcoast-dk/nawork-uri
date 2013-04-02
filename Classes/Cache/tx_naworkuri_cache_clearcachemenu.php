@@ -25,7 +25,7 @@ class tx_naworkuri_cache_clearcachemenu implements backend_cacheActionsHook {
 				'id' => 'clearUrlCache',
 				'title' => $title,
 				'href' => $GLOBALS['BACK_PATH'] . 'ajax.php?ajaxID=tx_naworkuri::clearUrlCache',
-				'icon' => '<img' . t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], '../typo3conf/ext/nawork_uri/mod1/moduleicon.png', 'width="16" height="16"') . ' title="' . $title . '" alt="' . $title . '" />'
+				'icon' => '<img' . t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], '../typo3conf/ext/nawork_uri/Resources/Public/Icons/module.png', 'width="16" height="16"') . ' title="' . $title . '" alt="' . $title . '" />'
 			);
 			$optionValues[] = 'clearUrlCache';
 		}

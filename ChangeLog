@@ -1,8 +1,7 @@
-<<<<<<< HEAD
 2.2.0:
-* adds possibility to redirect urls with query string
 * limits query results to 1 when finding url in tx_naworkuri_cache::read_path
-=======
+* rewritten backend module
+
 2.1.51:
 * fixes page not found behavior not determined correctly: the first one without domain must be returned by default
 
@@ -15,7 +14,6 @@
 
 2.1.47:
 * fixes alias not determined correctly: the query should not respect deleted pages
->>>>>>> nawork_uri_2
 
 2.1.42: Compatability update for TYPO3 CMS 6.0
 * SimpleXMLElement can not be serialized so it must be deleted before serialization and re-instantiated on wake up

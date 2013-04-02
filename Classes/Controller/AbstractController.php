@@ -41,6 +41,8 @@ class Tx_NaworkUri_Controller_AbstractController extends Tx_Extbase_MVC_Controll
 			$this->pageRenderer = $this->template->getPageRenderer();
 			$this->pageRenderer->addCssFile(t3lib_extMgm::extRelPath('nawork_uri') . 'Resources/Public/CSS/module.css');
 			$this->pageRenderer->addJsFile(t3lib_extMgm::extRelPath('nawork_uri') . 'Resources/Public/Contrib/jQuery/jquery-1.9.0.min.js');
+			$this->pageRenderer->addJsFile(t3lib_extMgm::extRelPath('nawork_uri') . 'Resources/Public/Contrib/mootools/mootoolsCore-1.4.5.js');
+			$this->pageRenderer->addJsFile(t3lib_extMgm::extRelPath('nawork_uri') . 'Resources/Public/Contrib/moo4q/Class.Mutators.jQuery.js');
 			$this->pageRenderer->addInlineLanguageLabelFile('EXT:nawork_uri/Resources/Private/Language/locallang_mod_url.xml', '', '', 2);
 
 			$GLOBALS['SOBE'] = new stdClass();

@@ -111,17 +111,22 @@
 		</div>
 	</section>
 	<script type="text/javascript">
-			<![CDATA[(function($) {
-					if($.fn.UrlModule){
-						$("#url_module").UrlModule({
-							"mode": "urls",
-							"ajaxUrl": "]]>{f:uri.action(action: 'ajaxLoadUrls', additionalParams: '{ajax: 1}')}<![CDATA[",
-							"settingsUrl": "]]>{f:uri.action(action: 'updateSettings', additionalParams: '{ajax: 1}')}<![CDATA[",
-							"settings": ]]><f:format.raw>{userSettings}</f:format.raw><![CDATA[,
-							"errorMessage": "]]><f:translate key="message_error" default="An error occured while loading the urls, change the filter to try other settings" /><![CDATA[",
-							"loadingMessage": "]]><f:translate key="message_loading" default="Loading urls... please wait..." /><![CDATA["
+			<![CDATA[
+				jQuery(document).ready(function() {
+					if(NaworkUri && NaworkUri.UrlModule){
+						document.tx_naworkuri_urlModule = new NaworkUri.UrlModule("#url_module", {
+							urls: {
+								ajax: "]]>{f:uri.action(action: 'ajaxLoadUrls', additionalParams: '{ajax: 1}')}<![CDATA[",
+								settings: "]]>{f:uri.action(action: 'updateSettings', additionalParams: '{ajax: 1}')}<![CDATA[",
+							},
+							settings: ]]><f:format.raw>{userSettings}</f:format.raw><![CDATA[,
+							messages: {
+								error:"]]><f:translate key="message_error" default="An error occured while loading the urls, change the filter to try other settings" /><![CDATA[",
+								loading: "]]><f:translate key="message_loading" default="Loading urls... please wait..." /><![CDATA["
+							}
 						});
 					}
-			})(jQuery)]]>
+				]]>
+			});
 	</script>
 </f:section>

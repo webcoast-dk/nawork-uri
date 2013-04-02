@@ -414,7 +414,7 @@
 						ev.stopImmediatePropagation();
 						module.trigger("closeContextMenu");
 					});
-				})
+				});
 			});
 
 			module.on("closeContextMenu", function(ev) {

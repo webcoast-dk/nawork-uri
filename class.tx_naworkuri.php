@@ -219,6 +219,7 @@ class tx_naworkuri implements t3lib_Singleton {
 				$newUrl['path'] = '/' . $newUrl['path'];
 			$uri = $newUrl['scheme'] . '://' . $newUrl['host'] . $newUrl['path'];
 			$queryParams = array_merge(tx_naworkuri_helper::explode_parameters($requestUrl['query']), tx_naworkuri_helper::explode_parameters($newUrl['query']));
+			debug($queryParams);
 			if (!empty($queryParams)) {
 				$uri .= '?' . tx_naworkuri_helper::implode_parameters($queryParams);
 			}

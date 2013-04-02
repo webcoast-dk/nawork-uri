@@ -270,6 +270,7 @@ class tx_naworkuri_helper {
 	public static function sendRedirect($url, $status) {
 		header('X-Redirect-By: nawork_uri');
 		header('Location: ' . $url, true, $status);
+		exit(0);
 	}
 
 	public static function getLocale() {

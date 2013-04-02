@@ -2,6 +2,10 @@
 * limits query results to 1 when finding url in tx_naworkuri_cache::read_path
 * rewritten backend module
 
+2.1.52:
+* change hook for redirects: use configArrayPostProc instead of isOutputting to avoid rendering of content
+* exit after setting headers to really exit processing and avoid rendering
+
 2.1.51:
 * fixes page not found behavior not determined correctly: the first one without domain must be returned by default
 

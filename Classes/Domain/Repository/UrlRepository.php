@@ -25,6 +25,20 @@ class Tx_NaworkUri_Domain_Repository_UrlRepository extends Tx_NaworkUri_Domain_R
 		$query = $this->buildUrlQueryByFilter($filter);
 		return $query->count();
 	}
+	
+	public function findRedirectsByFilter(Tx_NaworkUri_Domain_Model_Filter $filter) {
+		$query = $this->buildRedirectQueryByFilter($filter);
+		if ($filter->getLimit() > 0) {
+			$query->setOffset((int) $filter->getOffset());
+			$query->setLimit((int) $filter->getLimit());
+		}
+		return $query->setOrderings(array('path' => Tx_Extbase_Persistence_QueryInterface::ORDER_ASCENDING))->execute();
+	}
+	
+	public function countRedirectsByFilter(Tx_NaworkUri_Domain_Model_Filter $filter) {
+		$query = $this->buildRedirectQueryByFilter($filter);
+		return $query->count();
+	}
 
 	private function getPidsRecursive($id, &$pids, $depth = 0) {
 		if ($depth == 5) {
@@ -97,6 +111,25 @@ class Tx_NaworkUri_Domain_Repository_UrlRepository extends Tx_NaworkUri_Domain_R
 			$constraints[] = $query->like('path', str_replace('*', '%', $path));
 		}
 		$constraints[] = $query->logicalNot($query->equals('type', 2)); // we do not want redirects in this result
+		if (count($constraints) > 0) {
+			$query = $query->matching($query->logicalAnd($constraints));
+		}
+		return $query;
+	}
+	
+	private function buildRedirectQueryByFilter(Tx_NaworkUri_Domain_Model_Filter $filter) {
+		$query = $this->createQuery();
+		$constraints = array();
+
+		if ($filter->getDomain() instanceof Tx_NaworkUri_Domain_Model_Domain) {
+			$constraints[] = $query->equals('domain', $filter->getDomain());
+		}
+
+		$path = $filter->getPath();
+		if(!empty($path)) {
+			$constraints[] = $query->like('path', str_replace('*', '%', $path));
+		}
+		$constraints[] = $query->equals('type', 2); // we want only redirects in this result
 		if (count($constraints) > 0) {
 			$query = $query->matching($query->logicalAnd($constraints));
 		}

@@ -6,7 +6,7 @@
 	</meta>
 	<data type="array">
 		<languageKey index="default" type="array">
-			<label index="mlang_tabs_tab">Redirect Tool</label>
+			<label index="mlang_tabs_tab">Redirect Management</label>
 			<label index="mlang_labels_tabdescr">This module is used to view existing redirects and alter or delete them.</label>
 			<label index="mlang_labels_tablabel">Redirect management tool</label>
 

@@ -53,8 +53,8 @@ div#typo3-inner-docbody {
 }
 
 #typo3-inner-docbody #url_module #table_outer {
-	border-bottom: 1px solid #a2aab8;
-	/*width: 100%;*/
+	background-color: #FFFFFF;
+	border: 1px solid #a2aab8;
 }
 
 #typo3-inner-docbody #url_module #table_head {
@@ -68,7 +68,7 @@ div#typo3-inner-docbody {
 }
 
 #typo3-inner-docbody #url_module table {
-	border-bottom: none;
+	border: none;
 	border-collapse: collapse;
 	border-spacing: 0;
 	border-top: none;
@@ -167,6 +167,10 @@ div#typo3-inner-docbody {
 	width: 16px;
 }
 
+#typo3-inner-docbody #url_module .redirect .icon {
+	background-position: -224px center;
+}
+
 #typo3-inner-docbody #url_module #pagination {
 	margin-bottom: 5px;
 }
@@ -223,6 +227,10 @@ div#typo3-inner-docbody {
 	margin-right: 2px;
 }
 
+#typo3-inner-docbody #url_module #tx_naworkuri_contextMenu .add .icon {
+	background-position: -208px center;
+}
+
 #typo3-inner-docbody #url_module #tx_naworkuri_contextMenu .show .icon {
 	background-position: -144px center;
 }
@@ -242,3 +250,4 @@ div#typo3-inner-docbody {
 #typo3-inner-docbody #url_module #tx_naworkuri_contextMenu .delete .icon {
 	background-position: -161px center;
 }
+

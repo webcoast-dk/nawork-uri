@@ -58,6 +58,12 @@ class Tx_NaworkUri_Domain_Model_Url extends Tx_Extbase_DomainObject_AbstractEnti
 	 */
 	protected $type;
 
+	/**
+	 *
+	 * @var string
+	 */
+	protected $redirectPath;
+
 	public function getLanguage() {
 		return $this->language;
 	}
@@ -80,6 +86,10 @@ class Tx_NaworkUri_Domain_Model_Url extends Tx_Extbase_DomainObject_AbstractEnti
 
 	public function getType() {
 		return $this->type;
+	}
+
+	public function getRedirectPath() {
+		return $this->redirectPath;
 	}
 
 	public function setLocked($locked) {

@@ -86,11 +86,19 @@ if (TYPO3_MODE == 'BE') {
 //	t3lib_extMgm::addModule('txnaworkuriM1', '', '', t3lib_extMgm::extPath('nawork_uri') . 'Configuration/Module/');
 
 	Tx_Extbase_Utility_Extension::registerModule($_EXTKEY, 'web', 'tx_naworkuri_uri', '', array(
-		'Url' => 'index,ajaxLoadUrls,updateSettings,contextMenu,lockToggle,delete'
+		'Url' => 'indexUrls,ajaxLoadUrls,updateSettings,contextMenu,lockToggle,delete'
 			), array(
 		'access' => 'user,group',
 		'icon' => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/module.png',
 		'labels' => 'LLL:EXT:' . $_EXTKEY . '/Resources/Private/Language/locallang_mod_url.xml',
+	));
+	
+	Tx_Extbase_Utility_Extension::registerModule($_EXTKEY, 'tools', 'tx_naworkuri_redirect', '', array(
+		'Url' => 'indexRedirects,ajaxLoadRedirects,updateSettings,contextMenu,lockToggle,delete'
+			), array(
+		'access' => 'user,group',
+		'icon' => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/module.png',
+		'labels' => 'LLL:EXT:' . $_EXTKEY . '/Resources/Private/Language/locallang_mod_redirect.xml',
 	));
 
 	t3lib_extMgm::addStaticFile($_EXTKEY, 'Configuration/Module/', 'n@work URI Module');

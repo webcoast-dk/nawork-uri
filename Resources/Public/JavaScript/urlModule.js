@@ -1,4 +1,4 @@
-if(typeof NaworkUri != 'Object') {
+if(typeof NaworkUri != 'object') {
 	NaworkUri = {};
 }
 NaworkUri.UrlModule = new Class({
@@ -67,6 +67,7 @@ NaworkUri.UrlModule = new Class({
 	scrollBarWidth: 0,
 	lastDraggedPosition: 0,
 	selectedHeaderCell: null,
+	contextMenuTimeout: null,
 	
 	initialize: function(selector, options) {
 		this.setOptions(options);
@@ -83,6 +84,9 @@ NaworkUri.UrlModule = new Class({
 		jQuery(window).on("resize", function() {
 			obj.resize();
 		});
+		
+		
+		jQuery(window).click(obj.closeContextMenu);
 		
 		this.loadUrls();
 	},
@@ -228,14 +232,14 @@ NaworkUri.UrlModule = new Class({
 				}
 				if(obj.selectedHeaderCell != null && ev.buttons == 1) {
 					/*
-						 * works in both directions, because (ev.pageX - lastDraggedPosition) is negativ for shrinking and positiv for growing
-						 */
+					 * works in both directions, because (ev.pageX - lastDraggedPosition) is negativ for shrinking and positiv for growing
+					 */
 					var selectedHeaderCellResizer = obj.jqueryObject.find("#table_body thead ." + obj.selectedHeaderCell.attr("data-cellClassName"));
 					var nextHeaderCell = obj.selectedHeaderCell.next(".resizeable");
 					var nextHeaderCellResizer = obj.jqueryObject.find("#table_body thead ." + nextHeaderCell.attr("data-cellClassName"));
-					var diff = (ev.pageX - obj.lastDraggedPosition);
-					var selectedHeaderCellWidth = obj.selectedHeaderCell.width() + diff;
-					var nextHeaderCellWidth = nextHeaderCell.width() - diff;
+					var cellDiff = (ev.pageX - obj.lastDraggedPosition);
+					var selectedHeaderCellWidth = obj.selectedHeaderCell.width() + cellDiff;
+					var nextHeaderCellWidth = nextHeaderCell.width() - cellDiff;
 					if(nextHeaderCell.length > 0) {
 						obj.selectedHeaderCell.css({
 							"width": selectedHeaderCellWidth
@@ -255,10 +259,9 @@ NaworkUri.UrlModule = new Class({
 			});
 
 			thElement.on("mousedown", function(ev) {
-				console.debug(obj);
 				ev.preventDefault();
 				ev.stopImmediatePropagation();
-				if(thElement.hasClass("resizeable")) {
+				if(thElement.hasClass("resizeable") && thElement.next(".resizeable").length > 0) { // only do resizing if we have a next resizeable column
 					var dimensions = {
 						x1: thElement.offset().left,
 						x2: thElement.offset().left + thElement.width(),
@@ -273,43 +276,48 @@ NaworkUri.UrlModule = new Class({
 			});
 
 			thElement.on("mouseup", function(ev) {
-				console.debug(obj);
 				if(obj.selectedHeaderCell != null) {
-					if(obj.requests.setting != null) {
-						obj.requests.setting.abort();
-					}
 					obj.options.settings.columnWidth[obj.selectedHeaderCell.attr("data-cellClassName")] = obj.selectedHeaderCell.width();
 					obj.options.settings.columnWidth[obj.selectedHeaderCell.next(".resizeable").attr("data-cellClassName")] = obj.selectedHeaderCell.next(".resizeable").width();
-					var obj = obj;
-					obj.requests.setting = jQuery.ajax({
-						url: obj.options.settingsUrl,
-						dataType: "json",
-						data: {
-							tx_naworkuri_web_naworkuritxnaworkuriuri: {
-								key: "columnWidth." + obj.selectedHeaderCell.attr("data-cellClassName"),
-								value: obj.selectedHeaderCell.width()
-							}
-						},
-						success: function() {
-							obj.requests.setting = jQuery.ajax({
-								url: obj.options.settingsUrl,
-								dataType: "json",
-								data: {
-									tx_naworkuri_web_naworkuritxnaworkuriuri: {
-										key: "columnWidth." + obj.selectedHeaderCell.next(".resizeable").attr("data-cellClassName"),
-										value: obj.selectedHeaderCell.next(".resizeable").width()
-									}
-								},
-								complete: function() {
-									obj.selectedHeaderCell = null;
-								}
-							})
-						}
-					});
+					obj.updateUserSettings();
 				}
 				obj.lastDraggedPosition = 0;
 			});
 		});
+	},
+	
+	updateUserSettings: function() {
+		var obj = this;
+		if(this.selectedHeaderCell != null) {
+			if(obj.requests.setting != null) {
+				obj.requests.setting.abort();
+			}
+			obj.requests.setting = jQuery.ajax({
+				url: obj.options.urls.settings,
+				dataType: "json",
+				data: {
+					tx_naworkuri_web_naworkuritxnaworkuriuri: {
+						key: "columnWidth." + obj.selectedHeaderCell.attr("data-cellClassName"),
+						value: obj.selectedHeaderCell.width()
+					}
+				},
+				success: function() {
+					obj.requests.setting = jQuery.ajax({
+						url: obj.options.urls.settings,
+						dataType: "json",
+						data: {
+							tx_naworkuri_web_naworkuritxnaworkuriuri: {
+								key: "columnWidth." + obj.selectedHeaderCell.next(".resizeable").attr("data-cellClassName"),
+								value: obj.selectedHeaderCell.next(".resizeable").width()
+							}
+						},
+						complete: function() {
+							obj.selectedHeaderCell = null;
+						}
+					})
+				}
+			});
+		}
 	},
 	
 	initializeTableRows: function() {
@@ -319,25 +327,25 @@ NaworkUri.UrlModule = new Class({
 			row.on("contextmenu", function(ev) {
 				ev.preventDefault();
 				ev.stopImmediatePropagation();
-				if(this.requests.contextMenu != null) {
-					this.requests.contextMenu.abort();
-				}
-				this.requests.contextMenu = jQuery.ajax({
-					url: row.attr("data-contextmenuurl"),
-					dataType: "html",
-					success: function(response, status, request) {
-						if(jQuery.trim(response).length > 0) {
-							obj.openContextMenu(response, ev);
-						}
-					}
-				})
-			});
-			row.on("click", function(ev) {
-				ev.preventDefault();
-				ev.stopImmediatePropagation();
-				obj.closeContextMenu();
+				obj.loadContextMenu(row, ev);
 			});
 		});
+	},
+	
+	loadContextMenu: function(row, ev) {
+		var obj = this;
+		if(obj.requests.contextMenu != null) {
+			obj.requests.contextMenu.abort();
+		}
+		obj.requests.contextMenu = jQuery.ajax({
+			url: row.attr("data-contextmenuurl"),
+			dataType: "html",
+			success: function(response, status, request) {
+				if(jQuery.trim(response).length > 0) {
+					obj.openContextMenu(response, ev);
+				}
+			}
+		})
 	},
 	
 	openContextMenu: function(response, ev) {
@@ -347,13 +355,13 @@ NaworkUri.UrlModule = new Class({
 			jQuery("#tx_naworkuri_contextMenu").remove();
 		}
 		jQuery("#table_body").append(jQuery(response));
-		jQuery("#tx_naworkuri_contextMenu").css({
-			display: "blocK",
-			left: ev.pageX,
+		var cm = jQuery("#tx_naworkuri_contextMenu");
+		cm.css({
+			display: "block",
+			left: ev.pageX - 10,
 			top: ev.pageY - this.jqueryObject.find("#table_body").position().top
 		});
 		
-		var cm = jQuery("#tx_naworkuri_contextMenu");
 		cm.find(".show").click(function(ev) {
 			var popup = window.open(window.location.protocol + "//" + (window.location.host ? window.location.host : window.location.hostname) + "/" + jQuery(this).attr("data-path"), "tx_naworkuri_preview");
 			popup.focus();
@@ -409,6 +417,18 @@ NaworkUri.UrlModule = new Class({
 			}
 			obj.closeContextMenu();
 		});
+		cm.on("mouseover", function() {
+			if(obj.contextMenuTimeout != null) {
+				clearTimeout(obj.contextMenuTimeout);
+			}
+		});
+		cm.on("mouseout", function() {
+			obj.contextMenuTimeout = setTimeout(obj.closeContextMenu, 500);
+		});
+		if(this.contextMenuTimeout != null) {
+			clearTimeout(this.contextMenuTimeout);
+		}
+		this.contextMenuTimeout = setTimeout(this.closeContextMenu, 2000);
 	},
 	
 	closeContextMenu: function() {
@@ -466,20 +486,24 @@ NaworkUri.UrlModule = new Class({
 		obj.jqueryObject.find("#table_body table").css({
 			"width": "100%"
 		});
+		
 		/* if there are resizable columns, try to apply the saved width */
 		var resizeableColumnWidthDifference = 0;
 		var resizeableColumnWidthTotal = 0;
 		var resizeableColumnWidthFromOptions = 0;
 		obj.jqueryObject.find("#table_head .resizeable").each(function(columnIndex, column) {
 			column = jQuery(column);
-			if(obj.options.settings.columnWidth[column.attr("data-cellClassName")] && obj.options.settings.columnWidth[column.attr("data-cellClassName")].length > 0) {
-				if(obj.jqueryObject.find("#table_body thead ." + column.attr("data-cellClassName")).length > 0) {
-					resizeableColumnWidthDifference += obj.options.settings.columnWidth[column.attr("data-cellClassName")] - parseInt(column.css("width"));
-					resizeableColumnWidthTotal += parseInt(column.width());
-					resizeableColumnWidthFromOptions += parseInt(obj.options.settings.columnWidth[column.attr("data-cellClassName")]) || parseInt(column.width());
+			if(obj.jqueryObject.find("#table_body thead ." + column.attr("data-cellClassName")).length > 0) {
+				if(obj.options.settings.columnWidth[column.attr("data-cellClassName")] && parseInt(obj.options.settings.columnWidth[column.attr("data-cellClassName")]) > 0) {
+					resizeableColumnWidthDifference += (parseInt(obj.options.settings.columnWidth[column.attr("data-cellClassName")]) - column.width());
+					resizeableColumnWidthFromOptions += parseInt(obj.options.settings.columnWidth[column.attr("data-cellClassName")]);
+				} else {
+					resizeableColumnWidthFromOptions += parseInt(column.width());
 				}
+				resizeableColumnWidthTotal += parseInt(obj.options.settings.columnWidth[column.attr("data-cellClassName")]) || parseInt(column.width());
 			}
 		});
+		
 		obj.jqueryObject.find("#table_head .dynamic").each(function(columnIndex, column) {
 			column = jQuery(column);
 			var cellClass = column.attr("data-cellClassName");
@@ -487,8 +511,8 @@ NaworkUri.UrlModule = new Class({
 				var headerWidth = column.width();
 				var columnWidth = obj.jqueryObject.find("#table_body thead ." + cellClass).width();
 				columnWidth = Math.max(headerWidth, columnWidth);
-				if(obj.options.settings.columnWidth[column.attr("data-cellClassName")] && obj.options.settings.columnWidth[column.attr("data-cellClassName")].length > 0) {
-					columnWidth = Math.max(columnWidth, parseInt(obj.options.settings.columnWidth[column.attr("data-cellClassName")]));
+				if(obj.options.settings.columnWidth[column.attr("data-cellClassName")] && parseInt(obj.options.settings.columnWidth[column.attr("data-cellClassName")]) > 0) {
+					columnWidth = parseInt(obj.options.settings.columnWidth[column.attr("data-cellClassName")]);
 				}
 				column.css({
 					"width": columnWidth
@@ -499,24 +523,20 @@ NaworkUri.UrlModule = new Class({
 			}
 		});
 		
-				
 		var tableWidth = obj.jqueryObject.find("#table_body table").width();
 		var tableOuterWidth = obj.jqueryObject.find("#table_body").width() - obj.scrollBarWidth - 1;
-//		console.debug(tableWidth, tableOuterWidth);
-		if(tableWidth > tableOuterWidth && resizeableColumnWidthFromOptions != resizeableColumnWidthTotal) {
+		if(tableWidth > tableOuterWidth || resizeableColumnWidthFromOptions != resizeableColumnWidthTotal) {
 			var diff = tableWidth - tableOuterWidth;
-			console.debug(diff);
-			console.debug(resizeableColumnWidthTotal);
-			console.debug(resizeableColumnWidthFromOptions);
 			obj.jqueryObject.find("#table_head .resizeable").each(function(columnIndex, column) {
 				column = jQuery(column);
-				console.debug(column.width());
-				var percentage = obj.options.settings.columnWidth[column.attr("data-cellClassName")] / (resizeableColumnWidthTotal - resizeableColumnWidthFromOptions);
-//				console.debug(column.width());
-//				console.debug(percentage);
-				var columnWidth = column.width() - Math.ceil(diff * percentage);
-				console.debug(columnWidth);
-				/* if the table is too wide, reset the css to the value before; else set the resizer th to the new width */
+				var percentage = 0;
+				var columnWidth = 0;
+				if(obj.options.settings.columnWidth[column.attr("data-cellClassName")] && parseInt(obj.options.settings.columnWidth[column.attr("data-cellClassName")]) > 0) {
+					percentage = parseInt(obj.options.settings.columnWidth[column.attr("data-cellClassName")]) / resizeableColumnWidthFromOptions;
+				} else {
+					percentage = column.width() / resizeableColumnWidthFromOptions;
+				}
+				columnWidth = Math.floor((resizeableColumnWidthTotal - diff) * percentage);
 				column.css({
 					"width": columnWidth
 				});

@@ -1,0 +1,19 @@
+<f:if condition="{f:count(subject: '{urls}')} > 0">
+	<f:then>
+		<f:for each="{urls}" as="url">
+			<tr class="db_list_normal" data-uid="{url.uid}" data-contextMenuUrl="{f:uri.action(action: 'contextMenu', arguments: '{url: \'{url.uid}\'}', additionalParams: '{ajax: 1}')}">
+				<td class="uid redirect" title="ID: {url.uid}"><span class="icon"></span></td>
+				<td class="path">{url.path}</td>
+				<td class="redirect_path">{url.redirectPath}</td>
+				<td class="domain">{url.domain.domainName}</td>
+			</tr>
+		</f:for>
+	</f:then>
+	<f:else>
+		<tr>
+			<td colspan="6" class="message">
+		<f:translate key="message_no_results" default="No urls have been found with your filter settings!"/>
+		</td>
+		</tr>
+	</f:else>
+</f:if>

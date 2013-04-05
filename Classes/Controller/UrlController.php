@@ -36,10 +36,9 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 	 */
 	protected $languageRepository;
 	protected $userSettingsKey = 'tx_naworkuri_moduleUrl';
-	protected $userSettings = NULL;
-	protected $userSettingsUpdated = FALSE;
 
 	public function initializeAction() {
+		parent::initializeAction();
 		$this->pageId = intval(t3lib_div::_GP('id'));
 		if ($this->pageRenderer instanceof t3lib_PageRenderer) {
 			$this->pageRenderer->addInlineLanguageLabelFile('EXT:nawork_uri/Resources/Private/Language/locallang_mod_url.xml', '', '', 2);
@@ -50,15 +49,13 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 		$this->urlRepository = $this->objectManager->get('Tx_NaworkUri_Domain_Repository_UrlRepository');
 		$this->domainRepository = $this->objectManager->get('Tx_NaworkUri_Domain_Repository_DomainRepository');
 		$this->languageRepository = $this->objectManager->get('Tx_NaworkUri_Domain_Repository_LanguageRepository');
-		$this->loadUserSettings();
 	}
 
-	protected function callActionMethod() {
-		parent::callActionMethod();
-		$this->storeUserSettings();
+	public function initializeIndexRedirectsAction() {
+		$this->pageRenderer->addJsFile(t3lib_extMgm::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/redirectModule.js');
 	}
 
-	public function indexAction() {
+	public function indexUrlsAction() {
 		if (!$this->pageId > 0) {
 			$this->forward('noPageId');
 		}
@@ -67,8 +64,13 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 		$this->view->assign('userSettings', json_encode($this->userSettings));
 	}
 
-	public function noPageIdAction() {
+	public function indexRedirectsAction() {
+		$this->view->assign('domains', $this->domainRepository->findAll());
+		$this->view->assign('userSettings', json_encode($this->userSettings));
+	}
 
+	public function noPageIdAction() {
+		
 	}
 
 	/**
@@ -126,23 +128,47 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 
 	/**
 	 *
-	 * @param string $key
-	 * @param mixed $value
+	 * @param Tx_NaworkUri_Domain_Model_Domain $domain
+	 * @param string $path
+	 * @param int $offset
+	 * @param int $limit
 	 */
-	public function updateSettingsAction($key, $value) {
-		if (!empty($key) && !empty($value)) {
-			$this->setUserSettings($key, $value);
-			return '0';
+	public function ajaxLoadRedirectsAction(Tx_NaworkUri_Domain_Model_Domain $domain = NULL, $path = NULL, $offset = NULL, $limit = NULL) {
+		/* @var $filter Tx_NaworkUri_Domain_Model_Filter */
+		$filter = $this->objectManager->get('Tx_NaworkUri_Domain_Model_Filter');
+
+		if ($domain instanceof Tx_NaworkUri_Domain_Model_Domain) {
+			$filter->setDomain($domain);
 		}
-		return '1';
+
+		if ($path != NULL) {
+			$filter->setPath($path);
+		}
+
+		if ($offset !== NULL) {
+			$filter->setOffset($offset);
+		}
+
+		if ($limit != NULL && $limit > 0) {
+			$filter->setLimit($limit);
+			$this->setUserSettings('filter.pageSize', $limit);
+		}
+
+		$this->view->assign('urls', $this->urlRepository->findRedirectsByFilter($filter));
+		return json_encode(array(
+				'html' => $this->view->render(),
+				'count' => $this->urlRepository->countRedirectsByFilter($filter)
+			));
 	}
 
 	/**
 	 *
 	 * @param Tx_NaworkUri_Domain_Model_Url $url
+	 * @param boolean $includeAdd
 	 */
-	public function contextMenuAction(Tx_NaworkUri_Domain_Model_Url $url) {
+	public function contextMenuAction(Tx_NaworkUri_Domain_Model_Url $url, $includeAddOption = FALSE) {
 		$this->view->assign('url', $url);
+		$this->view->assign('includeAddOption', $includeAddOption);
 	}
 
 	/**
@@ -165,55 +191,6 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 	public function deleteAction(Tx_NaworkUri_Domain_Model_Url $url) {
 		$this->urlRepository->remove($url);
 		return '';
-	}
-
-	private function loadUserSettings() {
-		/* @var $BE_USER t3lib_beUserAuth */
-		global $BE_USER;
-		$this->userSettings = $BE_USER->getModuleData($this->userSettingsKey);
-		if ($this->userSettings == NULL || !is_array($this->userSettings)) {
-			$this->userSettings = array(
-				'filter' => array(
-					'pageSize' => 0,
-					'domain' => -1,
-					'language' => -1,
-					'scope' => 'page'
-				),
-				'columnWidth' => array(
-					'path' => 0
-				)
-			);
-			$BE_USER->pushModuleData($this->userSettingsKey, $this->userSettings);
-		}
-	}
-
-	private function storeUserSettings() {
-		/* @var $BE_USER t3lib_beUserAuth */
-		global $BE_USER;
-		if ($this->userSettingsUpdated) {
-			$BE_USER->pushModuleData($this->userSettingsKey, $this->userSettings);
-		}
-	}
-
-	private function setUserSettings($key, $value) {
-		$keyParts = t3lib_div::trimExplode('.', $key, TRUE);
-		$tmp = array(
-			$this->userSettings
-		);
-		$settingsKeyNotFound = FALSE;
-		foreach ($keyParts as $index => $p) {
-			if (!array_key_exists($p, $tmp[$index])) {
-				$tmp[$index][$p] = ($index < count($keyParts) - 1) ? array() : $value;
-			}
-			$tmp[($index + 1)] = $tmp[$index][$p];
-		}
-		$tmp[count($tmp) - 1] = $value;
-		$keyParts = array_reverse($keyParts);
-		foreach ($keyParts as $index => $revPart) {
-			$tmp[count($tmp) - $index - 2][$revPart] = $tmp[count($tmp) - $index - 1];
-		}
-		$this->userSettings = $tmp[0];
-		$this->userSettingsUpdated = TRUE;
 	}
 
 }

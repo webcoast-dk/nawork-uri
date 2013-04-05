@@ -10,7 +10,7 @@
  *
  * @author thorben
  */
-class Tx_NaworkUri_Controller_AbstractController extends Tx_Extbase_MVC_Controller_ActionController {
+abstract class Tx_NaworkUri_Controller_AbstractController extends Tx_Extbase_MVC_Controller_ActionController {
 
 	protected $extensionName = 'NaworkUri';
 
@@ -25,6 +25,9 @@ class Tx_NaworkUri_Controller_AbstractController extends Tx_Extbase_MVC_Controll
 	 * @var template
 	 */
 	protected $template;
+	protected $userSettingsKey = '';
+	protected $userSettings = NULL;
+	protected $userSettingsUpdated = FALSE;
 
 	/**
 	 * Processes a general request. The result can be returned by altering the given response.
@@ -50,13 +53,84 @@ class Tx_NaworkUri_Controller_AbstractController extends Tx_Extbase_MVC_Controll
 
 			parent::processRequest($request, $response);
 			$pageHeader = $this->template->startpage(
-					$GLOBALS['LANG']->sL('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_mod_url.xml:header_module')
+				$GLOBALS['LANG']->sL('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_mod_url.xml:header_module')
 			);
 			$pageEnd = $this->template->endPage();
 			$response->setContent($pageHeader . $response->getContent() . $pageEnd);
 		} else {
 			parent::processRequest($request, $response);
 		}
+	}
+
+	protected function initializeAction() {
+		$this->loadUserSettings();
+	}
+
+	protected function callActionMethod() {
+		parent::callActionMethod();
+		$this->storeUserSettings();
+	}
+
+	/**
+	 *
+	 * @param string $key
+	 * @param mixed $value
+	 */
+	public function updateSettingsAction($key, $value) {
+		if (!empty($key) && !empty($value)) {
+			$this->setUserSettings($key, $value);
+			return '0';
+		}
+		return '1';
+	}
+
+	protected function loadUserSettings() {
+		/* @var $BE_USER t3lib_beUserAuth */
+		global $BE_USER;
+		$this->userSettings = $BE_USER->getModuleData($this->userSettingsKey);
+		if ($this->userSettings == NULL || !is_array($this->userSettings)) {
+			$this->userSettings = array(
+				'filter' => array(
+					'pageSize' => 0,
+					'domain' => -1,
+					'language' => -1,
+					'scope' => 'page'
+				),
+				'columnWidth' => array(
+					'path' => 0
+				)
+			);
+			$BE_USER->pushModuleData($this->userSettingsKey, $this->userSettings);
+		}
+	}
+
+	protected function storeUserSettings() {
+		/* @var $BE_USER t3lib_beUserAuth */
+		global $BE_USER;
+		if ($this->userSettingsUpdated) {
+			$BE_USER->pushModuleData($this->userSettingsKey, $this->userSettings);
+		}
+	}
+
+	protected function setUserSettings($key, $value) {
+		$keyParts = t3lib_div::trimExplode('.', $key, TRUE);
+		$tmp = array(
+			$this->userSettings
+		);
+		$settingsKeyNotFound = FALSE;
+		foreach ($keyParts as $index => $p) {
+			if (!array_key_exists($p, $tmp[$index])) {
+				$tmp[$index][$p] = ($index < count($keyParts) - 1) ? array() : $value;
+			}
+			$tmp[($index + 1)] = $tmp[$index][$p];
+		}
+		$tmp[count($tmp) - 1] = $value;
+		$keyParts = array_reverse($keyParts);
+		foreach ($keyParts as $index => $revPart) {
+			$tmp[count($tmp) - $index - 2][$revPart] = $tmp[count($tmp) - $index - 1];
+		}
+		$this->userSettings = $tmp[0];
+		$this->userSettingsUpdated = TRUE;
 	}
 
 }

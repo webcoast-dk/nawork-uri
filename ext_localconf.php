@@ -17,7 +17,7 @@ $TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::clearUrlCache'] = 'EXT:nawork_uri/
 $TYPO3_CONF_VARS['SC_OPTIONS']['tce']['formevals']['tx_naworkuri_path'] = 'EXT:nawork_uri/Classes/Validation/class.tx_naworkuri_path.php';
 
 if (TYPO3_MODE === 'BE') {
-	// Register commands
+	/* Register command controller, this works since 4.6 */
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = 'Tx_Naworkuri_Command_NaworkUriCommandController';
 }
 

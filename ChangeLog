@@ -1,3 +1,9 @@
+2.2.1:
+* fix some locallang references in ext_tables.php
+* cleanup locallang files for modules
+* cleanup ext_tables.php
+* add note to registration of command controller, works with TYPO3 4.6
+
 2.2.0:
 * limits query results to 1 when finding url in tx_naworkuri_cache::read_path
 * rewritten backend modules: now seperated into two modules

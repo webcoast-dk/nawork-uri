@@ -47,7 +47,7 @@ NaworkUri.RedirectModule = new Class({
 			url: row.attr("data-contextmenuurl"),
 			dataType: "html",
 			data: {
-				tx_naworkuri_tools_naworkuritxnaworkuriredirect: {
+				tx_naworkuri_naworkuri_naworkuriredirect: {
 					includeAddOption: true
 				}
 			},
@@ -76,7 +76,7 @@ NaworkUri.RedirectModule = new Class({
 			url: this.options.urls.ajax,
 			dataType: "json",
 			data: {
-				tx_naworkuri_tools_naworkuritxnaworkuriredirect: {
+				tx_naworkuri_naworkuri_naworkuriredirect: {
 					domain: this.filter.domain.value,
 					path: this.filter.path.value,
 					offset: this.pagination.currentPage * this.pagination.pageSize,

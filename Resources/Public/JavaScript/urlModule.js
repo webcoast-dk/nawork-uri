@@ -73,6 +73,7 @@ NaworkUri.UrlModule = new Class({
 		this.setOptions(options);
 		this.jqueryObject = jQuery(selector);
 		this.loadingLayer = jQuery('<div class="tx_naworkuri_loadingLayer"><p>' + this.options.messages.loading + '</p></div>');
+		this.jqueryObject.find("#table_body tbody").append(this.loadingLayer);
 		
 		this.initializeFilters();
 		this.initializePagination();
@@ -362,6 +363,9 @@ NaworkUri.UrlModule = new Class({
 			top: ev.pageY - this.jqueryObject.find("#table_body").position().top
 		});
 		
+		cm.find(".add").click(function(ev) {
+			window.location.href="alt_doc.php?returnUrl=" + encodeURIComponent(window.location.href) + "&edit[tx_naworkuri_uri][" + jQuery(this).attr("data-storagePage") + "]=new";
+		});
 		cm.find(".show").click(function(ev) {
 			var popup = window.open(window.location.protocol + "//" + (window.location.host ? window.location.host : window.location.hostname) + "/" + jQuery(this).attr("data-path"), "tx_naworkuri_preview");
 			popup.focus();
@@ -567,7 +571,7 @@ NaworkUri.UrlModule = new Class({
 			url: this.options.urls.ajax,
 			dataType: "json",
 			data: {
-				tx_naworkuri_web_naworkuritxnaworkuriuri: {
+				tx_naworkuri_naworkuri_naworkuriuri: {
 					domain: this.filter.domain.value,
 					types: this.filter.types.value,
 					language: this.filter.language.value,

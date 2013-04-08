@@ -12,7 +12,7 @@ $TCA['tx_naworkuri_uri'] = Array(
 	'columns' => Array(
 		'page_uid' => Array(
 			'exclude' => 1,
-			'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.page',
+			'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.page',
 			'config' => Array(
 				'allowed' => 'pages',
 				'internal_type' => 'db',
@@ -42,19 +42,16 @@ $TCA['tx_naworkuri_uri'] = Array(
 		),
 		'domain' => Array(
 			'exclude' => 1,
-			'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.domain',
+			'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.domain',
 			'config' => Array(
 				'type' => 'select',
-				'form_type' => 'user',
-				'userFunc' => 'EXT:nawork_uri/Classes/UserFunc/DomainItemFunc.php:Tx_NaworkUri_UserFunc_DomainItemFunc->drawForm',
 				'foreign_table' => 'sys_domain',
 				'foreign_table_where' => 'AND tx_naworkuri_masterDomain=0',
-//				'itemsProcFunc' => 'EXT:nawork_uri/Classes/UserFunc/DomainItemFunc.php:Tx_NaworkUri_UserFunc_DomainItemFunc->alterItems'
 			)
 		),
 		'path' => Array(
 			'exclude' => 1,
-			'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.path',
+			'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.path',
 			'config' => Array(
 				'type' => 'input',
 				'size' => '60',
@@ -62,7 +59,7 @@ $TCA['tx_naworkuri_uri'] = Array(
 		),
 		'params' => Array(
 			'exclude' => 1,
-			'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.params',
+			'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.params',
 			'config' => Array(
 				'type' => 'input',
 				'size' => '30',
@@ -88,7 +85,7 @@ $TCA['tx_naworkuri_uri'] = Array(
 		),
 		'locked' => Array(
 			'exclude' => '1',
-			'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.locked',
+			'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.locked',
 			'config' => Array(
 				'type' => 'check',
 				'default' => '0'
@@ -96,20 +93,20 @@ $TCA['tx_naworkuri_uri'] = Array(
 		),
 		'type' => array(
 			'exclude' => '1',
-			'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.type',
+			'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.type',
 			'config' => array(
 				'type' => 'select',
 				'items' => array(
-					array('LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.type.0', 0), // normal url
-					array('LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.type.1', 1), // old url
-					array('LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.type.2', 2), // redirect
+					array('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.type.0', 0), // normal url
+					array('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.type.1', 1), // old url
+					array('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.type.2', 2), // redirect
 				),
 				'default' => '2'
 			)
 		),
 		'redirect_path' => array(
 			'exclude' => '1',
-			'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.redirect_path',
+			'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.redirect_path',
 			'config' => array(
 				'type' => 'input',
 				'size' => '80'
@@ -117,14 +114,14 @@ $TCA['tx_naworkuri_uri'] = Array(
 		),
 		'redirect_mode' => array(
 			'exclude' => '1',
-			'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode',
+			'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode',
 			'config' => array(
 				'type' => 'select',
 				'items' => array(
-					array('LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode.301', 301),
-					array('LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode.302', 303),
-					array('LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode.303', 303),
-					array('LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode.307', 307)
+					array('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode.301', 301),
+					array('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode.302', 303),
+					array('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode.303', 303),
+					array('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode.307', 307)
 				)
 			)
 		)

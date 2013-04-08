@@ -20,7 +20,7 @@ class tx_naworkuri_cache_clearcachemenu implements backend_cacheActionsHook {
 	public function manipulateCacheActions(&$cacheActions, &$optionValues) {
 		if ($GLOBALS['BE_USER']->isAdmin() || $GLOBALS['BE_USER']->getTSConfigVal('options.clearCache.clearUrlCache')) {
 			// Add new cache menu item
-			$title = $GLOBALS['LANG']->sL('LLL:EXT:nawork_uri/Resources/Language/locallang.xml:label.clearUrlCache');
+			$title = $GLOBALS['LANG']->sL('LLL:EXT:nawork_uri/Resources/Private/Language/locallang.xml:label.clearUrlCache');
 			$cacheActions[] = array(
 				'id' => 'clearUrlCache',
 				'title' => $title,

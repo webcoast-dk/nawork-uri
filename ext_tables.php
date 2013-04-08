@@ -69,13 +69,13 @@ $TCA['tx_naworkuri_uri'] = Array(
 		'enablecolumns' => array(
 		),
 		'dynamicConfigFile' => t3lib_extMgm::extPath($_EXTKEY) . 'tca.php',
-		'iconfile' => t3lib_extMgm::extRelPath($_EXTKEY) . 'Resources/GFX/Icons/uri.png',
+		'iconfile' => t3lib_extMgm::extRelPath($_EXTKEY) . 'Resources/Public/Icons/Types/uri.png',
 		'hideTable' => true,
 		'typeicon_column' => 'type',
 		'typeicons' => Array(
-			'0' => t3lib_extMgm::extRelPath($_EXTKEY) . 'Resources/GFX/Icons/uri.png',
-			'1' => t3lib_extMgm::extRelPath($_EXTKEY) . 'Resources/GFX/Icons/uri_old.png',
-			'2' => t3lib_extMgm::extRelPath($_EXTKEY) . 'Resources/GFX/Icons/redirect.png',
+			'0' => t3lib_extMgm::extRelPath($_EXTKEY) . 'Resources/Public/Icons/Types/uri.png',
+			'1' => t3lib_extMgm::extRelPath($_EXTKEY) . 'Resources/Public/Icons/Types/old.png',
+			'2' => t3lib_extMgm::extRelPath($_EXTKEY) . 'Resources/Public/Icons/Types/redirect.png',
 		),
 	),
 );
@@ -83,19 +83,24 @@ $TCA['tx_naworkuri_uri'] = Array(
 t3lib_extMgm::allowTableOnStandardPages('tx_naworkuri_uri');
 
 if (TYPO3_MODE == 'BE') {
-//	t3lib_extMgm::addModule('txnaworkuriM1', '', '', t3lib_extMgm::extPath('nawork_uri') . 'Configuration/Module/');
+	$mainModuleName = str_replace('_', '', $_EXTKEY) . '';
+	t3lib_extMgm::addModule($mainModuleName, '', '', t3lib_extMgm::extPath('nawork_uri').'Configuration/Module/');
+//	t3lib_extMgm::addModule('nawork_uri', '', '', t3lib_extMgm::extPath('nawork_uri') . 'Configuration/Module/');
+//	$GLOBALS['TBE_MODULES']['_PATHS']['naworkuri'] = t3lib_extMgm::extPath('nawork_uri').'Configuration/Module/';
 
-	Tx_Extbase_Utility_Extension::registerModule($_EXTKEY, 'web', 'tx_naworkuri_uri', '', array(
+//	Tx_Extbase_Utility_Extension::registerModule($_EXTKEY, 'nawork_uri', 'uri', '', array(
+	Tx_Extbase_Utility_Extension::registerModule($_EXTKEY, $mainModuleName, 'uri', '', array(
 		'Url' => 'indexUrls,ajaxLoadUrls,updateSettings,contextMenu,lockToggle,delete'
-			), array(
+		), array(
 		'access' => 'user,group',
 		'icon' => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/module.png',
 		'labels' => 'LLL:EXT:' . $_EXTKEY . '/Resources/Private/Language/locallang_mod_url.xml',
+			'navigationComponentId' => 'typo3-pagetree'
 	));
-	
-	Tx_Extbase_Utility_Extension::registerModule($_EXTKEY, 'tools', 'tx_naworkuri_redirect', '', array(
+
+	Tx_Extbase_Utility_Extension::registerModule($_EXTKEY, 'naworkuri', 'redirect', '', array(
 		'Url' => 'indexRedirects,ajaxLoadRedirects,updateSettings,contextMenu,lockToggle,delete'
-			), array(
+		), array(
 		'access' => 'user,group',
 		'icon' => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/module.png',
 		'labels' => 'LLL:EXT:' . $_EXTKEY . '/Resources/Private/Language/locallang_mod_redirect.xml',

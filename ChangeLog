@@ -1,6 +1,7 @@
 2.2.0:
 * limits query results to 1 when finding url in tx_naworkuri_cache::read_path
-* rewritten backend module
+* rewritten backend modules: now seperated into two modules
+* domains are now stored with uid instead of domain to avoid transformation to and from database
 
 2.1.52:
 * change hook for redirects: use configArrayPostProc instead of isOutputting to avoid rendering of content

@@ -7,7 +7,7 @@ if (!defined('TYPO3_MODE'))
 // add new fields to page and pages_language_overlay records
 $tempColumns = Array(
 	'tx_naworkuri_pathsegment' => array(
-		'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:pages.tx_naworkuri_pathsegment',
+		'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:pages.tx_naworkuri_pathsegment',
 		'config' => Array(
 			'type' => 'input',
 			'size' => '60',
@@ -15,7 +15,7 @@ $tempColumns = Array(
 		),
 	),
 	'tx_naworkuri_exclude' => array(
-		'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:pages.tx_naworkuri_exclude',
+		'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:pages.tx_naworkuri_exclude',
 		'config' => Array(
 			'type' => 'check',
 			'default' => '0'
@@ -33,7 +33,7 @@ t3lib_extMgm::addToAllTCAtypes('pages_language_overlay', 'tx_naworkuri_pathsegme
 
 $tempColumns = array(
 	'tx_naworkuri_masterDomain' => array(
-		'label' => 'LLL:EXT:nawork_uri/Resources/Language/locallang_db.xml:sys_domain.tx_naworkuri_masterDomain',
+		'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:sys_domain.tx_naworkuri_masterDomain',
 		'config' => array(
 			'type' => 'group',
 			'internal_type' => 'db',
@@ -64,7 +64,6 @@ $TCA['tx_naworkuri_uri'] = Array(
 		'cruser_id' => 'cruser_id',
 		'languageField' => 'sys_language_uid',
 		'sortby' => 'crdate',
-//		'delete' => '',
 		'rootLevel' => '-1',
 		'enablecolumns' => array(
 		),
@@ -83,12 +82,9 @@ $TCA['tx_naworkuri_uri'] = Array(
 t3lib_extMgm::allowTableOnStandardPages('tx_naworkuri_uri');
 
 if (TYPO3_MODE == 'BE') {
-	$mainModuleName = str_replace('_', '', $_EXTKEY) . '';
+	$mainModuleName = 'naworkuri';
 	t3lib_extMgm::addModule($mainModuleName, '', '', t3lib_extMgm::extPath('nawork_uri').'Configuration/Module/');
-//	t3lib_extMgm::addModule('nawork_uri', '', '', t3lib_extMgm::extPath('nawork_uri') . 'Configuration/Module/');
-//	$GLOBALS['TBE_MODULES']['_PATHS']['naworkuri'] = t3lib_extMgm::extPath('nawork_uri').'Configuration/Module/';
 
-//	Tx_Extbase_Utility_Extension::registerModule($_EXTKEY, 'nawork_uri', 'uri', '', array(
 	Tx_Extbase_Utility_Extension::registerModule($_EXTKEY, $mainModuleName, 'uri', '', array(
 		'Url' => 'indexUrls,ajaxLoadUrls,updateSettings,contextMenu,lockToggle,delete'
 		), array(
@@ -98,7 +94,7 @@ if (TYPO3_MODE == 'BE') {
 			'navigationComponentId' => 'typo3-pagetree'
 	));
 
-	Tx_Extbase_Utility_Extension::registerModule($_EXTKEY, 'naworkuri', 'redirect', '', array(
+	Tx_Extbase_Utility_Extension::registerModule($_EXTKEY, $mainModuleName, 'redirect', '', array(
 		'Url' => 'indexRedirects,ajaxLoadRedirects,updateSettings,contextMenu,lockToggle,delete'
 		), array(
 		'access' => 'user,group',

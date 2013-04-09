@@ -1,3 +1,6 @@
+2.2.3:
+* fixes screwed up query string on redirecting old url: provided query string must be urldecoded before merging with parameters from url record
+
 2.2.2:
 * change determination of page not found behavior: default was not override if domain matching item was found
 

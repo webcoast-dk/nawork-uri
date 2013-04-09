@@ -1,3 +1,6 @@
+2.2.2:
+* change determination of page not found behavior: default was not override if domain matching item was found
+
 2.2.1:
 * fix some locallang references in ext_tables.php
 * cleanup locallang files for modules

@@ -128,7 +128,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 				if ((string) $child->attributes()->domain == t3lib_div::getIndpEnv('HTTP_HOST') && (int) $child->attributes()->ignoreMasterDomain === 1) {
 					return (string) $child->attributes()->type;
 				}
-				if (empty($behavior) && (string) $child->attributes()->domain == tx_naworkuri_helper::getCurrentDomain()) {
+				if ((string) $child->attributes()->domain == tx_naworkuri_helper::getCurrentDomain()) {
 					$type = (string) $child->attributes()->type;
 				}
 				if(empty($behavior) && (string) $child->attributes()->domain == '') {
@@ -146,7 +146,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 				if ((string) $child->attributes()->domain == t3lib_div::getIndpEnv('HTTP_HOST') && (int) $child->attributes()->ignoreMasterDomain === 1) {
 					return (string) $child;
 				}
-				if (empty($behavior) && (string) $child->attributes()->domain == tx_naworkuri_helper::getCurrentDomain()) {
+				if ((string) $child->attributes()->domain == tx_naworkuri_helper::getCurrentDomain()) {
 					$behavior = (string) $child;
 				}
 				if(empty($behavior) && (string) $child->attributes()->domain == '') {

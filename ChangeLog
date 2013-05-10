@@ -1,3 +1,6 @@
+2.2.4:
+* fixes url without ending "/" not found if the url exists also with an ending "/"
+
 2.2.3:
 * fixes screwed up query string on redirecting old url: provided query string must be urldecoded before merging with parameters from url record
 

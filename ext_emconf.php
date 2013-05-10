@@ -3,7 +3,7 @@
 /***************************************************************
  * Extension Manager/Repository config file for ext "nawork_uri".
  *
- * Auto generated 09-04-2013 16:32
+ * Auto generated 10-05-2013 10:02
  *
  * Manual updates:
  * Only the data in the array - everything else is removed by next
@@ -15,7 +15,7 @@ $EM_CONF[$_EXTKEY] = array(
 	'description' => 'Create nice looking URLs like RealURL or CoolURI. It follows the concept of cooluri creating and caching the urls. Requirements: PHP 5+ with SimpleXML, cURL! MySQL 4.1+.',
 	'category' => 'fe',
 	'shy' => 0,
-	'version' => '2.2.3',
+	'version' => '2.2.4',
 	'dependencies' => 'extbase',
 	'conflicts' => '',
 	'priority' => '',

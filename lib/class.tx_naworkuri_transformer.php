@@ -77,28 +77,20 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		$append = (string) $this->config->getAppend();
 		list($path, $params) = t3lib_div::trimExplode('?', $uri);
 		// save the original path to check that if the "slashed" one does not return anything
-		$orgPath = '';
 		$path = urldecode($path);
-		if (!empty($path) && $append == '/' && substr($path, -strlen($append)) != $append && !preg_match('/\.\w{3,5}\d?$/', $path)) {
-			$orgPath = $path;
-			$path .= (string) $this->config->getAppend();
-		}
-
 		// look into the db
 		$cache = $this->cache->read_path($path, $this->domain);
-		if ($cache === FALSE && !empty($orgPath)) { // if we don't get a url try with the original path if it is not empty
-			$cache = $this->cache->read_path($orgPath, $this->domain);
-		}
-		if ($cache === FALSE && !empty($params)) {
-			$cache = $this->cache->read_path($path . '?' . $params, $this->domain);
-			if ($cache === FALSE && !empty($orgPath)) {
-				$cache = $this->cache->read_path($orgPath . '?' . $params, $this->domain);
+		if ($cache === FALSE) {
+			/* if we have not found an entry, try to append a "/" an try again */
+			if (!empty($path) && $append == '/' && substr($path, -strlen($append)) != $append && !preg_match('/\.\w{3,5}\d?$/', $path)) {
+				$path .= (string) $this->config->getAppend();
 			}
-		}
-		if ($cache['type'] > 0) {
-			throw new Tx_NaworkUri_Exception_UrlIsRedirectException($cache);
+			$cache = $this->cache->read_path($path, $this->domain);
 		}
 		if ($cache) {
+			if ($cache['type'] > 0) {
+				throw new Tx_NaworkUri_Exception_UrlIsRedirectException($cache);
+			}
 			// cachedparams
 			$cachedparams = Array();
 			parse_str($cache['params'], $cachedparams);

@@ -197,7 +197,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 	}
 
 	public function getTransliterations() {
-		if ($this->config->transliteration instanceof SimpleXMLElement) {
+		if ($this->config->transliteration instanceof SimpleXMLElement && $this->config->transliteration->count()) {
 			return $this->config->transliteration->children();
 		}
 		return array();

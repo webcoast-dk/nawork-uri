@@ -1,3 +1,7 @@
+2.2.5:
+* compatibility with TYPO3 6.0: renamed the template files to UpperCamelCase
+* re-add the "add" button
+
 2.2.4:
 * fixes url without ending "/" not found if the url exists also with an ending "/"
 

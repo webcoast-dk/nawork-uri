@@ -62,11 +62,15 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 		$this->view->assign('domains', $this->domainRepository->findAll());
 		$this->view->assign('languages', $this->languageRepository->findAll());
 		$this->view->assign('userSettings', json_encode($this->userSettings));
+		$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
+		$this->view->assign('storagePage', $extConf['storagePage']);
 	}
 
 	public function indexRedirectsAction() {
 		$this->view->assign('domains', $this->domainRepository->findAll());
 		$this->view->assign('userSettings', json_encode($this->userSettings));
+		$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
+		$this->view->assign('storagePage', $extConf['storagePage']);
 	}
 
 	public function noPageIdAction() {
@@ -169,8 +173,6 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 	public function contextMenuAction(Tx_NaworkUri_Domain_Model_Url $url, $includeAddOption = FALSE) {
 		$this->view->assign('url', $url);
 		$this->view->assign('includeAddOption', $includeAddOption);
-		$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
-		$this->view->assign('storagePage', $extConf['storagePage']);
 	}
 
 	/**

@@ -1,3 +1,7 @@
+a label {
+	cursor: pointer;
+}
+
 div#typo3-inner-docbody {
 	padding: 0 10px;
 }
@@ -22,6 +26,11 @@ div#typo3-inner-docbody {
 
 #typo3-inner-docbody #url_module #filter {
 	margin: 10px 0;
+}
+
+#typo3-inner-docbody #url_module #filter .add .icon {
+	background-position: -208px center;
+	margin-right: 5px;
 }
 
 #typo3-inner-docbody .filter_option {
@@ -50,6 +59,16 @@ div#typo3-inner-docbody {
 
 #typo3-inner-docbody .filter_option input[type="checkbox"] {
     margin-left: 0;
+}
+
+#typo3-inner-docbody .add {
+	padding-top: 10px;
+}
+
+#typo3-inner-docbody .add a {
+	background: -moz-linear-gradient(center top , #F6F6F6 10%, #D5D5D5 90%) repeat scroll 0 0 transparent;
+    border: 1px solid #7C7C7C;
+    padding: 5px 10px 8px;
 }
 
 #typo3-inner-docbody #url_module #table_outer {
@@ -225,10 +244,6 @@ div#typo3-inner-docbody {
 
 #typo3-inner-docbody #url_module #tx_naworkuri_contextMenu .icon {
 	margin-right: 2px;
-}
-
-#typo3-inner-docbody #url_module #tx_naworkuri_contextMenu .add .icon {
-	background-position: -208px center;
 }
 
 #typo3-inner-docbody #url_module #tx_naworkuri_contextMenu .show .icon {

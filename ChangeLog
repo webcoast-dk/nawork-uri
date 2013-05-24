@@ -1,3 +1,6 @@
+2.2.7:
+* fix php warning that is caused by an empty transliterations or non-existing tag in config file
+
 2.2.6:
 * fix for TYPO3 4.5: add module typoscript in ext_tables.php instead of static file because 4.5 can't handle this in the redirect module without the page tree
 

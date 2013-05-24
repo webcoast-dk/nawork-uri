@@ -102,6 +102,33 @@ if (TYPO3_MODE == 'BE') {
 		'labels' => 'LLL:EXT:' . $_EXTKEY . '/Resources/Private/Language/locallang_mod_redirect.xml',
 	));
 
-	t3lib_extMgm::addStaticFile($_EXTKEY, 'Configuration/Module/', 'n@work URI Module');
+	t3lib_extMgm::addTypoScriptSetup('
+		module.tx_naworkuri {
+			persistence {
+				storagePid = 0
+				classes {
+					Tx_NaworkUri_Domain_Model_Url {
+						mapping {
+							tableName = tx_naworkuri_uri
+							columns {
+								sys_language_uid.mapOnProperty = language
+								params.mapOnProperty = parameters
+							}
+						}
+					}
+					Tx_NaworkUri_Domain_Model_Domain {
+						mapping {
+							tableName = sys_domain
+						}
+					}
+					Tx_NaworkUri_Domain_Model_Language {
+						mapping {
+							tableName = sys_language
+						}
+					}
+				}
+			}
+		}
+		');
 }
 ?>

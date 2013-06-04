@@ -76,6 +76,28 @@
 		<char from="Ю" to="ju" />
 		<char from="Я" to="ja" />
 		<!-- cyrillic (russian) transliterations, not supported by glibc :: end -->
+
+		<!-- polisch diactric characters :: begin -->
+		<char from="Ą" to="A" />
+		<char from="Ć" to="C" />
+		<char from="Ę" to="E" />
+		<char from="Ł" to="L" />
+		<char from="Ń" to="N" />
+		<char from="Ó" to="O" />
+		<char from="Ś" to="S" />
+		<char from="Ź" to="Z" />
+		<char from="Ż" to="Z" />
+		
+		<char from="ą" to="a" />
+		<char from="ć" to="c" />
+		<char from="ę" to="e" />
+		<char from="ł" to="l" />
+		<char from="ń" to="n" />
+		<char from="ó" to="o" />
+		<char from="ś" to="s" />
+		<char from="ź" to="z" />
+		<char from="ż" to="z" />		
+		<!-- polisch diactric characters :: end -->
 	</transliteration>
 
 	<pagenotfound>
@@ -87,7 +109,8 @@
 		<behavior type="page">http://www.domain.tld/?id=notfound</behavior>
 		<behavior type="page" domain="www.domain.tld">http://www.domain.tld/index.php?id=notfound</behavior>
 		-->
-		<behavior type="message"><![CDATA[ <h1>Page not found!</h1> ]]></behavior>
+		<behavior type="message"><![CDATA[ <h1>Page not found!</h1> ]]>
+		</behavior>
 	</pagenotfound>
 
 

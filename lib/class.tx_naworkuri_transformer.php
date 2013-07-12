@@ -157,7 +157,13 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			$cHashParams = $params;
 			unset($cHashParams['cHash']);
 			ksort($cHashParams);
-			$params['cHash'] = t3lib_div::calculateCHash($cHashParams);
+			if (class_exists('TYPO3\CMS\Frontend\Page\CacheHashCalculator')) { // if this class exists we are in TYPO3 6.x
+				/* @var $cHashCaluclator \TYPO3\CMS\Frontend\Page\CacheHashCalculator */
+				$cHashCaluclator = t3lib_div::makeInstance('TYPO3\CMS\Frontend\Page\CacheHashCalculator');
+				$params['cHash'] = $cHashCaluclator->calculateCacheHash($cHashCaluclator->getRelevantParameters(tx_naworkuri_helper::implode_parameters($params, FALSE)));
+			} else {
+				$params['cHash'] = t3lib_div::calculateCHash($cHashParams);
+			}
 		}
 
 		$this->language = $params['L'];

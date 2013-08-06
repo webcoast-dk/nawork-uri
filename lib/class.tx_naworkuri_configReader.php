@@ -123,15 +123,20 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 
 	public function getPageNotFoundConfigBehaviorType() {
 		$type = '';
+		$currentDomain = tx_naworkuri_helper::getCurrentDomain();
+		$currentHost = t3lib_div::getIndpEnv('TYPO3_HOST_ONLY');
 		foreach ($this->config->pagenotfound->children() as $child) {
 			if ($child->getName() == 'behavior') {
-				if ((string) $child->attributes()->domain == t3lib_div::getIndpEnv('HTTP_HOST') && (int) $child->attributes()->ignoreMasterDomain === 1) {
+				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */
+				if ((string) $child->attributes()->domain === (string) $currentHost && ((int) $child->attributes()->ignoreMasterDomain === 1 || $currentDomain === 0 )) {
 					return (string) $child->attributes()->type;
 				}
-				if (((string) $child->attributes()->doman != '') && (string) $child->attributes()->domain == tx_naworkuri_helper::getCurrentDomain()) {
+				/* if there is a configuration for the current domain, use it */
+				if ((string) $child->attributes()->domain === (string) $currentDomain) {
 					$type = (string) $child->attributes()->type;
 				}
-				if (empty($behavior) && (string) $child->attributes()->domain == '') {
+				/* a configuration without domain should be used as default */
+				if (empty($type) && (string) $child->attributes()->domain == '') {
 					$type = (string) $child->attributes()->type;
 				}
 			}
@@ -141,14 +146,19 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 
 	public function getPageNotFoundConfigBehaviorValue() {
 		$behavior = '';
+		$currentDomain = tx_naworkuri_helper::getCurrentDomain();
+		$currentHost = t3lib_div::getIndpEnv('TYPO3_HOST_ONLY');
 		foreach ($this->config->pagenotfound->children() as $child) {
 			if ($child->getName() == 'behavior') {
-				if ((string) $child->attributes()->domain == t3lib_div::getIndpEnv('HTTP_HOST') && (int) $child->attributes()->ignoreMasterDomain === 1) {
+				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */
+				if ((string) $child->attributes()->domain === (string) $currentHost && ((int) $child->attributes()->ignoreMasterDomain === 1 || $currentDomain === 0)) {
 					return (string) $child;
 				}
-				if (((string) $child->attributes()->doman != '') && (string) $child->attributes()->domain == tx_naworkuri_helper::getCurrentDomain()) {
+				/* if there is a configuration for the current domain, use it */
+				if ((string) $child->attributes()->domain === (string) $currentDomain) {
 					$behavior = (string) $child;
 				}
+				/* a configuration without domain should be used as default */
 				if (empty($behavior) && (string) $child->attributes()->domain == '') {
 					$behavior = (string) $child;
 				}

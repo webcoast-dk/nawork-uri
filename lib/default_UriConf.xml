@@ -112,6 +112,11 @@
 		<behavior type="message"><![CDATA[ <h1>Page not found!</h1> ]]>
 		</behavior>
 	</pagenotfound>
+	
+	<pageNotAccessible>
+		<status>HTTP/1.0 403 Forbidden</status>
+		<behavior type="message"><![CDATA[<html><head><title>403 Forbidden</title></head><body><h1>Forbidden!</h1><p>You don't have the permission to access the requested page</p></body></html>]]></behavior>
+	</pageNotAccessible>
 
 
 	<!-- define fixed uri segments -->

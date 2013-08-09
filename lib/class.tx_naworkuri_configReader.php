@@ -111,9 +111,20 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 
 	public function getPageNotFoundConfigStatus() {
 		$status = '';
+		$currentDomain = tx_naworkuri_helper::getCurrentDomain();
+		$currentHost = TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
 		foreach ($this->config->pagenotfound->children() as $child) {
 			if ($child->getName() == 'status') {
-				if (empty($status) || (string) $child->attributes()->domain == tx_naworkuri_helper::getCurrentDomain()) {
+				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */
+				if ((string) $child->attributes()->domain === (string) $currentHost && ((int) $child->attributes()->ignoreMasterDomain === 1 || $currentDomain === 0 )) {
+					return (string) $child;
+				}
+				/* if there is a configuration for the current domain, use it */
+				if ((string) $child->attributes()->domain === (string) $currentDomain) {
+					$status = (string) $child;
+				}
+				/* a configuration without domain should be used as default */
+				if (empty($status) && (string) $child->attributes()->domain == '') {
 					$status = (string) $child;
 				}
 			}
@@ -124,7 +135,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 	public function getPageNotFoundConfigBehaviorType() {
 		$type = '';
 		$currentDomain = tx_naworkuri_helper::getCurrentDomain();
-		$currentHost = t3lib_div::getIndpEnv('TYPO3_HOST_ONLY');
+		$currentHost = TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
 		foreach ($this->config->pagenotfound->children() as $child) {
 			if ($child->getName() == 'behavior') {
 				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */
@@ -168,10 +179,81 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 	}
 
 	public function hasPageNotFoundConfig() {
-		if (is_a($this->config->pagenotfound, 'SimpleXMLElement')) {
-			return true;
+		return ($this->config->pagenotfound instanceof SimpleXMLElement && $this->config->pagenotfound->getName() == 'pagenotfound');
+	}
+	
+	/* page not accessible */
+	public function hasPageNotAccessibleConfiguration() {
+		return ($this->config->pageNotAccessible instanceof SimpleXMLElement && $this->config->pageNotAccessible->getName() == 'pageNotAccessible');
+	}
+	
+	public function getPageNotAccessibleConfigurationStatus() {
+		$status = '';
+		$currentDomain = tx_naworkuri_helper::getCurrentDomain();
+		$currentHost = TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
+		foreach ($this->config->pageNotAccessible->children() as $child) {
+			if ($child->getName() == 'status') {
+				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */
+				if ((string) $child->attributes()->domain === (string) $currentHost && ((int) $child->attributes()->ignoreMasterDomain === 1 || $currentDomain === 0 )) {
+					return (string) $child;
+				}
+				/* if there is a configuration for the current domain, use it */
+				if ((string) $child->attributes()->domain === (string) $currentDomain) {
+					$status = (string) $child;
+				}
+				/* a configuration without domain should be used as default */
+				if (empty($status) && (string) $child->attributes()->domain == '') {
+					$status = (string) $child;
+				}
+			}
 		}
-		return false;
+		return $status;
+	}
+
+	public function getPageNotAccessibleConfigurationBehaviorType() {
+		$type = '';
+		$currentDomain = tx_naworkuri_helper::getCurrentDomain();
+		$currentHost = TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
+		foreach ($this->config->pageNotAccessible->children() as $child) {
+			if ($child->getName() == 'behavior') {
+				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */
+				if ((string) $child->attributes()->domain === (string) $currentHost && ((int) $child->attributes()->ignoreMasterDomain === 1 || $currentDomain === 0 )) {
+					return (string) $child->attributes()->type;
+				}
+				/* if there is a configuration for the current domain, use it */
+				if ((string) $child->attributes()->domain === (string) $currentDomain) {
+					$type = (string) $child->attributes()->type;
+				}
+				/* a configuration without domain should be used as default */
+				if (empty($type) && (string) $child->attributes()->domain == '') {
+					$type = (string) $child->attributes()->type;
+				}
+			}
+		}
+		return $type;
+	}
+
+	public function getPageNotAccessibleConfigurationBehaviorValue() {
+		$behavior = '';
+		$currentDomain = tx_naworkuri_helper::getCurrentDomain();
+		$currentHost = t3lib_div::getIndpEnv('TYPO3_HOST_ONLY');
+		foreach ($this->config->pageNotAccessible->children() as $child) {
+			if ($child->getName() == 'behavior') {
+				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */
+				if ((string) $child->attributes()->domain === (string) $currentHost && ((int) $child->attributes()->ignoreMasterDomain === 1 || $currentDomain === 0)) {
+					return (string) $child;
+				}
+				/* if there is a configuration for the current domain, use it */
+				if ((string) $child->attributes()->domain === (string) $currentDomain) {
+					$behavior = (string) $child;
+				}
+				/* a configuration without domain should be used as default */
+				if (empty($behavior) && (string) $child->attributes()->domain == '') {
+					$behavior = (string) $child;
+				}
+			}
+		}
+		return $behavior;
 	}
 
 	public function getDomainTable() {

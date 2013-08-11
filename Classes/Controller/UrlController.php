@@ -80,7 +80,7 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 	/**
 	 *
 	 * @param Tx_NaworkUri_Domain_Model_Domain $domain
-	 * @param mixed $language
+	 * @param int $language
 	 * @param array $types
 	 * @param string $scope
 	 * @param string $path

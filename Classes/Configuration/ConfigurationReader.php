@@ -1,5 +1,7 @@
 <?php
 
+namespace Nawork\NaworkUri\Configuration;
+
 /* * *************************************************************
  *  Copyright notice
  *
@@ -28,7 +30,7 @@
  *
  * @author Thorben Kapp <thorben@work.de>
  */
-class tx_naworkuri_configReader implements t3lib_Singleton {
+class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 
 	/**
 	 *
@@ -46,7 +48,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 	public function __construct($configFile = '') {
 		global $TYPO3_CONF_VARS;
 		$this->configFile = $configFile;
-		$this->config = new SimpleXMLElement(PATH_site . $configFile, null, true);
+		$this->config = new \SimpleXMLElement(PATH_site . $configFile, null, true);
 		$this->extConfig = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 		$this->validateConfig();
 	}
@@ -62,7 +64,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 	}
 
 	public function __wakeup() {
-		$this->config = new SimpleXMLElement(PATH_site . $this->configFile, null, true);
+		$this->config = new \SimpleXMLElement(PATH_site . $this->configFile, null, true);
 	}
 
 	public function getStoragePage() {
@@ -111,7 +113,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 
 	public function getPageNotFoundConfigStatus() {
 		$status = '';
-		$currentDomain = tx_naworkuri_helper::getCurrentDomain();
+		$currentDomain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
 		$currentHost = TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
 		foreach ($this->config->pagenotfound->children() as $child) {
 			if ($child->getName() == 'status') {
@@ -134,7 +136,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 
 	public function getPageNotFoundConfigBehaviorType() {
 		$type = '';
-		$currentDomain = tx_naworkuri_helper::getCurrentDomain();
+		$currentDomain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
 		$currentHost = TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
 		foreach ($this->config->pagenotfound->children() as $child) {
 			if ($child->getName() == 'behavior') {
@@ -157,8 +159,8 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 
 	public function getPageNotFoundConfigBehaviorValue() {
 		$behavior = '';
-		$currentDomain = tx_naworkuri_helper::getCurrentDomain();
-		$currentHost = t3lib_div::getIndpEnv('TYPO3_HOST_ONLY');
+		$currentDomain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
+		$currentHost = \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
 		foreach ($this->config->pagenotfound->children() as $child) {
 			if ($child->getName() == 'behavior') {
 				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */
@@ -189,7 +191,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 	
 	public function getPageNotAccessibleConfigurationStatus() {
 		$status = '';
-		$currentDomain = tx_naworkuri_helper::getCurrentDomain();
+		$currentDomain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
 		$currentHost = TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
 		foreach ($this->config->pageNotAccessible->children() as $child) {
 			if ($child->getName() == 'status') {
@@ -212,8 +214,8 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 
 	public function getPageNotAccessibleConfigurationBehaviorType() {
 		$type = '';
-		$currentDomain = tx_naworkuri_helper::getCurrentDomain();
-		$currentHost = TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
+		$currentDomain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
+		$currentHost = \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
 		foreach ($this->config->pageNotAccessible->children() as $child) {
 			if ($child->getName() == 'behavior') {
 				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */
@@ -235,8 +237,8 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 
 	public function getPageNotAccessibleConfigurationBehaviorValue() {
 		$behavior = '';
-		$currentDomain = tx_naworkuri_helper::getCurrentDomain();
-		$currentHost = t3lib_div::getIndpEnv('TYPO3_HOST_ONLY');
+		$currentDomain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
+		$currentHost = \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
 		foreach ($this->config->pageNotAccessible->children() as $child) {
 			if ($child->getName() == 'behavior') {
 				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */
@@ -289,7 +291,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 	}
 
 	public function getTransliterations() {
-		if ($this->config->transliteration instanceof SimpleXMLElement && $this->config->transliteration->count()) {
+		if ($this->config->transliteration instanceof \SimpleXMLElement && $this->config->transliteration->count()) {
 			return $this->config->transliteration->children();
 		}
 		return array();
@@ -323,7 +325,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 			}
 		}
 
-		if (!$this->config->castTypeToInt instanceof SimpleXMLElement) {
+		if (!$this->config->castTypeToInt instanceof \SimpleXMLElement) {
 			$this->config->addChild('castTypeToInt', 0);
 		} else {
 			$castTypeToInt = (int) $this->config->castTypeToInt;
@@ -332,7 +334,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 			}
 		}
 
-		if (!$this->config->castLToInt instanceof SimpleXMLElement) {
+		if (!$this->config->castLToInt instanceof \SimpleXMLElement) {
 			$this->config->addChild('castLToInt', 0);
 		} else {
 			$castLToInt = (int) $this->config->castLToInt;
@@ -341,7 +343,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 			}
 		}
 
-		if (!$this->config->redirectOnParameterDiff instanceof SimpleXMLElement) {
+		if (!$this->config->redirectOnParameterDiff instanceof \SimpleXMLElement) {
 			$this->config->addChild('redirectOnParameterDiff', 1);
 		} else {
 			$redirectOnParameterDiff = (int) $this->config->redirectOnParameterDiff;
@@ -350,7 +352,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 			}
 		}
 
-		if (!$this->config->redirectStatus instanceof SimpleXMLElement) {
+		if (!$this->config->redirectStatus instanceof \SimpleXMLElement) {
 			$this->config->addChild('redirectStatus', '301');
 		} else {
 			$redirectStatus = (int) $this->config->redirectStatus;
@@ -359,7 +361,7 @@ class tx_naworkuri_configReader implements t3lib_Singleton {
 			}
 		}
 
-		if (!$this->config->checkForUpperCaseURI instanceof SimpleXMLElement) {
+		if (!$this->config->checkForUpperCaseURI instanceof \SimpleXMLElement) {
 			$this->config->addChild('checkForUpperCaseURI', false);
 		}
 	}

@@ -1,23 +1,8 @@
 <?php
 
-require_once (t3lib_extMgm::extPath('nawork_uri') . '/lib/class.tx_naworkuri_helper.php');
+namespace Nawork\NaworkUri\Tests\Unit\Utility;
 
-class tx_naworkuri_helper_testcase extends tx_naworkuri_basic_tc {
-
-	public function setUp() {
-		parent::setUp();
-		$this->test_subject = new tx_naworkuri_helper();
-		$this->configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', 'typo3conf/ext/nawork_uri/tests/test_UriConf.xml');
-	}
-
-	/**
-	 * Enter description here...
-	 *
-	 */
-	public function tearDown() {
-		unset($this->test_subject);
-		parent::tearDown();
-	}
+class GeneralUtilityTest extends \Nawork\NaworkUri\Tests\TestBase {
 
 	public function provider_test_param_implode() {
 		return array(
@@ -31,9 +16,10 @@ class tx_naworkuri_helper_testcase extends tx_naworkuri_basic_tc {
 	 * Enter description here...
 	 *
 	 * @dataProvider provider_test_param_implode
+	 * @test
 	 */
 	public function test_param_implode($array, $imploded_array, $error = '') {
-		$result = tx_naworkuri_helper::implode_parameters($array, FALSE);
+		$result = \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($array, FALSE);
 		$this->assertEquals($imploded_array, $result);
 	}
 
@@ -57,7 +43,7 @@ class tx_naworkuri_helper_testcase extends tx_naworkuri_basic_tc {
 	 */
 	public function test_param_explode($path, $exploded_array, $error = '') {
 		$this->assertEquals(
-			$exploded_array, $this->test_subject->explode_parameters($path), $error
+			$exploded_array, \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($path), $error
 		);
 	}
 
@@ -84,7 +70,7 @@ class tx_naworkuri_helper_testcase extends tx_naworkuri_basic_tc {
 	 * @param unknown_type $transliterated_string
 	 */
 	public function test_sanitizing_of_uri($utf_uri, $sanitized_uri) {
-		$result = $this->test_subject->sanitize_uri($utf_uri);
+		$result = \Nawork\NaworkUri\Utility\GeneralUtility::sanitize_uri($utf_uri);
 		$this->assertEquals($result, $sanitized_uri);
 	}
 
@@ -109,7 +95,7 @@ class tx_naworkuri_helper_testcase extends tx_naworkuri_basic_tc {
 	 * @param unknown_type $error
 	 */
 	public function test_uri_limit_allowed_chars($uri, $res, $error = '') {
-		$this->assertEquals($this->test_subject->uri_limit_allowed_chars($uri), $res, $error);
+		$this->assertEquals(\Nawork\NaworkUri\Utility\GeneralUtility::uri_limit_allowed_chars($uri), $res, $error);
 	}
 
 	//" #   & '               <   > ? @ [ \ ] ^ ` { | } %
@@ -133,7 +119,7 @@ class tx_naworkuri_helper_testcase extends tx_naworkuri_basic_tc {
 	 * @param unknown_type $error
 	 */
 	public function test_uri_handle_punctuation($uri, $res, $error = '') {
-		$this->assertEquals($this->test_subject->uri_handle_punctuation($uri), $res, $error);
+		$this->assertEquals(\Nawork\NaworkUri\Utility\GeneralUtility::uri_handle_punctuation($uri), $res, $error);
 	}
 
 	public function provider_test_uri_make_wellformed() {
@@ -153,7 +139,7 @@ class tx_naworkuri_helper_testcase extends tx_naworkuri_basic_tc {
 	 * @param unknown_type $error
 	 */
 	public function test_uri_make_wellformed($uri, $res, $error = '') {
-		$this->assertEquals($this->test_subject->uri_make_wellformed($uri), $res, $error);
+		$this->assertEquals(\Nawork\NaworkUri\Utility\GeneralUtility::uri_make_wellformed($uri), $res, $error);
 	}
 
 	/**
@@ -162,7 +148,7 @@ class tx_naworkuri_helper_testcase extends tx_naworkuri_basic_tc {
 	 */
 	public function getCurrentDomain($domainToSet, $domainUidToRetreive) {
 		$_SERVER['HTTP_HOST'] = $domainToSet;
-		$this->assertEquals($domainUidToRetreive, tx_naworkuri_helper::getCurrentDomain());
+		$this->assertEquals($domainUidToRetreive, \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain());
 	}
 
 	public function getCurrentDomainProvider() {

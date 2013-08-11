@@ -1,25 +1,23 @@
 <?php
 
-require_once (t3lib_extMgm::extPath('nawork_uri') . '/lib/class.tx_naworkuri_helper.php');
+namespace Nawork\NaworkUri\Cache;
 
-class tx_naworkuri_cache {
+class UrlCache {
 
 	const TX_NAWORKURI_URI_TYPE_NORMAL = 0;
 	const TX_NAWORKURI_URI_TYPE_OLD = 1;
 	const TX_NAWORKURI_URI_TYPE_REDIRECT = 2;
 
-	private $helper;
-
 	/**
 	 *
-	 * @var tx_naworkuri_configReader
+	 * @var \Nawork\NaworkUri\Configuration\ConfigurationReader
 	 */
 	private $config;
 	private $timeout = 86400;
 
 	/**
 	 *
-	 * @var t3lib_db
+	 * @var \TYPO3\CMS\Core\Database\DatabaseConnection
 	 */
 	private $db = null;
 
@@ -28,7 +26,6 @@ class tx_naworkuri_cache {
 	 *
 	 */
 	public function __construct($config) {
-		$this->helper = t3lib_div::makeInstance('tx_naworkuri_helper');
 		$this->config = $config;
 		$this->db = $GLOBALS['TYPO3_DB'];
 		$this->db->store_lastBuiltQuery = 0;
@@ -65,7 +62,7 @@ class tx_naworkuri_cache {
 		}
 		/* if there is no be user logged in, hidden or time controlled non visible pages should not return a url */
 		$displayPageCondition = ' AND p.hidden=0 AND p.starttime < ' . time() . ' AND (p.endtime=0 OR p.endtime > ' . time() . ') ';
-		if (tx_naworkuri_helper::isActiveBeUserSession()) {
+		if (\Nawork\NaworkUri\Utility\GeneralUtility::isActiveBeUserSession()) {
 			$displayPageCondition = '';
 		}
 		$domainCondition = '';
@@ -73,7 +70,7 @@ class tx_naworkuri_cache {
 			$domainCondition = ' AND u.domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
 		}
 		$urls = $this->db->exec_SELECTgetRows(
-				'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.page_uid=' . intval($uid) . ' AND sys_language_uid=' . intval($language) . ' AND hash_params="' . md5(tx_naworkuri_helper::implode_parameters($params, FALSE)) . '" ' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND p.uid=u.page_uid AND type=0 AND ( u.tstamp > ' . (time() - $this->timeout) . ' OR locked=1 )', // lets find type 0 urls only from the cache
+				'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.page_uid=' . intval($uid) . ' AND sys_language_uid=' . intval($language) . ' AND hash_params="' . md5(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($params, FALSE)) . '" ' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND p.uid=u.page_uid AND type=0 AND ( u.tstamp > ' . (time() - $this->timeout) . ' OR locked=1 )', // lets find type 0 urls only from the cache
 				'', '', '1'
 		);
 		if (is_array($urls) && count($urls) > 0) {
@@ -96,7 +93,7 @@ class tx_naworkuri_cache {
 		if ($this->config->isMultiDomainEnabled()) {
 			$domainCondition = ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
 		}
-		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'page_uid=' . intval($page) . ' AND sys_language_uid=' . intval($language) . $domainCondition . ' AND hash_params="' . md5(tx_naworkuri_helper::implode_parameters($params, FALSE)) . '" AND hash_path="' . md5($path) . '" AND type=0', '', '', 1);
+		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'page_uid=' . intval($page) . ' AND sys_language_uid=' . intval($language) . $domainCondition . ' AND hash_params="' . md5(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($params, FALSE)) . '" AND hash_path="' . md5($path) . '" AND type=0', '', '', 1);
 		if (is_array($urls) && count($urls) > 0) {
 			return $urls[0];
 		}
@@ -190,7 +187,7 @@ class tx_naworkuri_cache {
 	public function read_path($path, $domain) {
 		$hash_path = md5($path);
 		$displayPageCondition = ' AND p.hidden=0 AND p.starttime < ' . time() . ' AND (p.endtime=0 OR p.endtime > ' . time() . ') ';
-		if (tx_naworkuri_helper::isActiveBeUserSession()) {
+		if (\Nawork\NaworkUri\Utility\GeneralUtility::isActiveBeUserSession()) {
 			$displayPageCondition = '';
 		}
 		$domainCondition = '';
@@ -216,7 +213,7 @@ class tx_naworkuri_cache {
 	 * @param string $path
 	 */
 	public function createUrl($page, $language, $domain, $parameters, $path, $originalPath) {
-		$parameters = tx_naworkuri_helper::implode_parameters($parameters, FALSE);
+		$parameters = \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE);
 		$result = @$this->db->exec_INSERTquery($this->config->getUriTable(), array(
 					'pid' => $this->config->getStoragePage(),
 					'page_uid' => intval($page),
@@ -256,7 +253,7 @@ class tx_naworkuri_cache {
 	 * @param int $type
 	 */
 	private function updateUrl($uid, $page, $language, $parameters, $type = self::TX_NAWORKURI_URI_TYPE_NORMAL) {
-		$parameters = tx_naworkuri_helper::implode_parameters($parameters, FALSE);
+		$parameters = \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE);
 		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'uid=' . intval($uid), array(
 			'page_uid' => intval($page),
 			'sys_language_uid' => $language,
@@ -284,7 +281,7 @@ class tx_naworkuri_cache {
 		if (!empty($domain)) {
 			$domainConstraint = ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
 		}
-		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'hash_params=' . $this->db->fullQuoteStr(md5(tx_naworkuri_helper::implode_parameters($parameters, FALSE)), $this->config->getUriTable()) . $domainConstraint . ' AND page_uid=' . intval($pageId) . ' AND sys_language_uid=' . intval($language) . ($excludeUid !== FALSE ? ' AND uid!=' . intval($excludeUid) : '') . ' AND type=0', array(
+		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'hash_params=' . $this->db->fullQuoteStr(md5(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE)), $this->config->getUriTable()) . $domainConstraint . ' AND page_uid=' . intval($pageId) . ' AND sys_language_uid=' . intval($language) . ($excludeUid !== FALSE ? ' AND uid!=' . intval($excludeUid) : '') . ' AND type=0', array(
 			'type' => self::TX_NAWORKURI_URI_TYPE_OLD,
 			'tstamp' => time()
 				), array(
@@ -301,7 +298,7 @@ class tx_naworkuri_cache {
 	 */
 	public function unique($pageUid, $language, $path, $parameters, $domain) {
 		$pathHash = md5($path);
-		$parameterHash = md5(tx_naworkuri_helper::implode_parameters($parameters, FALSE));
+		$parameterHash = md5(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE));
 		$additionalWhere = '';
 		if (!empty($domain)) {
 			$additionalWhere .= ' AND domain LIKE ' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());

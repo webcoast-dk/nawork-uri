@@ -1,11 +1,11 @@
 
 # cat=basic//01; type=string; label=XML path: Path to the configuration xml file
-XMLPATH = typo3conf/ext/nawork_uri/lib/default_UriConf.xml
+XMLPATH = typo3conf/ext/nawork_uri/Configuration/Url/defaultUrlConfiguration.xml
 
 # cat=basic//02; type=int; label=URL storage page: The page where to store urls, default is "0", but if editors should work with the urls you need to set it to a specific sysfolder
 storagePage = 0
 
-# cat=basic//023; type=boolean; label=Multi domain site: Check if your site has multidomains
+# cat=basic//03; type=boolean; label=Multi domain site: Check if your site has multidomains
 MULTIDOMAIN = 1
 
 # cat=basic//04; type=string; label = The L parameter. Empty if no Languages are present. !!! not implemented yet !!!

@@ -29,7 +29,7 @@ t3lib_extMgm::addToAllTCAtypes('pages', 'tx_naworkuri_pathsegment,tx_naworkuri_e
 
 t3lib_div::loadTCA('pages_language_overlay');
 t3lib_extMgm::addTCAcolumns('pages_language_overlay', $tempColumns, 1);
-t3lib_extMgm::addToAllTCAtypes('pages_language_overlay', 'tx_naworkuri_pathsegment,tx_naworkuri_exclude', '', 'after:title');
+t3lib_extMgm::addToAllTCAtypes('pages_language_overlay', 'tx_naworkuri_pathsegment', '', 'after:title');
 
 $tempColumns = array(
 	'tx_naworkuri_masterDomain' => array(
@@ -67,7 +67,7 @@ $TCA['tx_naworkuri_uri'] = Array(
 		'rootLevel' => '-1',
 		'enablecolumns' => array(
 		),
-		'dynamicConfigFile' => t3lib_extMgm::extPath($_EXTKEY) . 'tca.php',
+		'dynamicConfigFile' => t3lib_extMgm::extPath($_EXTKEY) . 'Configuration/TCA/Url.php',
 		'iconfile' => t3lib_extMgm::extRelPath($_EXTKEY) . 'Resources/Public/Icons/Types/uri.png',
 		'hideTable' => true,
 		'typeicon_column' => 'type',

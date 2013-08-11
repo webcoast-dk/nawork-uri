@@ -2,7 +2,7 @@
 
 require_once (t3lib_extMgm::extPath('nawork_uri').'/lib/class.tx_naworkuri_utf8_to_ascii.php');
 
-class tx_naworkuri_utf8_to_ascii_testcase extends tx_phpunit_testcase {
+class tx_naworkuri_utf8_to_ascii_testcase extends Tx_Phpunit_TestCase {
 	
 	protected function setUp() {
 		$this->test_subject = new tx_naworkuri_utf8_to_ascii();

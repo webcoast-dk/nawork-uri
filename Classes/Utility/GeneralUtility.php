@@ -1,10 +1,11 @@
 <?php
 
+namespace Nawork\NaworkUri\Utility;
 /*
  * Helper functions
  */
 
-class tx_naworkuri_helper {
+class GeneralUtility {
 
 	const LOG_SEVERITY_INFO = 0;
 	const LOG_SEVERITY_ERROR = 1;
@@ -100,7 +101,7 @@ class tx_naworkuri_helper {
 	 * @param string $string
 	 * @return string
 	 */
-	public function sanitize_uri($uri) {
+	public static function sanitize_uri($uri) {
 		$locale = self::getLocale();
 		/* settings locales as in tsfe */
 		if (strpos(strtolower($locale), 'tr') === FALSE) {
@@ -110,19 +111,19 @@ class tx_naworkuri_helper {
 		setlocale(LC_MONETARY, $locale);
 		setlocale(LC_TIME, $locale);
 
-		$uri = $this->uriTransliterate($uri);
+		$uri = self::uriTransliterate($uri);
 		$uri = strip_tags($uri);
 		$uri = strtolower($uri);
-		$uri = $this->uri_handle_punctuation($uri);
-		$uri = $this->uri_handle_whitespace($uri);
-		$uri = $this->uri_limit_allowed_chars($uri);
-		$uri = $this->uri_make_wellformed($uri);
+		$uri = self::uri_handle_punctuation($uri);
+		$uri = self::uri_handle_whitespace($uri);
+		$uri = self::uri_limit_allowed_chars($uri);
+		$uri = self::uri_make_wellformed($uri);
 
 		return $uri;
 	}
 
-	public function uriTransliterate($uri) {
-		$config = t3lib_div::makeInstance('tx_naworkuri_configReader');
+	public static function uriTransliterate($uri) {
+		$config = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader');
 		foreach ($config->getTransliterations() as $char) {
 			$uri = str_replace((string) $char->attributes()->from, (string) $char->attributes()->to, $uri);
 		}
@@ -199,12 +200,13 @@ class tx_naworkuri_helper {
 	}
 
 	public static function getCurrentDomain() {
-		$config = t3lib_div::makeInstance('tx_naworkuri_configReader');
-		/* @var $db t3lib_db */
+		/* @var $config \Nawork\NaworkUri\Configuration\ConfigurationReader */
+		$config = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader');
+		/* @var $db \TYPO3\CMS\Core\Database\DatabaseConnection */
 		$db = $GLOBALS['TYPO3_DB'];
 		$domain = 0;
 		if ($config->isMultiDomainEnabled()) {
-			$domainName = t3lib_div::getIndpEnv('HTTP_HOST');
+			$domainName = \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_HOST');
 			$domainRes = $db->exec_SELECTgetRows('uid,tx_naworkuri_masterDomain', $config->getDomainTable(), 'domainName LIKE \'' . $domainName . '\'', 'hidden=0');
 			if ($domainRes && count($domainRes)) {
 				$domain = $domainRes[0]['uid'];
@@ -231,10 +233,10 @@ class tx_naworkuri_helper {
 	}
 
 	private static function findDomainRecursive($pid = 0) {
-		/* @var $db t3lib_db */
+		/* @var $db \TYPO3\CMS\Core\Database\DatabaseConnection */
 		$db = $GLOBALS['TYPO3_DB'];
-		/* @var $config tx_naworkuri_configReader */
-		$config = t3lib_div::makeInstance('tx_naworkuri_configReader');
+		/* @var $config \Nawork\NaworkUri\Configuration\ConfigurationReader */
+		$config = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader');
 		$pagesRes = $db->exec_SELECTgetRows('uid', $config->getPageTable(), 'pid=' . intval($pid), NULL, 'sorting ASC');
 		if (is_array($pagesRes)) {
 			foreach ($pagesRes as $pageRec) {
@@ -296,8 +298,8 @@ class tx_naworkuri_helper {
 		$encodableParameters = array();
 		$unencodableParameters = array();
 		$parameterNames = array_keys($parameters);
-		$configuration = t3lib_div::makeInstance('tx_naworkuri_configReader');
-		/* @var $configuration tx_naworkuri_configReader */
+		$configuration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader');
+		/* @var $configuration \Nawork\NaworkUri\Configuration\ConfigurationReader */
 		/* check predefined parts */
 		foreach ($configuration->getPredefinedParts() as $parameterConfiguration) {
 			/* @var $parameterConfiguration SimpleXMLElement */
@@ -338,13 +340,13 @@ class tx_naworkuri_helper {
 	}
 
 	public static function aliasToId($alias) {
-		if (tx_naworkuri_helper::canBeInterpretedAsInteger($alias)) {
+		if (self::canBeInterpretedAsInteger($alias)) {
 			return $alias;
 		}
 		$db = $GLOBALS['TYPO3_DB'];
-		$configuration = t3lib_div::makeInstance('tx_naworkuri_configReader');
-		/* @var $db t3lib_db */
-		/* @var $configuration tx_naworkuri_configReader */
+		$configuration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader');
+		/* @var $db \TYPO3\CMS\Core\Database\DatabaseConnection */
+		/* @var $configuration \Nawork\NaworkUri\Configuration\ConfigurationReader */
 		$result = $db->exec_SELECTgetRows('uid', $configuration->getPageTable(), 'alias=' . $db->fullQuoteStr($alias, $configuration->getPageTable()) . ' AND deleted=0');
 		if (is_array($result) && count($result) > 0) {
 			return $result[0]['uid'];
@@ -354,7 +356,7 @@ class tx_naworkuri_helper {
 
 	public static function log($msg, $severity = self::LOG_SEVERITY_INFO) {
 		$db = $GLOBALS['TYPO3_DB'];
-		/* @var $db t3lib_db */
+		/* @var $db \TYPO3\CMS\Core\Database\DatabaseConnection */
 		$db->exec_INSERTquery('sys_log', array(
 			'details' => $msg,
 			'error' => $severity,

@@ -1,8 +1,8 @@
 <?php
 
-require_once 'lib/class.tx_naworkuri_transformer.php';
+namespace Nawork\NaworkUri\Controller\Frontend;
 
-class tx_naworkuri implements t3lib_Singleton {
+class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 
 	protected $redirectUrl = NULL;
 
@@ -17,13 +17,13 @@ class tx_naworkuri implements t3lib_Singleton {
 
 		if ($params['pObj']->siteScript && substr($params['pObj']->siteScript, 0, 9) != 'index.php' && substr($params['pObj']->siteScript, 0, 1) != '?') {
 			$uri = $params['pObj']->siteScript;
-			list($uri, $parameters) = t3lib_div::trimExplode('?', $uri);
+			list($uri, $parameters) = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode('?', $uri);
 			// translate uri
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
-			/* @var $configReader tx_naworkuri_configReader */
-			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
-			/* @var $translator tx_naworkuri_transformer */
-			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, $extConf['MULTIDOMAIN']);
+			/* @var $configReader Nawork\NaworkUri\Configuration\ConfigurationReader */
+			$configReader = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader', $extConf['XMLPATH']);
+			/* @var $translator Nawork\NaworkUri\Utility\TransformationUtility */
+			$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $configReader, $extConf['MULTIDOMAIN']);
 			try {
 				$uri_params = $translator->uri2params($uri);
 				/* should the path be converted to lowercase to treat uppercase paths like normal paths */
@@ -38,20 +38,20 @@ class tx_naworkuri implements t3lib_Singleton {
 				}
 			} catch (Tx_NaworkUri_Exception_UrlIsRedirectException $ex) {
 				$url = $ex->getUrl();
-				if ($url['type'] == tx_naworkuri_cache::TX_NAWORKURI_URI_TYPE_OLD) {
+				if ($url['type'] == \Nawork\NaworkUri\Cache\UrlCache::TX_NAWORKURI_URI_TYPE_OLD) {
 					/*
 					 * we must not redirect here because we cannot use link generation here to get the correct target path
 					 */
 					$this->redirectUrl = $url;
-				} elseif ($url['type'] == tx_naworkuri_cache::TX_NAWORKURI_URI_TYPE_REDIRECT) {
+				} elseif ($url['type'] == \Nawork\NaworkUri\Cache\UrlCache::TX_NAWORKURI_URI_TYPE_REDIRECT) {
 					/* add hook for pre processing the redirect record */
 					if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['redirect-preProcess'])) {
 						foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['redirect-preProcess'] as $funcRef) {
-							t3lib_div::callUserFunction($funcRef, $url, $this);
+							\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($funcRef, $url, $this);
 						}
 					}
 					$newUrl = parse_url($url['redirect_path']);
-					$requestUrl = parse_url(t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'));
+					$requestUrl = parse_url(\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
 					if (empty($newUrl['scheme']))
 						$newUrl['scheme'] = $requestUrl['scheme'];
 					if (empty($newUrl['host']))
@@ -59,14 +59,14 @@ class tx_naworkuri implements t3lib_Singleton {
 					if (substr($newUrl['path'], 0, 1) != '/')
 						$newUrl['path'] = '/' . $newUrl['path'];
 					$uri = $newUrl['scheme'] . '://' . $newUrl['host'] . $newUrl['path'];
-					$queryParams = tx_naworkuri_helper::explode_parameters($newUrl['query']); // use only query string from redirect target and discard the given one
+					$queryParams = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($newUrl['query']); // use only query string from redirect target and discard the given one
 					if (!empty($queryParams)) {
-						$uri .= '?' . tx_naworkuri_helper::implode_parameters($queryParams);
+						$uri .= '?' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($queryParams);
 					}
 					if (array_key_exists('fragment', $newUrl) && !empty($newUrl['fragment'])) {
 						$uri .= '#' . $newUrl['fragment'];
 					}
-					tx_naworkuri_helper::sendRedirect($uri, $url['redirect_mode']);
+					\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($uri, $url['redirect_mode']);
 				}
 			}
 		}
@@ -85,20 +85,20 @@ class tx_naworkuri implements t3lib_Singleton {
 			list($path, $params) = explode('?', $link['LD']['totalURL']);
 			$params = rawurldecode(html_entity_decode($params));
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
-			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
-			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, (boolean) $extConf['MULTIDOMAIN']);
+			$configReader = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader', $extConf['XMLPATH']);
+			$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $configReader, (boolean) $extConf['MULTIDOMAIN']);
 			try {
 				$url = $translator->params2uri($params);
-				$link['LD']['totalURL'] = tx_naworkuri_helper::finalizeUrl($url);
+				$link['LD']['totalURL'] = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($url);
 				/* add hook for post processing the url */
 				if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'])) {
 					$hookParams = array(
 						'url' => $url,
-						'params' => tx_naworkuri_helper::explode_parameters($params),
+						'params' => \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params),
 						'LD' => $link['LD']
 					);
 					foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'] as $funcRef) {
-						t3lib_div::callUserFunction($funcRef, $hookParams, $this);
+						\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($funcRef, $hookParams, $this);
 					}
 					if ($hookParams['url'] !== FALSE) { // if the url is not false set it
 						$link['LD']['totalURL'] = $hookParams['url'];
@@ -111,21 +111,21 @@ class tx_naworkuri implements t3lib_Singleton {
 				}
 			} catch (Tx_NaworkUri_Exception_UrlIsNotUniqueException $ex) {
 				/* log unique failure to belog */
-				tx_naworkuri_helper::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . tx_naworkuri_helper::implode_parameters($ex->getParameters()), tx_naworkuri_helper::LOG_SEVERITY_ERROR);
+				\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
 				$totalURL = 'index.php';
 				if (!empty($params)) {
-					$totalURL .= '?' . tx_naworkuri_helper::implode_parameters(tx_naworkuri_helper::explode_parameters($params));
+					$totalURL .= '?' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters(\Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params));
 				}
-				$totalURL = tx_naworkuri_helper::finalizeUrl($totalURL);
+				$totalURL = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($totalURL);
 				$link['LD']['totalURL'] = $totalURL;
 			} catch (Tx_NaworkUri_Exception_DbErrorException $ex) {
 				/* log db errors to belog */
-				tx_naworkuri_helper::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', tx_naworkuri_helper::LOG_SEVERITY_ERROR);
+				\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
 				$totalURL = 'index.php';
 				if (!empty($params)) {
-					$totalURL .= '?' . tx_naworkuri_helper::implode_parameters(tx_naworkuri_helper::explode_parameters($params));
+					$totalURL .= '?' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters(\Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params));
 				}
-				$totalURL = tx_naworkuri_helper::finalizeUrl($totalURL);
+				$totalURL = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($totalURL);
 				$link['LD']['totalURL'] = $totalURL;
 			}
 		}
@@ -155,18 +155,18 @@ class tx_naworkuri implements t3lib_Singleton {
 		if ($this->redirectUrl != NULL) {
 			// translate uri
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
-			/* @var $configReader tx_naworkuri_configReader */
-			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
-			/* @var $translator tx_naworkuri_transformer */
-			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, $extConf['MULTIDOMAIN']);
+			/* @var $configReader \Nawork\NaworkUri\Configuration\ConfigurationReader */
+			$configReader = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader', $extConf['XMLPATH']);
+			/* @var $translator \Nawork\NaworkUri\Utility\TransformationUtility */
+			$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $configReader, $extConf['MULTIDOMAIN']);
 			$newUrlParameters = array('id' => $this->redirectUrl['page_uid'], 'L' => $this->redirectUrl['sys_language_uid']);
 			if (!empty($this->redirectUrl['params'])) {
-				$newUrlParameters = array_merge($newUrlParameters, tx_naworkuri_helper::explode_parameters($this->redirectUrl['params']));
+				$newUrlParameters = array_merge($newUrlParameters, \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($this->redirectUrl['params']));
 			}
-			$newUrl = $translator->params2uri(tx_naworkuri_helper::implode_parameters($newUrlParameters, FALSE), TRUE, TRUE);
-			$newUrl = tx_naworkuri_helper::finalizeUrl($newUrl, TRUE);
+			$newUrl = $translator->params2uri(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($newUrlParameters, FALSE), TRUE, TRUE);
+			$newUrl = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($newUrl, TRUE);
 			/* parse the current request url and prepend the scheme and host to the url */
-			$requestUrl = parse_url(t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'));
+			$requestUrl = parse_url(\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
 			$newUrl = parse_url($newUrl);
 			if (empty($newUrl['scheme']))
 				$newUrl['scheme'] = $requestUrl['scheme'];
@@ -175,21 +175,21 @@ class tx_naworkuri implements t3lib_Singleton {
 			if (substr($newUrl['path'], 0, 1) != '/')
 				$newUrl['path'] = '/' . $newUrl['path'];
 			$uri = $newUrl['scheme'] . '://' . $newUrl['host'] . $newUrl['path'];
-			$queryParams = array_merge(tx_naworkuri_helper::explode_parameters(rawurldecode($requestUrl['query'])), tx_naworkuri_helper::explode_parameters($newUrl['query']));
+			$queryParams = array_merge(\Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters(rawurldecode($requestUrl['query'])), \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($newUrl['query']));
 			if (!empty($queryParams)) {
-				$uri .= '?' . tx_naworkuri_helper::implode_parameters($queryParams);
+				$uri .= '?' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($queryParams);
 			}
 			if (array_key_exists('fragment', $newUrl) && !empty($newUrl['fragment'])) {
 				$uri .= '#' . $newUrl['fragment'];
 			}
-			tx_naworkuri_helper::sendRedirect($uri, 301);
+			\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($uri, 301);
 		} elseif ($GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1 && empty($_GET['ADMCMD_prev']) && $GLOBALS['TSFE']->config['config']['tx_naworkuri.']['redirect'] == 1 && $GLOBALS['TSFE']->siteScript) {
 			list($path, $params) = explode('?', $GLOBALS['TSFE']->siteScript);
 			$params = rawurldecode(html_entity_decode($params)); // decode the query string because it is expected by the further processing functions
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
-			$configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
-			$translator = t3lib_div::makeInstance('tx_naworkuri_transformer', $configReader, $extConf['MULTIDOMAIN']);
-			$tempParams = tx_naworkuri_helper::explode_parameters($params);
+			$configReader = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader', $extConf['XMLPATH']);
+			$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $configReader, $extConf['MULTIDOMAIN']);
+			$tempParams = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params);
 
 			/* should the path be converted to lowercase to treat uppercase paths like normal paths */
 			if ($configReader->getCheckForUpperCaseURI()) {
@@ -208,8 +208,8 @@ class tx_naworkuri implements t3lib_Singleton {
 
 			/* check if type should be casted to int to avoid strange behavior when creating links */
 			if ($configReader->getCastTypeToInt()) {
-				$type = !empty($tempParams['type']) ? $tempParams['type'] : t3lib_div::_GP('type');
-				if (!empty($type) && !tx_naworkuri_helper::canBeInterpretedAsInteger($type)) { // if type is not an int
+				$type = !empty($tempParams['type']) ? $tempParams['type'] : \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('type');
+				if (!empty($type) && !\Nawork\NaworkUri\Utility\GeneralUtility::canBeInterpretedAsInteger($type)) { // if type is not an int
 					unset($tempParams['type']); // unset type param to use system default
 					/* should we redirect if the parameter is wrong */
 					if ($configReader->getRedirectOnParameterDiff()) {
@@ -218,7 +218,7 @@ class tx_naworkuri implements t3lib_Singleton {
 							$uri = '/';
 						}
 						if (count($tempParams) > 0) {
-							$uri .= '?' . tx_naworkuri_helper::implode_parameters($tempParams);
+							$uri .= '?' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($tempParams);
 						}
 						header('Location: ' . $uri, true, $configReader->getRedirectStatus());
 						exit;
@@ -228,8 +228,8 @@ class tx_naworkuri implements t3lib_Singleton {
 
 			/* check if L should be casted to int to avoid strange behavior when creating links */
 			if ($configReader->getCastLToInt()) {
-				$L = !empty($tempParams['L']) ? $tempParams['L'] : t3lib_div::_GP('L');
-				if (!empty($L) && !tx_naworkuri_helper::canBeInterpretedAsInteger($L)) { // if L is not an int
+				$L = !empty($tempParams['L']) ? $tempParams['L'] : \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('L');
+				if (!empty($L) && !\Nawork\NaworkUri\Utility\GeneralUtility::canBeInterpretedAsInteger($L)) { // if L is not an int
 					unset($tempParams['L']); // unset L param to use system default
 					/* should we redirect if the parameter is wrong */
 					if ($configReader->getRedirectOnParameterDiff()) {
@@ -238,7 +238,7 @@ class tx_naworkuri implements t3lib_Singleton {
 							$uri = '/';
 						}
 						if (count($tempParams) > 0) {
-							$uri .= '?' . tx_naworkuri_helper::implode_parameters($tempParams);
+							$uri .= '?' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($tempParams);
 						}
 						header('Location: ' . $uri, true, $configReader->getRedirectStatus());
 						exit;
@@ -249,9 +249,9 @@ class tx_naworkuri implements t3lib_Singleton {
 			/* if the page is called via parameterized form look for a path to redirect to */
 			if ((substr($GLOBALS['TSFE']->siteScript, 0, 9) == 'index.php' || substr($GLOBALS['TSFE']->siteScript, 0, 1) == '?')) {
 				$dontCreateNewUrls = true;
-				$tempParams = tx_naworkuri_helper::explode_parameters($params);
+				$tempParams = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params);
 				if ((count($tempParams) < 3 && array_key_exists('L', $tempParams) && array_key_exists('id', $tempParams)) || (count($tempParams) < 2 && array_key_exists('id', $tempParams))) {
-					if (tx_naworkuri_helper::isActiveBeUserSession()) {
+					if (\Nawork\NaworkUri\Utility\GeneralUtility::isActiveBeUserSession()) {
 						$dontCreateNewUrls = false;
 					}
 				}
@@ -259,16 +259,16 @@ class tx_naworkuri implements t3lib_Singleton {
 				try {
 					$uri = $translator->params2uri($params, $dontCreateNewUrls, $ignoreTimeout);
 					if ($_SERVER['REQUEST_METHOD'] == 'GET' && ($path == 'index.php' || $path == '') && $uri !== false && $uri != $GLOBALS['TSFE']->siteScript) {
-						$uri = tx_naworkuri_helper::finalizeUrl($uri, TRUE); // TRUE is for redirect, this applies "/" by default and the baseURL if set
-						tx_naworkuri_helper::sendRedirect($uri, $configReader->getRedirectStatus());
+						$uri = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($uri, TRUE); // TRUE is for redirect, this applies "/" by default and the baseURL if set
+						\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($uri, $configReader->getRedirectStatus());
 						exit;
 					}
 				} catch (Tx_NaworkUri_Exception_UrlIsNotUniqueException $ex) {
 					/* log unique failure to belog */
-					tx_naworkuri_helper::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . tx_naworkuri_helper::implode_parameters($ex->getParameters()), tx_naworkuri_helper::LOG_SEVERITY_ERROR);
+					\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
 				} catch (Tx_NaworkUri_Exception_DbErrorException $ex) {
 					/* log db errors to belog */
-					tx_naworkuri_helper::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', tx_naworkuri_helper::LOG_SEVERITY_ERROR);
+					\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
 				}
 			}
 		}
@@ -356,8 +356,8 @@ class tx_naworkuri implements t3lib_Singleton {
 	public function handlePagenotfound($params, $frontendController) {
 		$output = '';
 		$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
-		$configReader = TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tx_naworkuri_configReader', $extConf['XMLPATH']);
-		/* @var $configReader tx_naworkuri_configReader */
+		$configReader = TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader', $extConf['XMLPATH']);
+		/* @var $configReader Nawork\NaworkUri\Configuration\ConfigurationReader */
 		/* the page is not accessible without being logged in, so handle this, if configured */
 		if (array_key_exists('pageAccessFailureReasons', $params) && is_array($params['pageAccessFailureReasons']) && array_key_exists('fe_group', $params['pageAccessFailureReasons']) && $configReader->hasPageNotAccessibleConfiguration()) {
 			header($configReader->getPageNotAccessibleConfigurationStatus());
@@ -386,7 +386,7 @@ class tx_naworkuri implements t3lib_Singleton {
 				case 'redirect':
 					$path = html_entity_decode($configReader->getPageNotAccessibleConfigurationBehaviorValue());
 					if (!($_SERVER['REQUEST_METHOD'] == 'POST' && preg_match('/index.php/', $_SERVER['SCRIPT_NAME']))) {
-						tx_naworkuri_helper::sendRedirect($path, 301); // send headers and exits
+						\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($path, 301); // send headers and exits
 					}
 				default:
 					$output = '<html><head><title>403 Forbidden</title></head><body><h1>403 Forbidden</h1><p>You don\'t have the permission to access this page</p></body></html>';
@@ -418,7 +418,7 @@ class tx_naworkuri implements t3lib_Singleton {
 				case 'redirect':
 					$path = html_entity_decode($configReader->getPageNotFoundConfigBehaviorValue());
 					if (!($_SERVER['REQUEST_METHOD'] == 'POST' && preg_match('/index.php/', $_SERVER['SCRIPT_NAME']))) {
-						tx_naworkuri_helper::sendRedirect($path, 301); // send headers and exits
+						\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($path, 301); // send headers and exits
 					}
 				default:
 					$output = '';

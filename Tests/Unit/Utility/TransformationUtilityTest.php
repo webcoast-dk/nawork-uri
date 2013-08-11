@@ -1,8 +1,11 @@
 <?php
 
-require_once (t3lib_extMgm::extPath('nawork_uri') . '/lib/class.tx_naworkuri_transformer.php');
+namespace Nawork\NaworkUri\Tests\Unit\Utility;
 
-class tx_naworkuri_transformer_testcase extends tx_naworkuri_basic_tc {
+/**
+ * @testdox
+ */
+class TransformationUtilityTest extends \Nawork\NaworkUri\Tests\TestBase {
 
 	/**
 	 * dataprovider for params2uri_pagepathReturnsCorrectPath

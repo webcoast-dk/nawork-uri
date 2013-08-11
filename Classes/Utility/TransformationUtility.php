@@ -1,9 +1,6 @@
 <?php
 
-require_once (PATH_t3lib . 'class.t3lib_page.php');
-
-require_once (t3lib_extMgm::extPath('nawork_uri') . '/lib/class.tx_naworkuri_cache.php');
-require_once (t3lib_extMgm::extPath('nawork_uri') . '/lib/class.tx_naworkuri_helper.php');
+namespace Nawork\NaworkUri\Utility;
 
 /**
  * Class for creating path uris
@@ -11,11 +8,11 @@ require_once (t3lib_extMgm::extPath('nawork_uri') . '/lib/class.tx_naworkuri_hel
  * @author Martin Ficzel
  *
  */
-class tx_naworkuri_transformer implements t3lib_Singleton {
+class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 
 	/**
 	 *
-	 * @var tx_naworkuri_configReader
+	 * @var \Nawork\NaworkUri\Configuration\ConfigurationReader
 	 */
 	private $config;
 
@@ -27,12 +24,12 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 	/**
 	 *
-	 * @var t3lib_db
+	 * @var \TYPO3\CMS\Core\Database\DatabaseConnection
 	 */
 	private $db;
 
 	/**
-	 * @var tx_naworkuri_cache
+	 * @var \Nawork\NaworkUri\Cache\UrlCache
 	 */
 	private $cache;
 
@@ -45,7 +42,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 	/**
 	 * Constructor
 	 *
-	 * @param tx_naworkuri_configReader $config
+	 * @param \Nawork\NaworkUri\Configuration\ConfigurationReader $config
 	 * @param boolean $multidomain
 	 * @param string $domain
 	 */
@@ -56,12 +53,10 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		// get the domain, if multiple domain is not enabled the helper return ""
 		$this->domain = $domain;
 		if (empty($this->domain)) {
-			$this->domain = tx_naworkuri_helper::getCurrentDomain();
+			$this->domain = GeneralUtility::getCurrentDomain();
 		}
-		$this->cache = t3lib_div::makeInstance('tx_naworkuri_cache', $this->config);
+		$this->cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Cache\UrlCache', $this->config);
 		$this->cache->setTimeout(30);
-
-		$this->helper = t3lib_div::makeInstance('tx_naworkuri_helper');
 	}
 
 	/**
@@ -75,7 +70,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		if (empty($uri))
 			return;
 		$append = (string) $this->config->getAppend();
-		list($path, $params) = t3lib_div::trimExplode('?', $uri);
+		list($path, $params) = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode('?', $uri);
 		// save the original path to check that if the "slashed" one does not return anything
 		$path = urldecode($path);
 		// look into the db
@@ -100,7 +95,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			$getparams = Array();
 			parse_str($params, $getparams);
 			// merged result
-			$res = t3lib_div::array_merge_recursive_overrule($cachedparams, $getparams);
+			$res = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($cachedparams, $getparams);
 			return $res;
 		}
 		return false;
@@ -116,12 +111,12 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		global $TYPO3_CONF_VARS;
 
 		list($parameters, $anchor) = explode('#', $param_str, 2);
-		$params = tx_naworkuri_helper::explode_parameters($parameters);
+		$params = GeneralUtility::explode_parameters($parameters);
 		$orgParams = $params;
 		/* add hook for processing the parameter set */
 		if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['parameterSet-preProcess'])) {
 			foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['parameterSet-preProcess'] as $funcRef) {
-				t3lib_div::callUserFunction($funcRef, $params, $this);
+				\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($funcRef, $params, $this);
 			}
 		}
 		/* if something destroys the params reset them */
@@ -130,25 +125,25 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 		}
 
 		/* we must have an integer id so lets look it up */
-		$params['id'] = tx_naworkuri_helper::aliasToId($params['id']);
+		$params['id'] = GeneralUtility::aliasToId($params['id']);
 
 		/* check if type should be casted to int to avoid strange behavior when creating links */
 		if ($this->config->getCastTypeToInt()) {
-			$type = !empty($params['type']) ? $params['type'] : t3lib_div::_GP('type');
-			if (!empty($type) && !tx_naworkuri_helper::canBeInterpretedAsInteger($type)) { // if type is not an int
+			$type = !empty($params['type']) ? $params['type'] : \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('type');
+			if (!empty($type) && !GeneralUtility::canBeInterpretedAsInteger($type)) { // if type is not an int
 				unset($params['type']); // remove type param to use systems default
 			}
 		}
 
 		/* check if L should be casted to int to avoid strange behavior when creating links */
 		if ($this->config->getCastLToInt()) {
-			$L = !empty($params['L']) ? $params['L'] : t3lib_div::_GP('L');
-			if (!empty($L) && !tx_naworkuri_helper::canBeInterpretedAsInteger($L)) { // if L is not an int
+			$L = !empty($params['L']) ? $params['L'] : \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('L');
+			if (!empty($L) && !GeneralUtility::canBeInterpretedAsInteger($L)) { // if L is not an int
 				unset($params['L']); // remove L param to use system default
 			}
 		}
 		if (!isset($params['L'])) {
-			/* append an empty string to make sure this value is a string when given to t3lib_div::calculateCHash */
+			/* append an empty string to make sure this value is a string when given to \TYPO3\CMS\Core\Utility\GeneralUtility::calculateCHash */
 			$params['L'] = '' . ($GLOBALS['TSFE']->sys_language_uid ? $GLOBALS['TSFE']->sys_language_uid : 0);
 		}
 
@@ -157,24 +152,19 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			$cHashParams = $params;
 			unset($cHashParams['cHash']);
 			ksort($cHashParams);
-			if (class_exists('TYPO3\CMS\Frontend\Page\CacheHashCalculator')) { // if this class exists we are in TYPO3 6.x
-				/* @var $cHashCaluclator \TYPO3\CMS\Frontend\Page\CacheHashCalculator */
-				$cHashCaluclator = t3lib_div::makeInstance('TYPO3\CMS\Frontend\Page\CacheHashCalculator');
-				$params['cHash'] = $cHashCaluclator->calculateCacheHash($cHashCaluclator->getRelevantParameters(tx_naworkuri_helper::implode_parameters($params, FALSE)));
-			} else {
-				$params['cHash'] = t3lib_div::calculateCHash($cHashParams);
-			}
+			/* @var $cHashCaluclator \TYPO3\CMS\Frontend\Page\CacheHashCalculator */
+			$cHashCaluclator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\CMS\Frontend\Page\CacheHashCalculator');
+			$params['cHash'] = $cHashCaluclator->calculateCacheHash($cHashCaluclator->getRelevantParameters(GeneralUtility::implode_parameters($params, FALSE)));
 		}
 
 		$this->language = $params['L'];
-//		debug($parameters);
 		/* find cached urls with the given parameters from the current domain */
-		list($encodableParameters, $unencodableParameters) = tx_naworkuri_helper::filterConfiguredParameters($params);
+		list($encodableParameters, $unencodableParameters) = GeneralUtility::filterConfiguredParameters($params);
 		$cachedUri = $this->cache->findCachedUrl($encodableParameters, $this->domain, $this->language);
 		if ($cachedUri !== FALSE) {
 			/* compute the unencoded parameters */
 			if (count($unencodableParameters) > 0) {
-				$cachedUri .= '?' . tx_naworkuri_helper::implode_parameters($unencodableParameters);
+				$cachedUri .= '?' . GeneralUtility::implode_parameters($unencodableParameters);
 			}
 			/* append the anchor if not empty */
 			if ($anchor) {
@@ -199,9 +189,9 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 		// write cache entry with these uri an create cache entry if needed
 		$debug_info = '';
-		$debug_info .= "original_params  : " . $this->helper->implode_parameters($original_params) . chr(10);
-		$debug_info .= "encoded_params   : " . $this->helper->implode_parameters($encoded_params) . chr(10);
-		$debug_info .= "unencoded_params : " . $this->helper->implode_parameters($unencoded_params) . chr(10);
+		$debug_info .= "original_params  : " . GeneralUtility::implode_parameters($original_params) . chr(10);
+		$debug_info .= "encoded_params   : " . GeneralUtility::implode_parameters($encoded_params) . chr(10);
+		$debug_info .= "unencoded_params : " . GeneralUtility::implode_parameters($unencoded_params) . chr(10);
 		/*
 		 * if any parameter is not encoded and the cHash is encoded, remove it from the encoded parameters
 		 * and put it into the unencoded parameters to avoid unnecessary uris
@@ -234,7 +224,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			$encoded_uri = '';
 		}
 
-		$result_path = $this->helper->sanitize_uri($encoded_uri);
+		$result_path = GeneralUtility::sanitize_uri($encoded_uri);
 
 		// append
 		if ($result_path) {
@@ -360,8 +350,8 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			$param_name = (string) $uripart->parameter;
 			if ($param_name && array_key_exists($param_name, $unencoded_params) && strlen($unencoded_params[$param_name]) > 0) {
 				try {
-					$value = Tx_NaworkUri_Cache_TransformationCache::getTransformation($param_name, $unencoded_params[$param_name], $this->language);
-				} catch (Tx_NaworkUri_Exception_TransformationValueNotFoundException $ex) {
+					$value = \Tx_NaworkUri_Cache_TransformationCache::getTransformation($param_name, $unencoded_params[$param_name], $this->language);
+				} catch (\Tx_NaworkUri_Exception_TransformationValueNotFoundException $ex) {
 
 
 					$table = (string) $uripart->table;
@@ -371,7 +361,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 					$configSelectFields = (string) $uripart->selectFields;
 					if (!empty($configSelectFields)) {
 						/* make sure we select uid and pid for the record, that is needed for the language overlay */
-						$selectFields = implode(',', array_merge(array('uid', 'pid'), t3lib_div::trimExplode(',', (string) $uripart->selectFields)));
+						$selectFields = implode(',', array_merge(array('uid', 'pid'), \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', (string) $uripart->selectFields)));
 					}
 					$fallback = (string) $uripart->fallback;
 					$foreignTable = (string) $uripart->foreignTable;
@@ -447,7 +437,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 								$value = str_replace('###', $value, $fallback);
 							}
 						}
-						Tx_NaworkUri_Cache_TransformationCache::setTransformation($param_name, $unencoded_params[$param_name], $value, $this->language);
+						\Tx_NaworkUri_Cache_TransformationCache::setTransformation($param_name, $unencoded_params[$param_name], $value, $this->language);
 					}
 				}
 				$encoded_params[$param_name] = $unencoded_params[$param_name];
@@ -473,7 +463,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 
 			// cast id to int and resolve aliases
 			if ($unencoded_params['id']) {
-				if (tx_naworkuri_helper::canBeInterpretedAsInteger($unencoded_params['id'])) {
+				if (GeneralUtility::canBeInterpretedAsInteger($unencoded_params['id'])) {
 					$unencoded_params['id'] = (int) $unencoded_params['id'];
 				} else {
 					$str = $GLOBALS['TYPO3_DB']->fullQuoteStr($unencoded_params['id'], $this->config->getPagePathTableName());
@@ -489,8 +479,8 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 			$id = $unencoded_params['id'];
 
 			try {
-				$path = Tx_NaworkUri_Cache_TransformationCache::getTransformation('id', $id, $this->language);
-			} catch (Tx_NaworkUri_Exception_TransformationValueNotFoundException $ex) {
+				$path = \Tx_NaworkUri_Cache_TransformationCache::getTransformation('id', $id, $this->language);
+			} catch (\Tx_NaworkUri_Exception_TransformationValueNotFoundException $ex) {
 
 				// get setup
 				$limit = $this->config->getPagePathLimit();
@@ -545,7 +535,7 @@ class tx_naworkuri_transformer implements t3lib_Singleton {
 					$limit--;
 				}
 				$path = implode('/', $parts);
-				Tx_NaworkUri_Cache_TransformationCache::setTransformation('id', $unencoded_params['id'], $path, $this->language);
+				\Tx_NaworkUri_Cache_TransformationCache::setTransformation('id', $unencoded_params['id'], $path, $this->language);
 			}
 			$encoded_params['id'] = $unencoded_params['id'];
 			unset($unencoded_params['id']);

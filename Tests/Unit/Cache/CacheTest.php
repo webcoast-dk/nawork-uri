@@ -1,5 +1,7 @@
 <?php
 
+namespace Nawork\NaworkUri\Tests\Unit\Cache;
+
 /* * *************************************************************
  *  Copyright notice
  *
@@ -28,7 +30,7 @@
  *
  * @author Thorben Kapp <thorben@work.de>
  */
-class tx_naworkuri_cache_testcase extends tx_naworkuri_basic_tc {
+class CacheTest extends \Nawork\NaworkUri\Tests\TestBase {
 
 	protected $transformer;
 	protected $cache;

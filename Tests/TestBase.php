@@ -1,5 +1,7 @@
 <?php
 
+namespace Nawork\NaworkUri\Tests;
+
 /* * *************************************************************
  *  Copyright notice
  *
@@ -28,28 +30,28 @@
  *
  * @author Thorben Kapp <thorben@work.de>
  */
-class tx_naworkuri_basic_tc extends tx_phpunit_testcase {
+class TestBase extends \Tx_Phpunit_TestCase {
 
 	/**
 	 *
-	 * @var tx_naworkuri_transformer
+	 * @var \Nawork\NaworkUri\Utility\TransformationUtility
 	 */
 	protected $transformer;
 
 	/**
 	 *
-	 * @var tx_naworkuri_cache
+	 * @var \Nawork\NaworkUri\Cache\UrlCache
 	 */
 	protected $cache;
 
 	/**
 	 *
-	 * @var t3lib_db
+	 * @var \TYPO3\CMS\Core\Database\DatabaseConnection
 	 */
 	protected $db;
 
 	/**
-	 * @var tx_naworkuri_configReader
+	 * @var \Nawork\NaworkUri\Configuration\ConfigurationReader
 	 */
 	protected $configReader;
 
@@ -61,9 +63,11 @@ class tx_naworkuri_basic_tc extends tx_phpunit_testcase {
 		$this->setupNews();
 		$this->setupDomain();
 
-		$this->configReader = t3lib_div::makeInstance('tx_naworkuri_configReader', 'typo3conf/ext/nawork_uri/tests/test_UriConf.xml');
-		$this->transformer = t3lib_div::makeInstance('tx_naworkuri_transformer', $this->configReader, true, 'test.local');
-		$this->cache = t3lib_div::makeInstance('tx_naworkuri_cache', $this->configReader);
+		$this->configReader = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader', 'typo3conf/ext/nawork_uri/Tests/testUrlConfiguration.xml');
+//		echo($this->configReader->getDomainTable());
+//		ob_flush();
+		$this->transformer = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $this->configReader, true, 'test.local');
+		$this->cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Cache\UrlCache', $this->configReader);
 	}
 
 	public function tearDown() {

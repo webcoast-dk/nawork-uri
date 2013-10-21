@@ -38,7 +38,7 @@ CREATE TABLE tx_naworkuri_uri (
     sys_language_uid int(11) DEFAULT '0' NOT NULL,
     domain varchar(255) DEFAULT '' NOT NULL,
     path varchar(255) DEFAULT '' NOT NULL,
-    params tinytext NOT NULL,
+    params text NOT NULL,
 	hash_path varchar(32) DEFAULT '' NOT NULL,
 	hash_params varchar(32) DEFAULT '' NOT NULL,
 	locked tinyint(1) DEFAULT '0' NOT NULL,

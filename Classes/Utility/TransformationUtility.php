@@ -193,12 +193,23 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 		$debug_info .= "encoded_params   : " . GeneralUtility::implode_parameters($encoded_params) . chr(10);
 		$debug_info .= "unencoded_params : " . GeneralUtility::implode_parameters($unencoded_params) . chr(10);
 		/*
-		 * if any parameter is not encoded and the cHash is encoded, remove it from the encoded parameters
-		 * and put it into the unencoded parameters to avoid unnecessary uris
+		 * Check for any parameter that should be included in the cacheHash if it is was not encoded.
+		 * If this is the case, remove the cHash parameter from the encoded parameters and append it.
+		 * This avoids "-1" urls.
 		 */
 		if (count($unencoded_params) > 0 && isset($encoded_params['cHash'])) {
-			$unencoded_params['cHash'] = $encoded_params['cHash'];
-			unset($encoded_params['cHash']);
+			$excludeCacheHash = FALSE;
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'])) {
+				foreach (array_keys($unencoded_params) as $parameterName) {
+					if (!in_array($parameterName, $GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'])) {
+						$excludeCacheHash = TRUE;
+					}
+				}
+			}
+			if ($excludeCacheHash) {
+				$unencoded_params['cHash'] = $encoded_params['cHash'];
+				unset($encoded_params['cHash']);
+			}
 		}
 
 		// order the params like configured

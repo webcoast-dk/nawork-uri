@@ -35,7 +35,6 @@ $TCA['tx_naworkuri_uri'] = Array(
 				'foreign_table' => 'sys_language',
 				'foreign_table_where' => 'ORDER BY sys_language.title',
 				'items' => array(
-					array('LLL:EXT:lang/locallang_general.xml:LGL.allLanguages', -1),
 					array('LLL:EXT:lang/locallang_general.xml:LGL.default_value', 0)
 				)
 			)
@@ -128,10 +127,10 @@ $TCA['tx_naworkuri_uri'] = Array(
 	),
 	'types' => array(
 		'0' => array(
-			'showitem' => 'type, page_uid, path, params, locked'
+			'showitem' => 'type, sys_language_uid, page_uid, path, params, locked'
 		),
 		'1' => array(
-			'showitem' => 'type, page_uid, path'
+			'showitem' => 'type, sys_language_uid, page_uid, path'
 		),
 		'2' => array(
 			'showitem' => 'type, path, redirect_path, redirect_mode'

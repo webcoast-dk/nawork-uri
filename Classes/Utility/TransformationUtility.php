@@ -279,6 +279,7 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 				$value = (string) $part->value;
 				$key = (string) $part->attributes()->key;
 				$regex = (string) $part->attributes()->regex;
+				$math = (string) $part->attributes()->math;
 
 				if (!$key) {
 					if (!$value && $value !== '0') {
@@ -301,7 +302,25 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 								unset($unencoded_params[$param_name]);
 							}
 						} else {
-							$parts[$param_name] = str_replace('###', $unencoded_params[$param_name], trim($key));
+							$urlValue = $unencoded_params[$param_name];
+							if (!empty($math) && tx_naworkuri_helper::canBeInterpretedAsInteger($urlValue)) {
+								list($operator, $operand) = t3lib_div::trimExplode(' ', $math);
+								switch ($operator) {
+									case '+':
+										$urlValue += $operand;
+										break;
+									case '-':
+										$urlValue -= $operand;
+										break;
+									case '*':
+										$urlValue *= $operand;
+										break;
+									case '/':
+										$urlValue /= $operand;
+										break;
+								}
+							}
+							$parts[$param_name] = str_replace('###', $urlValue, trim($key));
 							$encoded_params[$param_name] = $unencoded_params[$param_name];
 							unset($unencoded_params[$param_name]);
 						}

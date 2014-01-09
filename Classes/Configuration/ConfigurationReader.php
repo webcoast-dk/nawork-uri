@@ -145,7 +145,7 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 					return (string) $child->attributes()->type;
 				}
 				/* if there is a configuration for the current domain, use it */
-				if ((string) $child->attributes()->domain === (string) $currentDomain) {
+				if ((string) $child->attributes()->domain === (string) $currentDomain || (string) $child->attributes()->domain === (string) $currentHost && (int) $child->attributes()->ignoreMasterDomain === 0) {
 					$type = (string) $child->attributes()->type;
 				}
 				/* a configuration without domain should be used as default */
@@ -161,6 +161,7 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 		$behavior = '';
 		$currentDomain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
 		$currentHost = \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
+		/* @var $child \SimpleXMLElement */
 		foreach ($this->config->pagenotfound->children() as $child) {
 			if ($child->getName() == 'behavior') {
 				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */
@@ -168,7 +169,7 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 					return (string) $child;
 				}
 				/* if there is a configuration for the current domain, use it */
-				if ((string) $child->attributes()->domain === (string) $currentDomain) {
+				if ((string) $child->attributes()->domain === (string) $currentDomain || (string) $child->attributes()->domain === (string) $currentHost && (int) $child->attributes()->ignoreMasterDomain === 0) {
 					$behavior = (string) $child;
 				}
 				/* a configuration without domain should be used as default */

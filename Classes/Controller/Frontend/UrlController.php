@@ -380,8 +380,9 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 						curl_setopt($curl, CURLOPT_REFERER, TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
 						// disable check for valid peer certificate: this should not be used in
 						// production environments for security reasons
-						if ((bool) $extConf['noSslVerifyPeer']) {
+						if ((bool) $extConf['noSslVerify']) {
 							curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+							curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
 						}
 						$output = $this->curl_exec_follow($curl);
 					} else {

@@ -15,4 +15,4 @@ MULTIDOMAIN = 1
 default_locale = en_US
 
 # cat=security//01; type=boolean; label=SSL No Verify Peer: Do not verify the peer's ssl certificate. This should not be enabled in production environments.
-noSslVerifyPeer = 0
+noSslVerify = 0

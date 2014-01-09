@@ -378,6 +378,11 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 						curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
 						curl_setopt($curl, CURLOPT_MAXREDIRS, 1);
 						curl_setopt($curl, CURLOPT_REFERER, TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
+						// disable check for valid peer certificate: this should not be used in
+						// production environments for security reasons
+						if ((bool) $extConf['noSslVerifyPeer']) {
+							curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+						}
 						$output = $this->curl_exec_follow($curl);
 					} else {
 						$output = '404 not found! The 404 Page URL ' . $configReader->getPageNotAccessibleConfigurationBehaviorValue() . ' seems to cause a loop.';

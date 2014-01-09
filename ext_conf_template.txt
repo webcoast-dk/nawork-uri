@@ -13,3 +13,6 @@ MULTIDOMAIN = 1
 
 # cat=basic//05; type=string; label=Default locale: The default locale that should be used for transliteration if no locale is set in the config
 default_locale = en_US
+
+# cat=security//01; type=boolean; label=SSL No Verify Peer: Do not verify the peer's ssl certificate. This should not be enabled in production environments.
+noSslVerifyPeer = 0

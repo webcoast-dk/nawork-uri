@@ -184,12 +184,13 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 	public function hasPageNotFoundConfig() {
 		return ($this->config->pagenotfound instanceof SimpleXMLElement && $this->config->pagenotfound->getName() == 'pagenotfound');
 	}
-	
+
 	/* page not accessible */
+
 	public function hasPageNotAccessibleConfiguration() {
 		return ($this->config->pageNotAccessible instanceof SimpleXMLElement && $this->config->pageNotAccessible->getName() == 'pageNotAccessible');
 	}
-	
+
 	public function getPageNotAccessibleConfigurationStatus() {
 		$status = '';
 		$currentDomain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
@@ -320,8 +321,8 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 		if (!is_a($this->config->pagepath->table, 'SimpleXMLElement')) {
 			$this->config->addChild('pagepath->table', 'pages');
 		} else {
-			$pagepath->table = (string) $this->config->pagepath->table;
-			if (empty($pagepath->table)) {
+			$pagepathTable = (string) $this->config->pagepath->table;
+			if (empty($pagepathTable)) {
 				$this->config->pagepath->table = 'pages';
 			}
 		}
@@ -365,6 +366,15 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 		if (!$this->config->checkForUpperCaseURI instanceof \SimpleXMLElement) {
 			$this->config->addChild('checkForUpperCaseURI', false);
 		}
+	}
+
+	/**
+	 * Used for adjusting config for unit tests
+	 * 
+	 * @param array $changedExtConf
+	 */
+	public function setExtConfig($changedExtConf) {
+		$this->extConfig = $changedExtConf;
 	}
 
 }

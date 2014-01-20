@@ -43,7 +43,7 @@ class GeneralUtilityTest extends \Nawork\NaworkUri\Tests\TestBase {
 	 */
 	public function test_param_explode($path, $exploded_array, $error = '') {
 		$this->assertEquals(
-			$exploded_array, \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($path), $error
+				$exploded_array, \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($path), $error
 		);
 	}
 
@@ -147,8 +147,14 @@ class GeneralUtilityTest extends \Nawork\NaworkUri\Tests\TestBase {
 	 * @dataProvider getCurrentDomainProvider
 	 */
 	public function getCurrentDomain($domainToSet, $domainUidToRetreive) {
+		$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
+		$extConf['MULTIDOMAIN'] = 1;
+		$configReader = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\ConfigurationReader');
+		$configReader->setExtConfig($extConf);
 		$_SERVER['HTTP_HOST'] = $domainToSet;
-		$this->assertEquals($domainUidToRetreive, \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain());
+		$domainUid = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
+
+		$this->assertEquals($domainUidToRetreive, $domainUid);
 	}
 
 	public function getCurrentDomainProvider() {

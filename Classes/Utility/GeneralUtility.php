@@ -1,6 +1,7 @@
 <?php
 
 namespace Nawork\NaworkUri\Utility;
+
 /*
  * Helper functions
  */
@@ -365,6 +366,19 @@ class GeneralUtility {
 			'error',
 			'tstamp'
 		));
+	}
+
+	/**
+	 * Register transformation services.
+	 * 
+	 * @param string $type The name of the transformation type as used in the configuration, e.g. "ValueMap"
+	 * @param string $classReference The class reference to the transformation service, e.g. "EXT:myext/Classes/Service/MyTransformationService.php:My\MyExt\Service\MyTransformationService
+	 */
+	public static function registerTransformationService($type, $classReference) {
+		if (!is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['transformationServices'])) {
+			$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['transformationServices'] = array();
+		}
+		$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['transformationServices'][$type] = $classReference;
 	}
 
 }

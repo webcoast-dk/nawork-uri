@@ -356,7 +356,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 	public function handlePagenotfound($params, $frontendController) {
 		$output = '';
 		$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
-		$configReader = TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader', $extConf['XMLPATH']);
+		$configReader = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader', $extConf['XMLPATH']);
 		/* @var $configReader Nawork\NaworkUri\Configuration\ConfigurationReader */
 		/* the page is not accessible without being logged in, so handle this, if configured */
 		if (array_key_exists('pageAccessFailureReasons', $params) && is_array($params['pageAccessFailureReasons']) && array_key_exists('fe_group', $params['pageAccessFailureReasons']) && $configReader->hasPageNotAccessibleConfiguration()) {
@@ -367,7 +367,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 					$output = $configReader->getPageNotAccessibleConfigurationBehaviorValue();
 					break;
 				case 'page':
-					if (TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
+					if (\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
 						$curl = curl_init();
 						curl_setopt($curl, CURLOPT_URL, $configReader->getPageNotAccessibleConfigurationBehaviorValue());
 						curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
@@ -377,7 +377,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 						curl_setopt($curl, CURLOPT_USERAGENT, 'nawork_uri');
 						curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
 						curl_setopt($curl, CURLOPT_MAXREDIRS, 1);
-						curl_setopt($curl, CURLOPT_REFERER, TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
+						curl_setopt($curl, CURLOPT_REFERER, \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
 						// disable check for valid peer certificate: this should not be used in
 						// production environments for security reasons
 						if ((bool) $extConf['noSslVerify']) {
@@ -405,7 +405,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 					$output = $configReader->getPageNotFoundConfigBehaviorValue();
 					break;
 				case 'page':
-					if (TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
+					if (\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
 						$curl = curl_init();
 						curl_setopt($curl, CURLOPT_URL, $configReader->getPageNotFoundConfigBehaviorValue());
 						curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
@@ -415,7 +415,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 						curl_setopt($curl, CURLOPT_USERAGENT, 'nawork_uri');
 						curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
 						curl_setopt($curl, CURLOPT_MAXREDIRS, 1);
-						curl_setopt($curl, CURLOPT_REFERER, TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
+						curl_setopt($curl, CURLOPT_REFERER, \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
 						$output = $this->curl_exec_follow($curl);
 					} else {
 						$output = '404 not found! The 404 Page URL ' . $configReader->getPageNotFoundConfigBehaviorValue() . ' seems to cause a loop.';

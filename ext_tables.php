@@ -131,4 +131,6 @@ if (TYPO3_MODE == 'BE') {
 		}
 		');
 }
+
+$GLOBALS['TYPO3_CONF_VARS']['FE']['pageOverlayFields'] .= ',tx_naworkuri_pathsegment,tx_naworkuri_exclude';
 ?>

@@ -88,6 +88,33 @@
 		<char from="Я" to="ja" />
 		<!-- cyrillic (russian) transliterations, not supported by glibc :: end -->
 	</transliteration>
+	
+	<parameters>
+		<parameterConfig>
+			<name>L</name>
+			<type>ValueMap</type>
+			<map>
+				<mapping>
+					<value>0</value>
+					<replacement></replacement>
+				</mapping>
+				<mapping>
+					<value>1</value>
+					<replacement>en</replacement>
+				</mapping>
+				<mapping>
+					<value>2</value>
+					<replacement>ru</replacement>
+				</mapping>
+			</map>
+		</parameterConfig>
+		<parameterConfig>
+			<name>id</name>
+			<type>PagePath</type>
+			<table>pages</table>
+			<field>alias//nav_title//title</field>
+		</parameterConfig>
+	</parameters>
 
 
 	<!-- define fixed uri segments -->

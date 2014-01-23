@@ -60,6 +60,38 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 	}
 
 	/**
+	 * Take parameter array and transform it into an array of path elements.
+	 * 
+	 * @param array $parameters The original parameter array
+	 * @return array The transformed values
+	 * @throws Exception
+	 */
+	public function transformParametersToPath($parameters) {
+		$pathElements = array();
+		/* @var $parameterConfiguration \SimpleXMLElement */
+		foreach ($this->config->getParameterConfigurations() as $parameterConfiguration) {
+			$parameterName = (string) $parameterConfiguration->name;
+			if (array_key_exists($parameterName, $parameters)) {
+				$transformationType = (string) $parameterConfiguration->type;
+				if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['transformationServices']) && array_key_exists($transformationType, $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['transformationServices'])) {
+					/* @var $transformationService \Nawork\NaworkUri\Service\TransformationServiceInterface */
+					$transformationService = \TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['transformationServices'][$transformationType]);
+					if (!$transformationService instanceof \Nawork\NaworkUri\Service\TransformationServiceInterface) {
+						throw new \Nawork\NaworkUri\Exception\InvalidTransformationServiceException('The transformation service must implement \'\Nawork\NaworkUri\Service\TransformationServiceInterface\'');
+					}
+					$pathElements[$parameterName] = $transformationService->transform($parameterConfiguration, $parameters[$parameterName], $this);
+				} else {
+					throw new \Nawork\NaworkUri\Exception\MissingTransformationServiceException('The transformation service for type \'' . $transformationType . '\' registered');
+					/**
+					 * @todo Improve handling of missing transformation service
+					 */
+				}
+			}
+		}
+		return $pathElements;
+	}
+
+	/**
 	 * Convert the uri path to the request parameters
 	 *
 	 * @param string $uri
@@ -176,28 +208,16 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 		}
 
 		// create new uri because no exact match was found in cache
-		$original_params = $params;
-		$encoded_params = array();
-		$unencoded_params = $original_params;
+		$pathElements = $this->transformParametersToPath($encodableParameters);
+		$unencoded_params = array_diff_key($encodableParameters, $pathElements);
+		$encodedParameters = array_intersect_key($encodableParameters, $pathElements);
 
-		// transform the parameters to path segments
-		$path = array();
-		$path = array_merge($path, $this->params2uri_predefinedparts($original_params, $unencoded_params, $encoded_params));
-		$path = array_merge($path, $this->params2uri_valuemaps($original_params, $unencoded_params, $encoded_params));
-		$path = array_merge($path, $this->params2uri_uriparts($original_params, $unencoded_params, $encoded_params));
-		$path = array_merge($path, $this->params2uri_pagepath($original_params, $unencoded_params, $encoded_params));
-
-		// write cache entry with these uri an create cache entry if needed
-		$debug_info = '';
-		$debug_info .= "original_params  : " . GeneralUtility::implode_parameters($original_params) . chr(10);
-		$debug_info .= "encoded_params   : " . GeneralUtility::implode_parameters($encoded_params) . chr(10);
-		$debug_info .= "unencoded_params : " . GeneralUtility::implode_parameters($unencoded_params) . chr(10);
 		/*
 		 * Check for any parameter that should be included in the cacheHash if it is was not encoded.
 		 * If this is the case, remove the cHash parameter from the encoded parameters and append it.
 		 * This avoids "-1" urls.
 		 */
-		if (count($unencoded_params) > 0 && isset($encoded_params['cHash'])) {
+		if (count($unencoded_params) > 0 && isset($pathElements['cHash'])) {
 			$excludeCacheHash = FALSE;
 			if (is_array($GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'])) {
 				foreach (array_keys($unencoded_params) as $parameterName) {
@@ -207,30 +227,14 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 				}
 			}
 			if ($excludeCacheHash) {
-				$unencoded_params['cHash'] = $encoded_params['cHash'];
-				unset($encoded_params['cHash']);
+				$unencoded_params['cHash'] = $pathElements['cHash'];
+				unset($pathElements['cHash']);
 			}
-		}
-
-		// order the params like configured
-		$ordered_params = array();
-		foreach ($this->config->getParamOrder() as $param) {
-			$param_name = (string) $param;
-			if (isset($path[$param_name]) && $segment = $path[$param_name]) {
-				if ($segment)
-					$ordered_params[] = $segment;
-				unset($path[$param_name]);
-			}
-		}
-		// add params with not specified order
-		foreach ($path as $param => $path_segment) {
-			if ($path_segment)
-				$ordered_params[] = $path_segment;
 		}
 
 		// return
-		if (count($ordered_params)) {
-			$encoded_uri = implode('/', $ordered_params);
+		if (count($pathElements)) {
+			$encoded_uri = implode('/', $pathElements);
 		} else {
 			$encoded_uri = '';
 		}
@@ -244,7 +248,7 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 				$result_path = $result_path . $append;
 			}
 		}
-		$uri = $this->cache->writeUrl($encoded_params, $this->domain, $this->language, $result_path);
+		$uri = $this->cache->writeUrl($encodedParameters, $this->domain, $this->language, $result_path);
 
 		// read not encoded parameters
 		$i = 0;
@@ -573,6 +577,10 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 
 
 		return array('id' => $path);
+	}
+
+	public function getLanguage() {
+		return $this->language;
 	}
 
 }

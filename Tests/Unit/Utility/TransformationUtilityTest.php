@@ -350,6 +350,8 @@ class TransformationUtilityTest extends \Nawork\NaworkUri\Tests\TestBase {
 		$this->db->exec_DELETEquery('test_tx_naworkuri_uri', 'uid=1');
 		$this->assertEquals('sub-3-1/', $this->transformer->params2uri('id=4&no_cache=1'));
 	}
+	
+//	public function transformParameterToPathReturnCorrectResult($parameterString)
 
 }
 

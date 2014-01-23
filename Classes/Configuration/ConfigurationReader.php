@@ -298,6 +298,10 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 		}
 		return array();
 	}
+	
+	public function getParameterConfigurations() {
+		return $this->config->parameters->children();
+	}
 
 	private function validateConfig() {
 		if (!is_a($this->config->uritable, 'SimpleXMLElement')) {

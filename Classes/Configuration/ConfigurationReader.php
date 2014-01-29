@@ -260,18 +260,6 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 		return $behavior;
 	}
 
-	public function getDomainTable() {
-		return (string) $this->config->domaintable;
-	}
-
-	public function getUriTable() {
-		return (string) $this->config->uritable;
-	}
-
-	public function getPageTable() {
-		return (string) $this->config->pagepath->table;
-	}
-
 	public function getParamOrder() {
 		return $this->config->paramorder->children();
 	}
@@ -304,33 +292,6 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 	}
 
 	private function validateConfig() {
-		if (!is_a($this->config->uritable, 'SimpleXMLElement')) {
-			$this->config->addChild('uritable', 'tx_naworkuri_uri');
-		} else {
-			$uriTable = (string) $this->config->uritable;
-			if (empty($uriTable)) {
-				$this->config->uritable = 'tx_naworkuri_uri';
-			}
-		}
-
-		if (!is_a($this->config->domaintable, 'SimpleXMLElement')) {
-			$this->config->addChild('domaintable', 'sys_domain');
-		} else {
-			$domaintable = (string) $this->config->domaintable;
-			if (empty($domaintable)) {
-				$this->config->domaintable = 'sys_domain';
-			}
-		}
-
-		if (!is_a($this->config->pagepath->table, 'SimpleXMLElement')) {
-			$this->config->addChild('pagepath->table', 'pages');
-		} else {
-			$pagepathTable = (string) $this->config->pagepath->table;
-			if (empty($pagepathTable)) {
-				$this->config->pagepath->table = 'pages';
-			}
-		}
-
 		if (!$this->config->castTypeToInt instanceof \SimpleXMLElement) {
 			$this->config->addChild('castTypeToInt', 0);
 		} else {

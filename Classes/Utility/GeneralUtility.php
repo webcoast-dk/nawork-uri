@@ -203,19 +203,21 @@ class GeneralUtility {
 	public static function getCurrentDomain() {
 		/* @var $config \Nawork\NaworkUri\Configuration\ConfigurationReader */
 		$config = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader');
+		/* @var $tableConfiguration \Nawork\NaworkUri\Configuration\TableConfiguration */
+		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
 		/* @var $db \TYPO3\CMS\Core\Database\DatabaseConnection */
 		$db = $GLOBALS['TYPO3_DB'];
 		$domain = 0;
 		if ($config->isMultiDomainEnabled()) {
 			$domainName = \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_HOST');
-			$domainRes = $db->exec_SELECTgetRows('uid,tx_naworkuri_masterDomain', $config->getDomainTable(), 'domainName LIKE \'' . $domainName . '\'', 'hidden=0');
+			$domainRes = $db->exec_SELECTgetRows('uid,tx_naworkuri_masterDomain', $tableConfiguration->getDomainTable(), 'domainName LIKE \'' . $domainName . '\'', 'hidden=0');
 			if ($domainRes && count($domainRes)) {
 				$domain = $domainRes[0]['uid'];
 				if (intval($domainRes[0]['tx_naworkuri_masterDomain']) > 0) {
 					$domain = intval($domainRes[0]['tx_naworkuri_masterDomain']);
 					$continue = TRUE;
 					do {
-						$domainRes = $db->exec_SELECTgetRows('uid,tx_naworkuri_masterDomain', $config->getDomainTable(), 'uid=' . intval($domain));
+						$domainRes = $db->exec_SELECTgetRows('uid,tx_naworkuri_masterDomain', $tableConfiguration->getDomainTable(), 'uid=' . intval($domain));
 						if (is_array($domainRes) && count($domainRes) > 0) {
 							if (intval($domainRes[0]['tx_naworkuri_masterDomain']) > 0) {
 								$domain = intval($domainRes[0]['tx_naworkuri_masterDomain']);
@@ -236,12 +238,14 @@ class GeneralUtility {
 	private static function findDomainRecursive($pid = 0) {
 		/* @var $db \TYPO3\CMS\Core\Database\DatabaseConnection */
 		$db = $GLOBALS['TYPO3_DB'];
+		/* @var $tableConfiguration \Nawork\NaworkUri\Configuration\TableConfiguration */
+		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
 		/* @var $config \Nawork\NaworkUri\Configuration\ConfigurationReader */
 		$config = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader');
-		$pagesRes = $db->exec_SELECTgetRows('uid', $config->getPageTable(), 'pid=' . intval($pid), NULL, 'sorting ASC');
+		$pagesRes = $db->exec_SELECTgetRows('uid', $tableConfiguration->getPageTable(), 'pid=' . intval($pid), NULL, 'sorting ASC');
 		if (is_array($pagesRes)) {
 			foreach ($pagesRes as $pageRec) {
-				$domainRes = $db->exec_SELECTgetRows('uid', $config->getDomainTable(), 'pid=' . intval($pageRec['uid']) . ' AND tx_naworkuri_masterDomain < 1', NULL, 'sorting ASC', '1');
+				$domainRes = $db->exec_SELECTgetRows('uid', $tableConfiguration->getDomainTable(), 'pid=' . intval($pageRec['uid']) . ' AND tx_naworkuri_masterDomain < 1', NULL, 'sorting ASC', '1');
 				if ($domainRes && count($domainRes) > 0) {
 					return $domainRes[0]['uid'];
 				} else {
@@ -297,41 +301,17 @@ class GeneralUtility {
 	 */
 	public static function filterConfiguredParameters($parameters) {
 		$encodableParameters = array();
-		$unencodableParameters = array();
 		$parameterNames = array_keys($parameters);
 		$configuration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader');
 		/* @var $configuration \Nawork\NaworkUri\Configuration\ConfigurationReader */
-		/* check predefined parts */
-		foreach ($configuration->getPredefinedParts() as $parameterConfiguration) {
-			/* @var $parameterConfiguration SimpleXMLElement */
-			$parameterName = (string) $parameterConfiguration->parameter;
-			if (in_array($parameterName, $parameterNames)) {
+		// check parameter configurations, which parameters can be encoded
+		foreach($configuration->getParameterConfigurations() as $parameterConfiguration) {
+			$parameterName = (string) $parameterConfiguration->name;
+			if(in_array($parameterName, $parameterNames)) {
 				$encodableParameters[$parameterName] = $parameters[$parameterName];
 			}
 		}
-		/* check the uri parts */
-		foreach ($configuration->getUriParts() as $parameterConfiguration) {
-			$parameterName = (string) $parameterConfiguration->parameter;
-			if (in_array($parameterName, $parameterNames)) {
-				$encodableParameters[$parameterName] = $parameters[$parameterName];
-			}
-		}
-		/* check the value maps */
-		foreach ($configuration->getValueMaps() as $parameterConfiguration) {
-			$parameterName = (string) $parameterConfiguration->parameter;
-			if (in_array($parameterName, $parameterNames)) {
-				foreach ($parameterConfiguration->children() as $child) {
-					/* @var $child SimpleXMLElement */
-					if ($child->getName() == 'value') {
-						if ((string) $child == $parameters[$parameterName]) {
-							$encodableParameters[$parameterName] = $parameters[$parameterName];
-						}
-					}
-				}
-			}
-		}
-		/* push the id */
-		$encodableParameters['id'] = self::aliasToId($parameters['id']);
+		
 		ksort($encodableParameters);
 		if (count($parameters) > count($encodableParameters) && array_key_exists('cHash', $encodableParameters)) {
 			unset($encodableParameters['cHash']);

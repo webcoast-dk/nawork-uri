@@ -18,7 +18,9 @@ class PagePathTransformationService implements \Nawork\NaworkUri\Service\Transfo
 	 */
 	public function transform($parameterConfiguration, $value, $transformationUtility) {
 		/* @var $GLOBALS['TSFE'] \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController */
-		$rootline = $this->getRootline($value, (string) $parameterConfiguration->table);
+		/* @var $tableConfiguration \Nawork\NaworkUri\Configuration\TableConfiguration */
+		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
+		$rootline = $this->getRootline($value, (string) $tableConfiguration->getPageTable());
 
 		// only one page (root page) is in the rootline, return an empty path
 		if (count($rootline) == 1) {

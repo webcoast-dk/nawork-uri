@@ -99,6 +99,10 @@
 		<char from="ż" to="z" />		
 		<!-- polisch diactric characters :: end -->
 	</transliteration>
+	
+	<tables>
+		<pages>pages</pages>
+	</tables>
 
 	<pagenotfound>
 		<status>HTTP/1.0 404 Not Found</status>

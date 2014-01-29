@@ -20,6 +20,12 @@ class UrlCache {
 	 * @var \TYPO3\CMS\Core\Database\DatabaseConnection
 	 */
 	private $db = null;
+	
+	/**
+	 *
+	 * @var \Nawork\NaworkUri\Configuration\TableConfiguration
+	 */
+	private $tableConfiguration;
 
 	/**
 	 * Constructor
@@ -28,7 +34,8 @@ class UrlCache {
 	public function __construct($config) {
 		$this->config = $config;
 		$this->db = $GLOBALS['TYPO3_DB'];
-		$this->db->store_lastBuiltQuery = 0;
+		$this->db->store_lastBuiltQuery = 1;
+		$this->tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
 	}
 
 	/**
@@ -51,7 +58,7 @@ class UrlCache {
 		unset($params['id']);
 		unset($params['L']);
 		/* evaluate the cache timeout */
-		$pageRes = $this->db->exec_SELECTgetRows('*', $this->config->getPageTable(), 'uid=' . intval($uid));
+		$pageRes = $this->db->exec_SELECTgetRows('*', $this->tableConfiguration->getPageTable(), 'uid=' . intval($uid));
 		$page = $pageRes[0];
 		if ($page['cache_timeout'] > 0) {
 			$this->setTimeout($page['cache_timeout']);
@@ -67,10 +74,10 @@ class UrlCache {
 		}
 		$domainCondition = '';
 		if ($this->config->isMultiDomainEnabled()) {
-			$domainCondition = ' AND u.domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
+			$domainCondition = ' AND u.domain=' . $this->db->fullQuoteStr($domain, $this->tableConfiguration->getUrlTable());
 		}
 		$urls = $this->db->exec_SELECTgetRows(
-				'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.page_uid=' . intval($uid) . ' AND sys_language_uid=' . intval($language) . ' AND hash_params="' . md5(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($params, FALSE)) . '" ' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND p.uid=u.page_uid AND type=0 AND ( u.tstamp > ' . (time() - $this->timeout) . ' OR locked=1 )', // lets find type 0 urls only from the cache
+				'u.*', $this->tableConfiguration->getUrlTable() . ' u, ' . $this->tableConfiguration->getPageTable() . ' p', 'u.page_uid=' . intval($uid) . ' AND sys_language_uid=' . intval($language) . ' AND hash_params="' . md5(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($params, FALSE)) . '" ' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND p.uid=u.page_uid AND type=0 AND ( u.tstamp > ' . (time() - $this->timeout) . ' OR locked=1 )', // lets find type 0 urls only from the cache
 				'', '', '1'
 		);
 		if (is_array($urls) && count($urls) > 0) {
@@ -91,9 +98,9 @@ class UrlCache {
 	public function findExistantUrl($page, $language, $params, $path, $domain) {
 		$domainCondition = '';
 		if ($this->config->isMultiDomainEnabled()) {
-			$domainCondition = ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
+			$domainCondition = ' AND domain=' . $this->db->fullQuoteStr($domain, $this->tableConfiguration->getUrlTable());
 		}
-		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'page_uid=' . intval($page) . ' AND sys_language_uid=' . intval($language) . $domainCondition . ' AND hash_params="' . md5(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($params, FALSE)) . '" AND hash_path="' . md5($path) . '" AND type=0', '', '', 1);
+		$urls = $this->db->exec_SELECTgetRows('*', $this->tableConfiguration->getUrlTable(), 'page_uid=' . intval($page) . ' AND sys_language_uid=' . intval($language) . $domainCondition . ' AND hash_params="' . md5(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($params, FALSE)) . '" AND hash_path="' . md5($path) . '" AND type=0', '', '', 1);
 		if (is_array($urls) && count($urls) > 0) {
 			return $urls[0];
 		}
@@ -111,14 +118,14 @@ class UrlCache {
 	public function findOldUrl($domain, $path) {
 		$domainCondition = '';
 		if ($this->config->isMultiDomainEnabled()) {
-			$domainCondition = ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
+			$domainCondition = ' AND domain=' . $this->db->fullQuoteStr($domain, $this->tableConfiguration->getUrlTable());
 		}
-		$urls = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'hash_path="' . md5($path) . '" AND type=1' . $domainCondition, '', '', 1);
+		$urls = $this->db->exec_SELECTgetRows('*', $this->tableConfiguration->getUrlTable(), 'hash_path="' . md5($path) . '" AND type=1' . $domainCondition, '', '', 1);
 		if (is_array($urls) && count($urls) > 0) {
 			return $urls[0];
 		}
 		/* try to find a url on a deleted or hidden page */
-		$urls = $this->db->exec_SELECTgetRows('u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.page_uid=p.uid AND (p.deleted=1 OR p.hidden=1) AND u.hash_path="' . md5($path) . '"' . $domainCondition, '', '', 1);
+		$urls = $this->db->exec_SELECTgetRows('u.*', $this->tableConfiguration->getUrlTable() . ' u, ' . $this->tableConfiguration->getPageTable() . ' p', 'u.page_uid=p.uid AND (p.deleted=1 OR p.hidden=1) AND u.hash_path="' . md5($path) . '"' . $domainCondition, '', '', 1);
 		if (is_array($urls) && count($urls) > 0) {
 			return $urls[0];
 		}
@@ -192,10 +199,10 @@ class UrlCache {
 		}
 		$domainCondition = '';
 		if ($this->config->isMultiDomainEnabled()) {
-			$domainCondition = ' AND u.domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
+			$domainCondition = ' AND u.domain=' . $this->db->fullQuoteStr($domain, $this->tableConfiguration->getUrlTable());
 		}
 		$uris = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
-				'u.*', $this->config->getUriTable() . ' u, ' . $this->config->getPageTable() . ' p', 'u.hash_path="' . $hash_path . '"' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND (p.uid=u.page_uid OR u.type=2)', '', '', '1'
+				'u.*', $this->tableConfiguration->getUrlTable() . ' u, ' . $this->tableConfiguration->getPageTable() . ' p', 'u.hash_path="' . $hash_path . '"' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND (p.uid=u.page_uid OR u.type=2)', '', '', '1'
 		);
 
 		if (is_array($uris) && count($uris) > 0) {
@@ -214,7 +221,7 @@ class UrlCache {
 	 */
 	public function createUrl($page, $language, $domain, $parameters, $path, $originalPath) {
 		$parameters = \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE);
-		$result = @$this->db->exec_INSERTquery($this->config->getUriTable(), array(
+		$result = @$this->db->exec_INSERTquery($this->tableConfiguration->getUrlTable(), array(
 					'pid' => $this->config->getStoragePage(),
 					'page_uid' => intval($page),
 					'tstamp' => time(),
@@ -239,7 +246,7 @@ class UrlCache {
 	}
 
 	private function touchUrl($uid) {
-		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'uid=' . intval($uid), array('tstamp' => time()), array('tstamp'));
+		$this->db->exec_UPDATEquery($this->tableConfiguration->getUrlTable(), 'uid=' . intval($uid), array('tstamp' => time()), array('tstamp'));
 	}
 
 	/**
@@ -254,7 +261,7 @@ class UrlCache {
 	 */
 	private function updateUrl($uid, $page, $language, $parameters, $type = self::TX_NAWORKURI_URI_TYPE_NORMAL) {
 		$parameters = \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE);
-		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'uid=' . intval($uid), array(
+		$this->db->exec_UPDATEquery($this->tableConfiguration->getUrlTable(), 'uid=' . intval($uid), array(
 			'page_uid' => intval($page),
 			'sys_language_uid' => $language,
 			'params' => $parameters,
@@ -279,9 +286,9 @@ class UrlCache {
 	private function makeOldUrl($domain, $pageId, $language, $parameters, $excludeUid = FALSE) {
 		$domainConstraint = '';
 		if (!empty($domain)) {
-			$domainConstraint = ' AND domain=' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
+			$domainConstraint = ' AND domain=' . $this->db->fullQuoteStr($domain, $this->tableConfiguration->getUrlTable());
 		}
-		$this->db->exec_UPDATEquery($this->config->getUriTable(), 'hash_params=' . $this->db->fullQuoteStr(md5(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE)), $this->config->getUriTable()) . $domainConstraint . ' AND page_uid=' . intval($pageId) . ' AND sys_language_uid=' . intval($language) . ($excludeUid !== FALSE ? ' AND uid!=' . intval($excludeUid) : '') . ' AND type=0', array(
+		$this->db->exec_UPDATEquery($this->tableConfiguration->getUrlTable(), 'hash_params=' . $this->db->fullQuoteStr(md5(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE)), $this->tableConfiguration->getUrlTable()) . $domainConstraint . ' AND page_uid=' . intval($pageId) . ' AND sys_language_uid=' . intval($language) . ($excludeUid !== FALSE ? ' AND uid!=' . intval($excludeUid) : '') . ' AND type=0', array(
 			'type' => self::TX_NAWORKURI_URI_TYPE_OLD,
 			'tstamp' => time()
 				), array(
@@ -301,12 +308,12 @@ class UrlCache {
 		$parameterHash = md5(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE));
 		$additionalWhere = '';
 		if (!empty($domain)) {
-			$additionalWhere .= ' AND domain LIKE ' . $this->db->fullQuoteStr($domain, $this->config->getUriTable());
+			$additionalWhere .= ' AND domain LIKE ' . $this->db->fullQuoteStr($domain, $this->tableConfiguration->getUrlTable());
 		}
-		$dbRes = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid', $this->config->getUriTable(), '(page_uid!=' . intval($pageUid) . ' OR sys_language_uid!=' . intval($language) . ' OR hash_params != ' . $this->db->fullQuoteStr($parameterHash, $this->config->getUriTable()) . ') AND hash_path = ' . $this->db->fullQuoteStr($pathHash, $this->config->getUriTable()) . $additionalWhere, '', '', '1');
+		$dbRes = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid', $this->tableConfiguration->getUrlTable(), '(page_uid!=' . intval($pageUid) . ' OR sys_language_uid!=' . intval($language) . ' OR hash_params != ' . $this->db->fullQuoteStr($parameterHash, $this->tableConfiguration->getUrlTable()) . ') AND hash_path = ' . $this->db->fullQuoteStr($pathHash, $this->tableConfiguration->getUrlTable()) . $additionalWhere, '', '', '1');
 		if (count($dbRes) > 0) {
 			/* so we have to make the url unique */
-			$cachedUrl = $this->db->exec_SELECTgetRows('*', $this->config->getUriTable(), 'page_uid=' . intval($pageUid) . ' AND sys_language_uid=' . intval($language) . ' AND type=0 AND hash_params=' . $this->db->fullQuoteStr($parameterHash, $this->config->getUriTable()) . $additionalWhere, '', '', '1');
+			$cachedUrl = $this->db->exec_SELECTgetRows('*', $this->tableConfiguration->getUrlTable(), 'page_uid=' . intval($pageUid) . ' AND sys_language_uid=' . intval($language) . ' AND type=0 AND hash_params=' . $this->db->fullQuoteStr($parameterHash, $this->tableConfiguration->getUrlTable()) . $additionalWhere, '', '', '1');
 			if (count($cachedUrl) > 0 && $cachedUrl[0]['original_path'] == $path) {
 				/* there is a url found with the parameter set, so lets use this path */
 				return $cachedUrl[0]['path'];
@@ -326,7 +333,7 @@ class UrlCache {
 					$tmp_uri = $append . $this->config->getAppend();
 				}
 				$search_hash = md5($tmp_uri);
-				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid', $this->config->getUriTable(), '(page_uid!=' . intval($pageUid) . ' OR sys_language_uid!=' . intval($language) . ' OR hash_params != ' . $this->db->fullQuoteStr($parameterHash, $this->config->getUriTable()) . ') AND hash_path=' . $this->db->fullQuoteStr($search_hash, $this->config->getUriTable()) . $additionalWhere, '', '', '1');
+				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid', $this->tableConfiguration->getUrlTable(), '(page_uid!=' . intval($pageUid) . ' OR sys_language_uid!=' . intval($language) . ' OR hash_params != ' . $this->db->fullQuoteStr($parameterHash, $this->tableConfiguration->getUrlTable()) . ') AND hash_path=' . $this->db->fullQuoteStr($search_hash, $this->tableConfiguration->getUrlTable()) . $additionalWhere, '', '', '1');
 			} while (count($dbres) > 0);
 			return $tmp_uri;
 		}

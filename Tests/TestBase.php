@@ -54,9 +54,16 @@ class TestBase extends \Tx_Phpunit_TestCase {
 	 * @var \Nawork\NaworkUri\Configuration\ConfigurationReader
 	 */
 	protected $configReader;
+	
+	/**
+	 *
+	 * @var \Nawork\NaworkUri\Configuration\TableConfiguration
+	 */
+	protected $tableConfiguration;
 
 	public function setUp() {
 		$this->db = $GLOBALS['TYPO3_DB'];
+		$this->tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
 
 		$this->setupUriTable();
 		$this->setupPages();
@@ -82,6 +89,7 @@ class TestBase extends \Tx_Phpunit_TestCase {
 	}
 
 	protected function setupUriTable() {
+		$this->tableConfiguration->setUrlTable('test_tx_naworkuri_uri');
 		$this->db->sql_query(
 			"CREATE TABLE test_tx_naworkuri_uri (
 				uid int(11) NOT NULL auto_increment,
@@ -111,6 +119,7 @@ class TestBase extends \Tx_Phpunit_TestCase {
 	}
 
 	protected function setupPages() {
+		$this->tableConfiguration->setPageTable('test_pages');
 		$this->db->sql_query(
 				"CREATE TABLE `test_pages` (
 				  `uid` int(11) NOT NULL AUTO_INCREMENT,
@@ -303,6 +312,7 @@ class TestBase extends \Tx_Phpunit_TestCase {
 	}
 
 	protected function setupDomain() {
+		$this->tableConfiguration->setDomainTable('test_sys_domain');
 		$this->db->sql_query(
 				"CREATE TABLE `test_sys_domain` (
 					`uid` int(11) unsigned NOT NULL AUTO_INCREMENT,

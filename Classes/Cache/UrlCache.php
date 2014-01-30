@@ -31,8 +31,8 @@ class UrlCache {
 	 * Constructor
 	 *
 	 */
-	public function __construct($config) {
-		$this->config = $config;
+	public function __construct() {
+		$this->config = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfigurationReader();
 		$this->db = $GLOBALS['TYPO3_DB'];
 		$this->db->store_lastBuiltQuery = 1;
 		$this->tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
@@ -164,7 +164,7 @@ class UrlCache {
 		$this->makeOldUrl($domain, $pageUid, $language, $parameters);
 		$uniquePath = $this->unique($pageUid, $language, $path, $parameters, $domain); // make the url unique
 		if ($uniquePath === FALSE) {
-			throw new Tx_NaworkUri_Exception_UrlIsNotUniqueException($path, $domain, $orginalParameters, $language);
+			throw new \Nawork\NaworkUri\Exception\UrlIsNotUniqueException($path, $domain, $orginalParameters, $language);
 		}
 		/* try to find an existing url that was too old to be retreived from cache */
 		$existingUrl = $this->findExistantUrl($pageUid, $language, $parameters, $uniquePath, $domain);
@@ -221,7 +221,7 @@ class UrlCache {
 	 */
 	public function createUrl($page, $language, $domain, $parameters, $path, $originalPath) {
 		$parameters = \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE);
-		$result = @$this->db->exec_INSERTquery($this->tableConfiguration->getUrlTable(), array(
+		$result = $this->db->exec_INSERTquery($this->tableConfiguration->getUrlTable(), array(
 					'pid' => $this->config->getStoragePage(),
 					'page_uid' => intval($page),
 					'tstamp' => time(),
@@ -240,6 +240,7 @@ class UrlCache {
 					'crdate',
 					'sys_language_uid'
 				));
+
 		if (!$result) {
 			throw new Tx_NaworkUri_Exception_DbErrorException($this->db->sql_error());
 		}

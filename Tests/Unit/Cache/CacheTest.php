@@ -32,11 +32,6 @@ namespace Nawork\NaworkUri\Tests\Unit\Cache;
  */
 class CacheTest extends \Nawork\NaworkUri\Tests\TestBase {
 
-	protected $transformer;
-	protected $cache;
-	protected $db;
-	protected $configReader;
-
 	public function uniqueReturnsUniquePathProvider() {
 		return array(
 			array(
@@ -153,9 +148,9 @@ class CacheTest extends \Nawork\NaworkUri\Tests\TestBase {
 	 */
 	public function uniqueReturnsUniquePath($preparedUris, $test, $expected) {
 		foreach ($preparedUris as $uri) {
-			$uri = $this->cache->createUrl($uri['pageUid'], 0, 'test.local', $uri['params'], $uri['path'], $uri['path']);
+			$uri = $this->cache->createUrl($uri['pageUid'], 0, 1, $uri['params'], $uri['path'], $uri['path']);
 		}
-		$result = $this->cache->unique($test['pageUid'], 0, $test['path'], $test['params'], 'test.local');
+		$result = $this->cache->unique($test['pageUid'], 0, $test['path'], $test['params'], 1);
 		$this->assertEquals($expected, $result);
 	}
 

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<nawork_uri>
+
+    <append>/</append>
+    <castTypeToInt>1</castTypeToInt>
+    <castLToInt>1</castLToInt>
+    <redirectOnParameterDiff>1</redirectOnParameterDiff>
+    <redirectStatus>301</redirectStatus>
+
+    <pagenotfound>
+        <status>HTTP/1.0 404 Not Found</status>
+        <!--
+        <status domain="www.domain.tld">HTTP/1.0 404 Not Found</status>
+        <behavior type="message"><![CDATA[ <h1>Page not found!</h1> ]]></behavior>
+        <behavior type="redirect">http://www.domain.tld/?id=notfound</behavior>
+        <behavior type="page">http://www.domain.tld/?id=notfound</behavior>
+        <behavior type="page" domain="www.domain.tld">http://www.domain.tld/index.php?id=notfound</behavior>
+        -->
+        <behavior type="message"><![CDATA[ <h1>Page not found!</h1> ]]></behavior>
+    </pagenotfound>
+
+    <pageNotAccessible>
+        <status>HTTP/1.0 403 Forbidden</status>
+        <behavior type="message">
+            <![CDATA[<html><head><title>403 Forbidden</title></head><body><h1>Forbidden!</h1><p>You don't have the permission to access the requested page</p></body></html>]]></behavior>
+    </pageNotAccessible>
+
+    <transliteration>
+        <!--
+        <char from="ä" to="ae" />
+        <char from="ö" to="oe" />
+        <char from="ü" to="ue" />
+        <char from="Ä" to="ae" />
+        <char from="Ö" to="oe" />
+        <char from="Ü" to="ue" />
+        -->
+        <!-- cyrillic (russian) transliterations, not supported by glibc :: begin-->
+        <char from="а" to="a"/>
+        <char from="б" to="b"/>
+        <char from="в" to="v"/>
+        <char from="г" to="g"/>
+        <char from="д" to="d"/>
+        <char from="е" to="e"/>
+        <char from="ж" to="z"/>
+        <char from="з" to="z"/>
+        <char from="и" to="i"/>
+        <char from="й" to="j"/>
+        <char from="к" to="k"/>
+        <char from="л" to="l"/>
+        <char from="м" to="m"/>
+        <char from="н" to="n"/>
+        <char from="о" to="o"/>
+        <char from="п" to="p"/>
+        <char from="р" to="r"/>
+        <char from="с" to="s"/>
+        <char from="т" to="t"/>
+        <char from="у" to="u"/>
+        <char from="ф" to="f"/>
+        <char from="х" to="ch"/>
+        <char from="ц" to="c"/>
+        <char from="ч" to="c"/>
+        <char from="ш" to="s"/>
+        <char from="щ" to="s"/>
+        <char from="э" to="e"/>
+        <char from="ю" to="ju"/>
+        <char from="я" to="ja"/>
+
+        <char from="А" to="a"/>
+        <char from="Б" to="b"/>
+        <char from="В" to="v"/>
+        <char from="Г" to="g"/>
+        <char from="Д" to="d"/>
+        <char from="Е" to="e"/>
+        <char from="Ж" to="z"/>
+        <char from="З" to="z"/>
+        <char from="И" to="i"/>
+        <char from="Й" to="j"/>
+        <char from="К" to="k"/>
+        <char from="Л" to="l"/>
+        <char from="М" to="m"/>
+        <char from="Н" to="n"/>
+        <char from="О" to="o"/>
+        <char from="П" to="p"/>
+        <char from="Р" to="r"/>
+        <char from="С" to="s"/>
+        <char from="Т" to="r"/>
+        <char from="У" to="u"/>
+        <char from="Ф" to="f"/>
+        <char from="Х" to="z"/>
+        <char from="Ц" to="c"/>
+        <char from="Ч" to="c"/>
+        <char from="Ш" to="s"/>
+        <char from="Щ" to="s"/>
+        <char from="Э" to="e"/>
+        <char from="Ю" to="ju"/>
+        <char from="Я" to="ja"/>
+        <!-- cyrillic (russian) transliterations, not supported by glibc :: end -->
+
+        <!-- polisch diactric characters :: begin -->
+        <char from="Ą" to="A"/>
+        <char from="Ć" to="C"/>
+        <char from="Ę" to="E"/>
+        <char from="Ł" to="L"/>
+        <char from="Ń" to="N"/>
+        <char from="Ó" to="O"/>
+        <char from="Ś" to="S"/>
+        <char from="Ź" to="Z"/>
+        <char from="Ż" to="Z"/>
+
+        <char from="ą" to="a"/>
+        <char from="ć" to="c"/>
+        <char from="ę" to="e"/>
+        <char from="ł" to="l"/>
+        <char from="ń" to="n"/>
+        <char from="ó" to="o"/>
+        <char from="ś" to="s"/>
+        <char from="ź" to="z"/>
+        <char from="ż" to="z"/>
+        <!-- polisch diactric characters :: end -->
+    </transliteration>
+
+    <parameters>
+        <parameterConfiguration>
+            <name>cHash</name>
+            <type>Hidden</type>
+        </parameterConfiguration>
+        <parameterConfiguration>
+            <name>no_cache</name>
+            <type>Hidden</type>
+        </parameterConfiguration>
+        <parameterConfiguration>
+            <name>L</name>
+            <type>ValueMap</type>
+            <map>
+                <mapping>
+                    <value>0</value>
+                    <replacement></replacement>
+                </mapping>
+                <mapping>
+                    <value>1</value>
+                    <replacement>en</replacement>
+                </mapping>
+            </map>
+        </parameterConfiguration>
+        <parameterConfiguration>
+            <name>id</name>
+            <type>PagePath</type>
+            <field>alias//nav_title//title</field>
+        </parameterConfiguration>
+        <parameterConfiguration>
+            <name>tx_ttnews[tt_news]</name>
+            <type>Database</type>
+            <table>test_news</table>
+            <replacement>{title}</replacement>
+        </parameterConfiguration>
+    </parameters>
+</nawork_uri>

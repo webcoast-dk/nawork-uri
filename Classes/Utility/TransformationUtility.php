@@ -46,16 +46,16 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @param boolean $multidomain
 	 * @param string $domain
 	 */
-	public function __construct($config, $multidomain = false, $domain = '') {
+	public function __construct($multidomain = false, $domain = '') {
 		$this->db = $GLOBALS['TYPO3_DB'];
 		// read configuration
-		$this->config = $config;
+		$this->config = ConfigurationUtility::getConfigurationReader();
 		// get the domain, if multiple domain is not enabled the helper return ""
 		$this->domain = $domain;
 		if (empty($this->domain)) {
 			$this->domain = GeneralUtility::getCurrentDomain();
 		}
-		$this->cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Cache\UrlCache', $this->config);
+		$this->cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Cache\UrlCache');
 		$this->cache->setTimeout(30);
 	}
 
@@ -171,7 +171,7 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 				$cachedUri .= '#' . $anchor;
 			}
 			return $cachedUri;
-		} elseif ($dontCreateNewUrls && $cache_uri === false) {
+		} elseif ($dontCreateNewUrls && $cachedUri === false) {
 			return false;
 		}
 

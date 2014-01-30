@@ -64,17 +64,16 @@ class TestBase extends \Tx_Phpunit_TestCase {
 	public function setUp() {
 		$this->db = $GLOBALS['TYPO3_DB'];
 		$this->tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
+		\Nawork\NaworkUri\Utility\GeneralUtility::registerConfiguration('default', 'EXT:nawork_uri/Configuration/Url/TestConfiguration.xml');
 
 		$this->setupUriTable();
 		$this->setupPages();
 		$this->setupNews();
 		$this->setupDomain();
 
-		$this->configReader = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader', 'typo3conf/ext/nawork_uri/Tests/testUrlConfiguration.xml');
-//		echo($this->configReader->getDomainTable());
-//		ob_flush();
-		$this->transformer = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $this->configReader, true, 'test.local');
-		$this->cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Cache\UrlCache', $this->configReader);
+		$this->configReader = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfigurationReader();
+		$this->transformer = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', true, 'test.local');
+		$this->cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Cache\UrlCache');
 	}
 
 	public function tearDown() {
@@ -90,6 +89,7 @@ class TestBase extends \Tx_Phpunit_TestCase {
 
 	protected function setupUriTable() {
 		$this->tableConfiguration->setUrlTable('test_tx_naworkuri_uri');
+		$this->db->sql_query("DROP TABLE IF EXISTS test_tx_naworkuri_uri;");
 		$this->db->sql_query(
 			"CREATE TABLE test_tx_naworkuri_uri (
 				uid int(11) NOT NULL auto_increment,
@@ -120,6 +120,7 @@ class TestBase extends \Tx_Phpunit_TestCase {
 
 	protected function setupPages() {
 		$this->tableConfiguration->setPageTable('test_pages');
+		$this->db->sql_query("DROP TABLE IF EXISTS test_pages;");
 		$this->db->sql_query(
 				"CREATE TABLE `test_pages` (
 				  `uid` int(11) NOT NULL AUTO_INCREMENT,
@@ -285,6 +286,7 @@ class TestBase extends \Tx_Phpunit_TestCase {
 	}
 
 	protected function setupNews() {
+		$this->db->sql_query("DROP TABLE IF EXISTS test_news;");
 		$this->db->sql_query(
 				"CREATE TABLE test_news (
 					uid int(11) NOT NULL auto_increment,
@@ -313,6 +315,7 @@ class TestBase extends \Tx_Phpunit_TestCase {
 
 	protected function setupDomain() {
 		$this->tableConfiguration->setDomainTable('test_sys_domain');
+		$this->db->sql_query("DROP TABLE IF EXISTS test_sys_domain;");
 		$this->db->sql_query(
 				"CREATE TABLE `test_sys_domain` (
 					`uid` int(11) unsigned NOT NULL AUTO_INCREMENT,

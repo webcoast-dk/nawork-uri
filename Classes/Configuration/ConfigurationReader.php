@@ -37,18 +37,19 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @var SimpleXMLElement
 	 */
 	protected $config;
+	/**
+	 * @var string
+	 */
 	protected $configFile;
+	/**
+	 * @var array
+	 */
 	protected $extConfig;
-	protected $tables = array(
-		'uri' => 'tx_naworkuri_uri',
-		'page' => 'pages',
-		'domain' => 'sys_domain'
-	);
 
 	public function __construct($configFile = '') {
 		global $TYPO3_CONF_VARS;
 		$this->configFile = $configFile;
-		$this->config = new \SimpleXMLElement(PATH_site . $configFile, null, true);
+		$this->config = new \SimpleXMLElement($configFile, NULL, TRUE);
 		$this->extConfig = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 		$this->validateConfig();
 	}
@@ -56,15 +57,12 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 	public function __sleep() {
 		$this->config = NULL;
 		unset($this->config);
-		return array(
-			'configFile',
-			'extConfig',
-			'tables'
-		);
+
+		return array('configFile', 'extConfig');
 	}
 
 	public function __wakeup() {
-		$this->config = new \SimpleXMLElement(PATH_site . $this->configFile, null, true);
+		$this->config = new \SimpleXMLElement(PATH_site . $this->configFile, NULL, TRUE);
 	}
 
 	public function getStoragePage() {
@@ -108,7 +106,7 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 	}
 
 	public function hasPagePathConfig() {
-		return is_a($this->config->pagepath, 'SimpleXMLElement') ? true : false;
+		return is_a($this->config->pagepath, 'SimpleXMLElement') ? TRUE : FALSE;
 	}
 
 	public function getPageNotFoundConfigStatus() {
@@ -118,7 +116,7 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 		foreach ($this->config->pagenotfound->children() as $child) {
 			if ($child->getName() == 'status') {
 				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */
-				if ((string) $child->attributes()->domain === (string) $currentHost && ((int) $child->attributes()->ignoreMasterDomain === 1 || $currentDomain === 0 )) {
+				if ((string) $child->attributes()->domain === (string) $currentHost && ((int) $child->attributes()->ignoreMasterDomain === 1 || $currentDomain === 0)) {
 					return (string) $child;
 				}
 				/* if there is a configuration for the current domain, use it */
@@ -131,6 +129,7 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 				}
 			}
 		}
+
 		return $status;
 	}
 
@@ -141,7 +140,7 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 		foreach ($this->config->pagenotfound->children() as $child) {
 			if ($child->getName() == 'behavior') {
 				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */
-				if ((string) $child->attributes()->domain === (string) $currentHost && ((int) $child->attributes()->ignoreMasterDomain === 1 || $currentDomain === 0 )) {
+				if ((string) $child->attributes()->domain === (string) $currentHost && ((int) $child->attributes()->ignoreMasterDomain === 1 || $currentDomain === 0)) {
 					return (string) $child->attributes()->type;
 				}
 				/* if there is a configuration for the current domain, use it */
@@ -154,6 +153,7 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 				}
 			}
 		}
+
 		return $type;
 	}
 
@@ -178,6 +178,7 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 				}
 			}
 		}
+
 		return $behavior;
 	}
 
@@ -198,7 +199,7 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 		foreach ($this->config->pageNotAccessible->children() as $child) {
 			if ($child->getName() == 'status') {
 				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */
-				if ((string) $child->attributes()->domain === (string) $currentHost && ((int) $child->attributes()->ignoreMasterDomain === 1 || $currentDomain === 0 )) {
+				if ((string) $child->attributes()->domain === (string) $currentHost && ((int) $child->attributes()->ignoreMasterDomain === 1 || $currentDomain === 0)) {
 					return (string) $child;
 				}
 				/* if there is a configuration for the current domain, use it */
@@ -211,6 +212,7 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 				}
 			}
 		}
+
 		return $status;
 	}
 
@@ -221,7 +223,7 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 		foreach ($this->config->pageNotAccessible->children() as $child) {
 			if ($child->getName() == 'behavior') {
 				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */
-				if ((string) $child->attributes()->domain === (string) $currentHost && ((int) $child->attributes()->ignoreMasterDomain === 1 || $currentDomain === 0 )) {
+				if ((string) $child->attributes()->domain === (string) $currentHost && ((int) $child->attributes()->ignoreMasterDomain === 1 || $currentDomain === 0)) {
 					return (string) $child->attributes()->type;
 				}
 				/* if there is a configuration for the current domain, use it */
@@ -234,6 +236,7 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 				}
 			}
 		}
+
 		return $type;
 	}
 
@@ -257,6 +260,7 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 				}
 			}
 		}
+
 		return $behavior;
 	}
 
@@ -284,9 +288,10 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 		if ($this->config->transliteration instanceof \SimpleXMLElement && $this->config->transliteration->count()) {
 			return $this->config->transliteration->children();
 		}
+
 		return array();
 	}
-	
+
 	public function getParameterConfigurations() {
 		return $this->config->parameters->children();
 	}
@@ -329,13 +334,13 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 		}
 
 		if (!$this->config->checkForUpperCaseURI instanceof \SimpleXMLElement) {
-			$this->config->addChild('checkForUpperCaseURI', false);
+			$this->config->addChild('checkForUpperCaseURI', FALSE);
 		}
 	}
 
 	/**
 	 * Used for adjusting config for unit tests
-	 * 
+	 *
 	 * @param array $changedExtConf
 	 */
 	public function setExtConfig($changedExtConf) {

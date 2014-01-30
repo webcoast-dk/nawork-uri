@@ -21,12 +21,14 @@ if (TYPO3_MODE === 'BE') {
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = 'Tx_Naworkuri_Command_NaworkUriCommandController';
 }
 
-// array to store the transformation services in
-$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['transformationServices'] = array();
-
+// register transformation services
 \Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('Hidden', 'EXT:nawork_uri/Classes/Service/Transformation/HiddenTransformationService.php:Nawork\\NaworkUri\\Service\\Transformation\\HiddenTransformationService');
 \Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('Plain', 'EXT:nawork_uri/Classes/Service/Transformation/PlainTransformationService.php:Nawork\\NaworkUri\\Service\\Transformation\\PlainTransformationService');
 \Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('ValueMap', 'EXT:nawork_uri/Classes/Service/Transformation/ValueMapTransformationService.php:Nawork\\NaworkUri\\Service\\Transformation\\ValueMapTransformationService');
 \Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('PagePath', 'EXT:nawork_uri/Classes/Service/Transformation/PagePathTransformationService.php:Nawork\\NaworkUri\\Service\\Transformation\\PagePathTransformationService');
 \Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('Database', 'EXT:nawork_uri/Classes/Service/Transformation/DatabaseTransformationService.php:Nawork\\NaworkUri\\Service\\Transformation\\DatabaseTransformationService');
+
+// register default configuration, but do not override if default is already set
+\Nawork\NaworkUri\Utility\GeneralUtility::registerConfiguration('default', 'EXT:nawork_uri/Configuration/Url/DefaultConfiguration.xml', FALSE);
+
 ?>

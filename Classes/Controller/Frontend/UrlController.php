@@ -20,8 +20,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 			list($uri, $parameters) = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode('?', $uri);
 			// translate uri
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
-			/* @var $configReader Nawork\NaworkUri\Configuration\ConfigurationReader */
-			$configReader = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader', $extConf['XMLPATH']);
+			$configReader = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfigurationReader();
 			/* @var $translator Nawork\NaworkUri\Utility\TransformationUtility */
 			$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $configReader, $extConf['MULTIDOMAIN']);
 			try {
@@ -85,7 +84,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 			list($path, $params) = explode('?', $link['LD']['totalURL']);
 			$params = rawurldecode(html_entity_decode($params));
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
-			$configReader = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader', $extConf['XMLPATH']);
+			$configReader = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfigurationReader();
 			$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $configReader, (boolean) $extConf['MULTIDOMAIN']);
 			try {
 				$url = $translator->params2uri($params);
@@ -109,7 +108,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 						$link['LD']['totalURL'] = $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $link['LD']['totalURL'];
 					}
 				}
-			} catch (Tx_NaworkUri_Exception_UrlIsNotUniqueException $ex) {
+			} catch (\Nawork\NaworkUri\Exception\UrlIsNotUniqueException $ex) {
 				/* log unique failure to belog */
 				\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
 				$totalURL = 'index.php';
@@ -156,7 +155,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 			// translate uri
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 			/* @var $configReader \Nawork\NaworkUri\Configuration\ConfigurationReader */
-			$configReader = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader', $extConf['XMLPATH']);
+			$configReader = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfigurationReader();
 			/* @var $translator \Nawork\NaworkUri\Utility\TransformationUtility */
 			$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $configReader, $extConf['MULTIDOMAIN']);
 			$newUrlParameters = array('id' => $this->redirectUrl['page_uid'], 'L' => $this->redirectUrl['sys_language_uid']);
@@ -187,7 +186,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 			list($path, $params) = explode('?', $GLOBALS['TSFE']->siteScript);
 			$params = rawurldecode(html_entity_decode($params)); // decode the query string because it is expected by the further processing functions
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
-			$configReader = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader', $extConf['XMLPATH']);
+			$configReader = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfigurationReader();
 			$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $configReader, $extConf['MULTIDOMAIN']);
 			$tempParams = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params);
 
@@ -263,7 +262,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 						\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($uri, $configReader->getRedirectStatus());
 						exit;
 					}
-				} catch (Tx_NaworkUri_Exception_UrlIsNotUniqueException $ex) {
+				} catch (\Nawork\NaworkUri\Exception\UrlIsNotUniqueException $ex) {
 					/* log unique failure to belog */
 					\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
 				} catch (Tx_NaworkUri_Exception_DbErrorException $ex) {
@@ -356,7 +355,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 	public function handlePagenotfound($params, $frontendController) {
 		$output = '';
 		$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
-		$configReader = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Configuration\ConfigurationReader', $extConf['XMLPATH']);
+		$configReader = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfigurationReader();
 		/* @var $configReader Nawork\NaworkUri\Configuration\ConfigurationReader */
 		/* the page is not accessible without being logged in, so handle this, if configured */
 		if (array_key_exists('pageAccessFailureReasons', $params) && is_array($params['pageAccessFailureReasons']) && array_key_exists('fe_group', $params['pageAccessFailureReasons']) && $configReader->hasPageNotAccessibleConfiguration()) {

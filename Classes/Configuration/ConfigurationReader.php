@@ -69,10 +69,6 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 		return (int) $this->extConfig['storagePage'];
 	}
 
-	public function isMultiDomainEnabled() {
-		return (boolean) $this->extConfig['MULTIDOMAIN'];
-	}
-
 	public function getCastTypeToInt() {
 		return (boolean) (int) $this->config->castTypeToInt;
 	}
@@ -91,22 +87,6 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 
 	public function getCheckForUpperCaseURI() {
 		return (boolean) (int) $this->config->checkForUpperCaseURI;
-	}
-
-	public function getPagePathTableName() {
-		return (string) $this->config->pagepath->table;
-	}
-
-	public function getPagePathField() {
-		return (string) $this->config->pagepath->field;
-	}
-
-	public function getPagePathLimit() {
-		return (int) $this->config->pagepath->limit;
-	}
-
-	public function hasPagePathConfig() {
-		return is_a($this->config->pagepath, 'SimpleXMLElement') ? TRUE : FALSE;
 	}
 
 	public function getPageNotFoundConfigStatus() {
@@ -294,6 +274,10 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 
 	public function getParameterConfigurations() {
 		return $this->config->parameters->children();
+	}
+
+	public function isDisabled() {
+		return (boolean) (int) $this->config->disabled;
 	}
 
 	private function validateConfig() {

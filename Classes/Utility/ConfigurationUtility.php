@@ -14,21 +14,32 @@ class ConfigurationUtility {
 		/** @var \Nawork\NaworkUri\Configuration\TableConfiguration $tableConfiguration */
 		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
 		$file = NULL;
-		$domain = 'default';
-		$domainUid = GeneralUtility::getCurrentDomain();
-		if ($domainUid > 0) {
-			$domainRecord = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('domainName', $tableConfiguration->getDomainTable(), 'uid=' . intval($domainUid));
-			if (is_array($domainRecord)) {
-				$domain = $domainRecord['domainName'];
-			}
-		}
 		try {
-			$file = self::findConfigurationByDomain($domain);
+			// try to find the configuration for the current host name, e.g. for
+			// local development or testing environment: this ignores master domains
+			$file = self::findConfigurationByDomain(\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY'));
 		} catch (InvalidConfigurationException $ex) {
-			try {
-				$file = self::findConfigurationByDomain('default');
-			} catch (InvalidConfigurationException $ex) {
+			$domain = 'default';
+			// look, if there is a domain record matching the current hostname,
+			// this includes recursive look up of master domain records
+			$domainUid = GeneralUtility::getCurrentDomain();
+			if ($domainUid > 0) {
+				$domainRecord = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('domainName', $tableConfiguration->getDomainTable(), 'uid=' . intval($domainUid));
+				if (is_array($domainRecord)) {
+					$domain = $domainRecord['domainName'];
+				}
 			}
+			try {
+				// look for a configuration file for the evaluated domain
+				$file = self::findConfigurationByDomain($domain);
+			} catch (InvalidConfigurationException $ex) {
+				try {
+					// as a fallback use the default configuration
+					$file = self::findConfigurationByDomain('default');
+				} catch (InvalidConfigurationException $ex) {
+				}
+			}
+
 		}
 
 		return $file;

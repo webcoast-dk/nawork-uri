@@ -37,35 +37,8 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 							$this->handlePagenotfound(array('currentUrl' => $ref->siteScript, 'reaseonText' => 'The requested path could not be found', 'pageAccessFailureReasons' => array()), $ref);
 						}
 					}
-				} catch (Tx_NaworkUri_Exception_UrlIsRedirectException $ex) {
-					$url = $ex->getUrl();
-					if ($url['type'] == \Nawork\NaworkUri\Cache\UrlCache::TX_NAWORKURI_URI_TYPE_OLD) {
-						/*
-						 * we must not redirect here because we cannot use link generation here to get the correct target path
-						 */
-						$this->redirectUrl = $url;
-					} elseif ($url['type'] == \Nawork\NaworkUri\Cache\UrlCache::TX_NAWORKURI_URI_TYPE_REDIRECT) {
-						/* add hook for pre processing the redirect record */
-						if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['redirect-preProcess'])) {
-							foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['redirect-preProcess'] as $funcRef) {
-								\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($funcRef, $url, $this);
-							}
-						}
-						$newUrl = parse_url($url['redirect_path']);
-						$requestUrl = parse_url(\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
-						if (empty($newUrl['scheme'])) $newUrl['scheme'] = $requestUrl['scheme'];
-						if (empty($newUrl['host'])) $newUrl['host'] = $requestUrl['host'];
-						if (substr($newUrl['path'], 0, 1) != '/') $newUrl['path'] = '/' . $newUrl['path'];
-						$uri = $newUrl['scheme'] . '://' . $newUrl['host'] . $newUrl['path'];
-						$queryParams = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($newUrl['query']); // use only query string from redirect target and discard the given one
-						if (!empty($queryParams)) {
-							$uri .= '?' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($queryParams);
-						}
-						if (array_key_exists('fragment', $newUrl) && !empty($newUrl['fragment'])) {
-							$uri .= '#' . $newUrl['fragment'];
-						}
-						\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($uri, $url['redirect_mode']);
-					}
+				} catch (\Nawork\NaworkUri\Exception\UrlIsRedirectException $ex) {
+					$this->redirectUrl = $ex->getUrl();
 				}
 			}
 		}

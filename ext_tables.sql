@@ -43,7 +43,6 @@ CREATE TABLE tx_naworkuri_uri (
 	hash_params varchar(32) DEFAULT '' NOT NULL,
 	locked tinyint(1) DEFAULT '0' NOT NULL,
 	type tinyint(1) DEFAULT '0' NOT NULL,
-	redirect_path varchar(255) DEFAULT '' NOT NULL,
 	redirect_mode int(3) DEFAULT '301' NOT NULL,
 	original_path varchar(255) DEFAULT '' NOT NULL,
 

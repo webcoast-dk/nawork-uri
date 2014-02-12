@@ -84,7 +84,7 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 		}
 		if ($cache) {
 			if ($cache['type'] > 0) {
-				throw new Tx_NaworkUri_Exception_UrlIsRedirectException($cache);
+				throw new \Nawork\NaworkUri\Exception\UrlIsRedirectException($cache);
 			}
 			// cachedparams
 			$cachedparams = Array();

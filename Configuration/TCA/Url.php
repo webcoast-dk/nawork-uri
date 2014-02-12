@@ -6,7 +6,7 @@ if (!defined('TYPO3_MODE'))
 $TCA['tx_naworkuri_uri'] = Array(
 	'ctrl' => $TCA['tx_naworkuri_uri']['ctrl'],
 	'interface' => Array(
-		'showRecordFieldList' => 'sys_language_uid,domain,path,params,hash_path,hash_params,locked,type,redirect_path,redirect_mode'
+		'showRecordFieldList' => 'sys_language_uid,domain,path,params,hash_path,hash_params,locked,type,redirect_mode'
 	),
 	'feInterface' => $TCA['tx_naworkuri_uri']['feInterface'],
 	'columns' => Array(
@@ -103,14 +103,6 @@ $TCA['tx_naworkuri_uri'] = Array(
 				'default' => '2'
 			)
 		),
-		'redirect_path' => array(
-			'exclude' => '1',
-			'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.redirect_path',
-			'config' => array(
-				'type' => 'input',
-				'size' => '80'
-			)
-		),
 		'redirect_mode' => array(
 			'exclude' => '1',
 			'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode',
@@ -133,7 +125,7 @@ $TCA['tx_naworkuri_uri'] = Array(
 			'showitem' => 'type, sys_language_uid, page_uid, path'
 		),
 		'2' => array(
-			'showitem' => 'type, path, redirect_path, redirect_mode'
+			'showitem' => 'type, path, page_uid, redirect_mode'
 		)
 	)
 );

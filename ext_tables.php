@@ -133,4 +133,6 @@ if (TYPO3_MODE == 'BE') {
 }
 
 $GLOBALS['TYPO3_CONF_VARS']['FE']['pageOverlayFields'] .= ',tx_naworkuri_pathsegment,tx_naworkuri_exclude';
+// register hook for manipulating default type for new records
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tceforms.php']['getMainFieldsClass'][] = 'Nawork\\NaworkUri\\Hooks\\TceFormsMainFields';
 ?>

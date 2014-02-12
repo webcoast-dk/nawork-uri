@@ -6,9 +6,6 @@ $TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tstemplate.php']['linkData-Pos
 $TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_fe.php']['checkAlternativeIdMethods-PostProc']['nawork_uri'] = 'EXT:nawork_uri/Classes/Controller/Frontend/UrlController.php:&Nawork\NaworkUri\Controller\Frontend\UrlController->uri2params';
 // redirect old urls to new
 $TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_fe.php']['configArrayPostProc']['nawork_uri'] = 'EXT:nawork_uri/Classes/Controller/Frontend/UrlController.php:&Nawork\NaworkUri\Controller\Frontend\UrlController->redirect2uri';
-// add a tce_main hook to create the path and parameter hashes automatically
-$TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass']['nawork_uri'] = 'EXT:nawork_uri/Classes/Controller/Frontend/UrlController.php:UrlController';
-//$TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass']['tx_naworkuri_uriSave'] = 'EXT:nawork_uri/Classes/UserFunc/UriSave.php:Tx_NaworkUri_UserFunc_UriSave';
 /* add an additional cache clearing function to the menu */
 $TYPO3_CONF_VARS['SC_OPTIONS']['additionalBackendItems']['cacheActions']['tx_naworkuri'] = 'EXT:nawork_uri/Classes/Cache/tx_naworkuri_cache_clearcachemenu.php:tx_naworkuri_cache_clearcachemenu';
 //

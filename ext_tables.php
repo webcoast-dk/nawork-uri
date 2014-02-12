@@ -133,6 +133,12 @@ if (TYPO3_MODE == 'BE') {
 }
 
 $GLOBALS['TYPO3_CONF_VARS']['FE']['pageOverlayFields'] .= ',tx_naworkuri_pathsegment,tx_naworkuri_exclude';
-// register hook for manipulating default type for new records
-$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tceforms.php']['getMainFieldsClass'][] = 'Nawork\\NaworkUri\\Hooks\\TceFormsMainFields';
+
+if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
+	// register hook for manipulating default type for new records
+	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tceforms.php']['getMainFieldsClass'][] = 'Nawork\\NaworkUri\\Hooks\\TceFormsMainFields';
+	// add a hook to create the path and parameter hashes automatically when creating or altering urls manually
+	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = 'Nawork\\NaworkUri\\Hooks\\TceMainProcessDatamap';
+
+}
 ?>

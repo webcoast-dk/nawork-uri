@@ -33,6 +33,7 @@ class GeneralUtilityTest extends \Nawork\NaworkUri\Tests\TestBase {
 			array('L=1&foo[bar]=123&id=2', array('foo[bar]' => 123, 'id' => 2, 'L' => 1)),
 			array('foo[bar]=123&L=1&id=2', array('foo[bar]' => 123, 'id' => 2, 'L' => 1)),
 			array('foo=bar&baz[]=bla&baz[]=fasel', array('foo' => 'bar', 'baz[]' => array('bla', 'fasel'))),
+		    array('tx_solr[q]=foo+bar', array('tx_solr[q]' => 'foo bar')),
 		);
 	}
 

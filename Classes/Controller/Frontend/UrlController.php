@@ -57,7 +57,6 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 		if (!$configReader->isDisabled()) {
 			if ($GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1 && $link['LD']['url']) {
 				list($path, $params) = explode('?', $link['LD']['totalURL']);
-				$params = rawurldecode(html_entity_decode($params));
 				$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 				$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $configReader, (boolean) $extConf['MULTIDOMAIN']);
 				try {

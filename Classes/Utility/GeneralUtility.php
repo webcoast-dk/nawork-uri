@@ -42,6 +42,8 @@ class GeneralUtility {
 			return array();
 		}
 
+		$param_string = rawurldecode(urldecode(html_entity_decode($param_string)));
+
 		$result = array();
 		$tmp = explode('&', $param_string);
 		foreach ($tmp as $part) {

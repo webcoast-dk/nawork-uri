@@ -1,6 +1,8 @@
 <?php
 
-class Tx_naworkuri_Domain_Model_PathTestResult {
+namespace Nawork\NaworkUri\Domain\Model;
+
+class PathTestResult {
 
 	/**
 	 * @var string

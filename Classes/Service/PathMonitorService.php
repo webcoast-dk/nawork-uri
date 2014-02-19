@@ -1,6 +1,8 @@
 <?php
 
-class Tx_Naworkuri_Service_PathMonitorService {
+namespace Nawork\NaworkUri\Service;
+
+class PathMonitorService {
 
 	protected $domain;
 	protected $cUrl;
@@ -54,14 +56,14 @@ class Tx_Naworkuri_Service_PathMonitorService {
 	 * @param int $expectedStatus
 	 * @param null|string $expectedRedirect
 	 * @param null|bool $expectedHttps use https
-	 * @return Tx_naworkuri_Domain_Model_PathTestResult
+	 * @return \Nawork\NaworkUri\Domain\Model\PathTestResult
 	 */
 	public function testPath($path, $expectedStatus = NULL, $expectedRedirect = NULL, $expectedHttps = FALSE) {
 
 		$url = 'http://' . $this->domain . $path;
 
 		// create result object
-		$pathTestResult = new Tx_naworkuri_Domain_Model_PathTestResult();
+		$pathTestResult = new \Nawork\NaworkUri\Domain\Model\PathTestResult();
 		$pathTestResult->addInfo('expect'. $path . ' status:' . $expectedStatus . ' redirect:' . $expectedRedirect . ' https:' . $expectedHttps);
 		$pathTestResult->setUrl($url);
 

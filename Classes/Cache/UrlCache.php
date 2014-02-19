@@ -4,9 +4,9 @@ namespace Nawork\NaworkUri\Cache;
 
 class UrlCache {
 
-	const TX_NAWORKURI_URI_TYPE_NORMAL = 0;
-	const TX_NAWORKURI_URI_TYPE_OLD = 1;
-	const TX_NAWORKURI_URI_TYPE_REDIRECT = 2;
+	const URI_TYPE_NORMAL = 0;
+	const URI_TYPE_OLD = 1;
+	const URI_TYPE_REDIRECT = 2;
 
 	/**
 	 *
@@ -220,7 +220,7 @@ class UrlCache {
 		$result = $this->db->exec_INSERTquery($this->tableConfiguration->getUrlTable(), array('pid' => $this->config->getStoragePage(), 'page_uid' => intval($page), 'tstamp' => time(), 'crdate' => time(), 'sys_language_uid' => intval($language), 'domain' => $domain, 'path' => $path, 'hash_path' => md5($path), 'params' => $parameters, 'hash_params' => md5($parameters), 'original_path' => $originalPath), array('pid', 'page_uid', 'tstamp', 'crdate', 'sys_language_uid'));
 
 		if (!$result) {
-			throw new Tx_NaworkUri_Exception_DbErrorException($this->db->sql_error());
+			throw new \Nawork\NaworkUri\Exception\DbErrorException($this->db->sql_error());
 		}
 	}
 
@@ -238,7 +238,7 @@ class UrlCache {
 	 * @param array  $parameters
 	 * @param int    $type
 	 */
-	private function updateUrl($uid, $page, $language, $parameters, $type = self::TX_NAWORKURI_URI_TYPE_NORMAL) {
+	private function updateUrl($uid, $page, $language, $parameters, $type = self::URI_TYPE_NORMAL) {
 		$parameters = \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE);
 		$this->db->exec_UPDATEquery($this->tableConfiguration->getUrlTable(), 'uid=' . intval($uid), array('page_uid' => intval($page), 'sys_language_uid' => $language, 'params' => $parameters, 'hash_params' => md5($parameters), 'type' => intval($type), 'tstamp' => time()), array('page_uid', 'sys_language_uid', 'type', 'tstamp'));
 	}
@@ -252,7 +252,7 @@ class UrlCache {
 	 */
 	private function makeOldUrl($domain, $pageId, $language, $parameters, $excludeUid = FALSE) {
 		$domainCondition = ' AND domain=' . (int) $domain;
-		$this->db->exec_UPDATEquery($this->tableConfiguration->getUrlTable(), 'hash_params=' . $this->db->fullQuoteStr(md5(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE)), $this->tableConfiguration->getUrlTable()) . $domainConstraint . ' AND page_uid=' . intval($pageId) . ' AND sys_language_uid=' . intval($language) . ($excludeUid !== FALSE ? ' AND uid!=' . intval($excludeUid) : '') . ' AND type=0', array('type' => self::TX_NAWORKURI_URI_TYPE_OLD, 'tstamp' => time()), array('type', 'tstamp'));
+		$this->db->exec_UPDATEquery($this->tableConfiguration->getUrlTable(), 'hash_params=' . $this->db->fullQuoteStr(md5(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE)), $this->tableConfiguration->getUrlTable()) . $domainConstraint . ' AND page_uid=' . intval($pageId) . ' AND sys_language_uid=' . intval($language) . ($excludeUid !== FALSE ? ' AND uid!=' . intval($excludeUid) : '') . ' AND type=0', array('type' => self::URI_TYPE_OLD, 'tstamp' => time()), array('type', 'tstamp'));
 	}
 
 	/**

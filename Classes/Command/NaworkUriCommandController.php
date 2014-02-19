@@ -1,6 +1,8 @@
 <?php
 
-class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Controller_CommandController {
+namespace Nawork\NaworkUri\Command;
+
+class NaworkUriCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\CommandController {
 
 	/**
 	 * Monitor the stored pathes
@@ -22,7 +24,7 @@ class Tx_Naworkuri_Command_NaworkUriCommandController extends Tx_Extbase_MVC_Con
 	 */
 	public function monitorPathesCommand($domain = NULL, $user = NULL, $password = NULL, $sslNoVerify = FALSE, $pathes = NULL, $errors = FALSE, $output = NULL , $verbose = FALSE, $sleep = 0) {
 
-		$urlMonitor = new \Tx_Naworkuri_Service_PathMonitorService($domain, $user, $password, $sslNoVerify);
+		$urlMonitor = new \Nawork\NaworkUri\Service\PathMonitorService($domain, $user, $password, $sslNoVerify);
 
 		$pathesTotal = 0;
 		$pathesOk = 0;

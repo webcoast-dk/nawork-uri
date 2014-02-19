@@ -1,16 +1,13 @@
 <?php
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+namespace Nawork\NaworkUri\Controller;
 
 /**
  * Description of UrlController
  *
  * @author thorben
  */
-class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_AbstractController {
+class UrlController extends AbstractController {
 
 	/**
 	 *
@@ -20,31 +17,31 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 
 	/**
 	 *
-	 * @var Tx_NaworkUri_Domain_Repository_UrlRepository
+	 * @var \Nawork\NaworkUri\Domain\Repository\UrlRepository
 	 */
 	protected $urlRepository;
 
 	/**
 	 *
-	 * @var Tx_NaworkUri_Domain_Repository_DomainRepository
+	 * @var \Nawork\NaworkUri\Domain\Repository\DomainRepository
 	 */
 	protected $domainRepository;
 
 	/**
 	 *
-	 * @var Tx_NaworkUri_Domain_Repository_LanguageRepository
+	 * @var \Nawork\NaworkUri\Domain\Repository\LanguageRepository
 	 */
 	protected $languageRepository;
 	protected $userSettingsKey = 'tx_naworkuri_moduleUrl';
 
 	public function initializeAction() {
 		parent::initializeAction();
-		$this->pageId = intval(t3lib_div::_GP('id'));
-		if ($this->pageRenderer instanceof t3lib_PageRenderer) {
+		$this->pageId = intval(\TYPO3\CMS\Core\Utility\GeneralUtility::_GP('id'));
+		if ($this->pageRenderer instanceof \TYPO3\CMS\Core\Page\PageRenderer) {
 			$this->pageRenderer->addInlineLanguageLabelFile('EXT:nawork_uri/Resources/Private/Language/locallang_mod_url.xml', '', '', 2);
 			$this->pageRenderer->addInlineLanguageLabel('header_module', 'foo');
-			$this->pageRenderer->addJsFile(t3lib_extMgm::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/jquery.urlModule.js');
-			$this->pageRenderer->addJsFile(t3lib_extMgm::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/urlModule.js');
+			$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/jquery.urlModule.js');
+			$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/urlModule.js');
 		}
 		$this->urlRepository = $this->objectManager->get('Tx_NaworkUri_Domain_Repository_UrlRepository');
 		$this->domainRepository = $this->objectManager->get('Tx_NaworkUri_Domain_Repository_DomainRepository');
@@ -52,7 +49,7 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 	}
 
 	public function initializeIndexRedirectsAction() {
-		$this->pageRenderer->addJsFile(t3lib_extMgm::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/redirectModule.js');
+		$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/redirectModule.js');
 	}
 
 	public function indexUrlsAction() {
@@ -80,20 +77,22 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 
 	/**
 	 *
-	 * @param Tx_NaworkUri_Domain_Model_Domain $domain
+	 * @param \Nawork\NaworkUri\Domain\Model\Domain $domain
 	 * @param int $language
 	 * @param array $types
 	 * @param string $scope
 	 * @param string $path
 	 * @param int $offset
 	 * @param int $limit
+	 *
+	 * @return string
 	 */
-	public function ajaxLoadUrlsAction(Tx_NaworkUri_Domain_Model_Domain $domain = NULL, $language = NULL, $types = array(), $scope = NULL, $path = NULL, $offset = NULL, $limit = NULL) {
-		/* @var $filter Tx_NaworkUri_Domain_Model_Filter */
-		$filter = $this->objectManager->get('Tx_NaworkUri_Domain_Model_Filter');
+	public function ajaxLoadUrlsAction($domain = NULL, $language = NULL, $types = array(), $scope = NULL, $path = NULL, $offset = NULL, $limit = NULL) {
+		/* @var $filter \Nawork\NaworkUri\Domain\Model\Filter */
+		$filter = $this->objectManager->get('Filter');
 		$filter->setPageId($this->pageId);
 
-		if ($domain instanceof Tx_NaworkUri_Domain_Model_Domain) {
+		if ($domain instanceof \Nawork\NaworkUri\Domain\Model\Domain) {
 			$filter->setDomain($domain);
 		}
 
@@ -133,16 +132,18 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 
 	/**
 	 *
-	 * @param Tx_NaworkUri_Domain_Model_Domain $domain
+	 * @param \Nawork\NaworkUri\Domain\Model\Domain $domain
 	 * @param string $path
 	 * @param int $offset
 	 * @param int $limit
+	 *
+	 * @return string
 	 */
-	public function ajaxLoadRedirectsAction(Tx_NaworkUri_Domain_Model_Domain $domain = NULL, $path = NULL, $offset = NULL, $limit = NULL) {
-		/* @var $filter Tx_NaworkUri_Domain_Model_Filter */
-		$filter = $this->objectManager->get('Tx_NaworkUri_Domain_Model_Filter');
+	public function ajaxLoadRedirectsAction($domain = NULL, $path = NULL, $offset = NULL, $limit = NULL) {
+		/* @var $filter \Nawork\NaworkUri\Domain\Model\Filter */
+		$filter = $this->objectManager->get('Nawork\\NaworkUri\\Domain\\Model\\Filter');
 
-		if ($domain instanceof Tx_NaworkUri_Domain_Model_Domain) {
+		if ($domain instanceof \Nawork\NaworkUri\Domain\Model\Domain) {
 			$filter->setDomain($domain);
 		}
 
@@ -168,10 +169,10 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 
 	/**
 	 *
-	 * @param Tx_NaworkUri_Domain_Model_Url $url
-	 * @param boolean $includeAdd
+	 * @param \Nawork\NaworkUri\Domain\Model\Url $url
+	 * @param boolean $includeAddOption
 	 */
-	public function contextMenuAction(Tx_NaworkUri_Domain_Model_Url $url, $includeAddOption = FALSE) {
+	public function contextMenuAction($url, $includeAddOption = FALSE) {
 		$this->view->assign('url', $url);
 		$this->view->assign('includeAddOption', $includeAddOption);
 	}
@@ -179,10 +180,10 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 	/**
 	 * Toggle the lock state of an url
 	 *
-	 * @param Tx_NaworkUri_Domain_Model_Url $url
+	 * @param \Nawork\NaworkUri\Domain\Model\Url $url
 	 * @return string
 	 */
-	public function lockToggleAction(Tx_NaworkUri_Domain_Model_Url $url) {
+	public function lockToggleAction($url) {
 		$url->setLocked(!$url->getLocked());
 		return '';
 	}
@@ -190,10 +191,10 @@ class Tx_NaworkUri_Controller_UrlController extends Tx_NaworkUri_Controller_Abst
 	/**
 	 * Delete a url
 	 *
-	 * @param Tx_NaworkUri_Domain_Model_Url $url
+	 * @param \Nawork\NaworkUri\Domain\Model\Url $url
 	 * @return string
 	 */
-	public function deleteAction(Tx_NaworkUri_Domain_Model_Url $url) {
+	public function deleteAction($url) {
 		$this->urlRepository->remove($url);
 		return '';
 	}

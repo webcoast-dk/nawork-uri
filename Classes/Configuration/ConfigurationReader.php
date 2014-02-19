@@ -34,7 +34,7 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 
 	/**
 	 *
-	 * @var SimpleXMLElement
+	 * @var \SimpleXMLElement
 	 */
 	protected $config;
 	/**
@@ -92,7 +92,7 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 	public function getPageNotFoundConfigStatus() {
 		$status = '';
 		$currentDomain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
-		$currentHost = TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
+		$currentHost = \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
 		foreach ($this->config->pagenotfound->children() as $child) {
 			if ($child->getName() == 'status') {
 				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */
@@ -116,7 +116,7 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 	public function getPageNotFoundConfigBehaviorType() {
 		$type = '';
 		$currentDomain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
-		$currentHost = TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
+		$currentHost = \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
 		foreach ($this->config->pagenotfound->children() as $child) {
 			if ($child->getName() == 'behavior') {
 				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */
@@ -163,19 +163,19 @@ class ConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface {
 	}
 
 	public function hasPageNotFoundConfig() {
-		return ($this->config->pagenotfound instanceof SimpleXMLElement && $this->config->pagenotfound->getName() == 'pagenotfound');
+		return ($this->config->pagenotfound instanceof \SimpleXMLElement && $this->config->pagenotfound->getName() == 'pagenotfound');
 	}
 
 	/* page not accessible */
 
 	public function hasPageNotAccessibleConfiguration() {
-		return ($this->config->pageNotAccessible instanceof SimpleXMLElement && $this->config->pageNotAccessible->getName() == 'pageNotAccessible');
+		return ($this->config->pageNotAccessible instanceof \SimpleXMLElement && $this->config->pageNotAccessible->getName() == 'pageNotAccessible');
 	}
 
 	public function getPageNotAccessibleConfigurationStatus() {
 		$status = '';
 		$currentDomain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
-		$currentHost = TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
+		$currentHost = \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
 		foreach ($this->config->pageNotAccessible->children() as $child) {
 			if ($child->getName() == 'status') {
 				/* there is a configuration for the current hostname and it should ignore the master domain or no domain record exists */

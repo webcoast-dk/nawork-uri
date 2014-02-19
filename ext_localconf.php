@@ -6,17 +6,10 @@ $TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tstemplate.php']['linkData-Pos
 $TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_fe.php']['checkAlternativeIdMethods-PostProc']['nawork_uri'] = 'EXT:nawork_uri/Classes/Controller/Frontend/UrlController.php:&Nawork\NaworkUri\Controller\Frontend\UrlController->uri2params';
 // redirect old urls to new
 $TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_fe.php']['configArrayPostProc']['nawork_uri'] = 'EXT:nawork_uri/Classes/Controller/Frontend/UrlController.php:&Nawork\NaworkUri\Controller\Frontend\UrlController->redirect2uri';
-/* add an additional cache clearing function to the menu */
-$TYPO3_CONF_VARS['SC_OPTIONS']['additionalBackendItems']['cacheActions']['tx_naworkuri'] = 'EXT:nawork_uri/Classes/Cache/tx_naworkuri_cache_clearcachemenu.php:tx_naworkuri_cache_clearcachemenu';
 //
 $TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::clearUrlCache'] = 'EXT:nawork_uri/Classes/Cache/ClearCache.php:&Tx_NaworkUri_Cache_ClearCache->clearUrlCache';
 
 $TYPO3_CONF_VARS['SC_OPTIONS']['tce']['formevals']['tx_naworkuri_path'] = 'EXT:nawork_uri/Classes/Validation/class.tx_naworkuri_path.php';
-
-if (TYPO3_MODE === 'BE') {
-	/* Register command controller, this works since 4.6 */
-	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = 'Tx_Naworkuri_Command_NaworkUriCommandController';
-}
 
 // register transformation services
 \Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('Hidden', 'EXT:nawork_uri/Classes/Service/Transformation/HiddenTransformationService.php:Nawork\\NaworkUri\\Service\\Transformation\\HiddenTransformationService');

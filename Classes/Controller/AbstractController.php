@@ -1,16 +1,13 @@
 <?php
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+namespace Nawork\NaworkUri\Controller;
 
 /**
  * Description of AbstractController
  *
  * @author thorben
  */
-abstract class Tx_NaworkUri_Controller_AbstractController extends Tx_Extbase_MVC_Controller_ActionController {
+abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController {
 
 	protected $extensionName = 'NaworkUri';
 
@@ -37,15 +34,15 @@ abstract class Tx_NaworkUri_Controller_AbstractController extends Tx_Extbase_MVC
 	 * @throws Tx_Extbase_MVC_Exception_UnsupportedRequestType if the controller doesn't support the current request type
 	 * @return void
 	 */
-	public function processRequest(Tx_Extbase_MVC_RequestInterface $request, Tx_Extbase_MVC_ResponseInterface $response) {
+	public function processRequest(\TYPO3\CMS\Extbase\Mvc\RequestInterface $request, \TYPO3\CMS\Extbase\Mvc\ResponseInterface $response) {
 
-		if (intval(t3lib_div::_GP('ajax')) < 1) {
-			$this->template = t3lib_div::makeInstance('template');
+		if (intval(\TYPO3\CMS\Core\Utility\GeneralUtility::_GP('ajax')) < 1) {
+			$this->template = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('template');
 			$this->pageRenderer = $this->template->getPageRenderer();
-			$this->pageRenderer->addCssFile(t3lib_extMgm::extRelPath('nawork_uri') . 'Resources/Public/CSS/module.css');
-			$this->pageRenderer->addJsFile(t3lib_extMgm::extRelPath('nawork_uri') . 'Resources/Public/Contrib/jQuery/jquery-1.9.0.min.js');
-			$this->pageRenderer->addJsFile(t3lib_extMgm::extRelPath('nawork_uri') . 'Resources/Public/Contrib/mootools/mootoolsCore-1.4.5.js');
-			$this->pageRenderer->addJsFile(t3lib_extMgm::extRelPath('nawork_uri') . 'Resources/Public/Contrib/moo4q/Class.Mutators.jQuery.js');
+			$this->pageRenderer->addCssFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/CSS/module.css');
+			$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Contrib/jQuery/jquery-1.9.0.min.js');
+			$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Contrib/mootools/mootoolsCore-1.4.5.js');
+			$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Contrib/moo4q/Class.Mutators.jQuery.js');
 			$this->pageRenderer->addInlineLanguageLabelFile('EXT:nawork_uri/Resources/Private/Language/locallang_mod_url.xml', '', '', 2);
 
 			$GLOBALS['SOBE'] = new stdClass();
@@ -85,7 +82,7 @@ abstract class Tx_NaworkUri_Controller_AbstractController extends Tx_Extbase_MVC
 	}
 
 	protected function loadUserSettings() {
-		/* @var $BE_USER t3lib_beUserAuth */
+		/* @var $BE_USER \TYPO3\CMS\Core\Authentication\BackendUserAuthentication */
 		global $BE_USER;
 		$this->userSettings = $BE_USER->getModuleData($this->userSettingsKey);
 		if ($this->userSettings == NULL || !is_array($this->userSettings)) {
@@ -105,7 +102,7 @@ abstract class Tx_NaworkUri_Controller_AbstractController extends Tx_Extbase_MVC
 	}
 
 	protected function storeUserSettings() {
-		/* @var $BE_USER t3lib_beUserAuth */
+		/* @var $BE_USER \TYPO3\CMS\Core\Authentication\BackendUserAuthentication */
 		global $BE_USER;
 		if ($this->userSettingsUpdated) {
 			$BE_USER->pushModuleData($this->userSettingsKey, $this->userSettings);
@@ -113,7 +110,7 @@ abstract class Tx_NaworkUri_Controller_AbstractController extends Tx_Extbase_MVC
 	}
 
 	protected function setUserSettings($key, $value) {
-		$keyParts = t3lib_div::trimExplode('.', $key, TRUE);
+		$keyParts = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode('.', $key, TRUE);
 		$tmp = array(
 			$this->userSettings
 		);

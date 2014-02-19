@@ -1,41 +1,38 @@
 <?php
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+namespace Nawork\NaworkUri\Domain\Repository;
 
 /**
  * Description of UrlRepository
  *
  * @author thorben
  */
-class Tx_NaworkUri_Domain_Repository_UrlRepository extends Tx_NaworkUri_Domain_Repository_AbstractRepository {
+class UrlRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
 
-	public function findUrlsByFilter(Tx_NaworkUri_Domain_Model_Filter $filter) {
+	public function findUrlsByFilter(\Nawork\NaworkUri\Domain\Model\Filter $filter) {
 		$query = $this->buildUrlQueryByFilter($filter);
 		if ($filter->getLimit() > 0) {
 			$query->setOffset((int) $filter->getOffset());
 			$query->setLimit((int) $filter->getLimit());
 		}
-		return $query->setOrderings(array('path' => Tx_Extbase_Persistence_QueryInterface::ORDER_ASCENDING))->execute();
+		return $query->setOrderings(array('path' => \TYPO3\CMS\Extbase\Persistence\QueryInterface::ORDER_ASCENDING))->execute();
 	}
 
-	public function countUrlsByFilter(Tx_NaworkUri_Domain_Model_Filter $filter) {
+	public function countUrlsByFilter(\Nawork\NaworkUri\Domain\Model\Filter $filter) {
 		$query = $this->buildUrlQueryByFilter($filter);
 		return $query->count();
 	}
 	
-	public function findRedirectsByFilter(Tx_NaworkUri_Domain_Model_Filter $filter) {
+	public function findRedirectsByFilter(\Nawork\NaworkUri\Domain\Model\Filter $filter) {
 		$query = $this->buildRedirectQueryByFilter($filter);
 		if ($filter->getLimit() > 0) {
 			$query->setOffset((int) $filter->getOffset());
 			$query->setLimit((int) $filter->getLimit());
 		}
-		return $query->setOrderings(array('path' => Tx_Extbase_Persistence_QueryInterface::ORDER_ASCENDING))->execute();
+		return $query->setOrderings(array('path' => \TYPO3\CMS\Extbase\Persistence\QueryInterface::ORDER_ASCENDING))->execute();
 	}
 	
-	public function countRedirectsByFilter(Tx_NaworkUri_Domain_Model_Filter $filter) {
+	public function countRedirectsByFilter(\Nawork\NaworkUri\Domain\Model\Filter $filter) {
 		$query = $this->buildRedirectQueryByFilter($filter);
 		return $query->count();
 	}
@@ -44,7 +41,7 @@ class Tx_NaworkUri_Domain_Repository_UrlRepository extends Tx_NaworkUri_Domain_R
 		if ($depth == 5) {
 //			return;
 		}
-		/* @var $db t3lib_db */
+		/* @var $db \TYPO3\CMS\Core\Database\DatabaseConnection */
 		$db = $GLOBALS['TYPO3_DB'];
 		$rows = $db->exec_SELECTgetRows('uid', 'pages', 'pid=' . intval($id));
 		foreach ($rows as $page) {
@@ -55,10 +52,10 @@ class Tx_NaworkUri_Domain_Repository_UrlRepository extends Tx_NaworkUri_Domain_R
 
 	/**
 	 *
-	 * @param Tx_NaworkUri_Domain_Model_Filter $filter
-	 * @return Tx_Extbase_Persistence_QueryInterface
+	 * @param \Nawork\NaworkUri\Domain\Model\Filter $filter
+	 * @return \TYPO3\CMS\Extbase\Persistence\QueryInterface
 	 */
-	private function buildUrlQueryByFilter(Tx_NaworkUri_Domain_Model_Filter $filter) {
+	private function buildUrlQueryByFilter(\Nawork\NaworkUri\Domain\Model\Filter $filter) {
 		$query = $this->createQuery();
 		$constraints = array();
 
@@ -117,11 +114,11 @@ class Tx_NaworkUri_Domain_Repository_UrlRepository extends Tx_NaworkUri_Domain_R
 		return $query;
 	}
 	
-	private function buildRedirectQueryByFilter(Tx_NaworkUri_Domain_Model_Filter $filter) {
+	private function buildRedirectQueryByFilter(\Nawork\NaworkUri\Domain\Model\Filter $filter) {
 		$query = $this->createQuery();
 		$constraints = array();
 
-		if ($filter->getDomain() instanceof Tx_NaworkUri_Domain_Model_Domain) {
+		if ($filter->getDomain() instanceof \Nawork\NaworkUri\Domain\Model\Domain) {
 			$constraints[] = $query->equals('domain', $filter->getDomain());
 		}
 

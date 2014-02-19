@@ -1,19 +1,16 @@
 <?php
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+namespace Nawork\NaworkUri\Cache;
 
 /**
  * Description of ClearCache
  *
  * @author thorben
  */
-class Tx_NaworkUri_Cache_ClearCache {
+class ClearCache {
 	/**
 	 *
-	 * @var t3lib_db
+	 * @var \TYPO3\CMS\Core\Database\DatabaseConnection
 	 */
 	protected $db;
 

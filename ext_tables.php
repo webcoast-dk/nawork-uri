@@ -139,6 +139,9 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tceforms.php']['getMainFieldsClass'][] = 'Nawork\\NaworkUri\\Hooks\\TceFormsMainFields';
 	// add a hook to create the path and parameter hashes automatically when creating or altering urls manually
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = 'Nawork\\NaworkUri\\Hooks\\TceMainProcessDatamap';
-
+	// add an additional cache clearing function to the menu
+	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['additionalBackendItems']['cacheActions'][] = 'Nawork\\NaworkUri\\Hooks\\ClearCache';
+	// register command controller for uri testing
+	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = 'Nawork\\NaworkUri\\Command\\NaworkUriCommandController';
 }
 ?>

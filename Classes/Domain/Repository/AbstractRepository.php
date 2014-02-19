@@ -1,16 +1,13 @@
 <?php
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+namespace Nawork\NaworkUri\Domain\Repository;
 
 /**
  * Description of UrlRepository
  *
  * @author thorben
  */
-class Tx_NaworkUri_Domain_Repository_AbstractRepository extends Tx_Extbase_Persistence_Repository {
+class AbstractRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
 
 	public function createQuery() {
 		$query = parent::createQuery();

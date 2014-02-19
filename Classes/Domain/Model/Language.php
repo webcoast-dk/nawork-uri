@@ -1,16 +1,13 @@
 <?php
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+namespace Nawork\NaworkUri\Domain\Model;
 
 /**
  * Description of Url
  *
  * @author thorben
  */
-class Tx_NaworkUri_Domain_Model_Language extends Tx_Extbase_DomainObject_AbstractEntity {
+class Language extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 
 	/**
 	 *

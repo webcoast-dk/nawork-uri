@@ -1,16 +1,13 @@
 <?php
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+namespace Nawork\NaworkUri\Hooks;
 
 /**
  * Description of ClearCache
  *
  * @author thorben
  */
-class tx_naworkuri_cache_clearcachemenu implements backend_cacheActionsHook {
+class ClearCache implements \TYPO3\CMS\Backend\Toolbar\ClearCacheActionsHookInterface {
 
 	/**
 	 *
@@ -20,12 +17,11 @@ class tx_naworkuri_cache_clearcachemenu implements backend_cacheActionsHook {
 	public function manipulateCacheActions(&$cacheActions, &$optionValues) {
 		if ($GLOBALS['BE_USER']->isAdmin() || $GLOBALS['BE_USER']->getTSConfigVal('options.clearCache.clearUrlCache')) {
 			// Add new cache menu item
-			$title = $GLOBALS['LANG']->sL('LLL:EXT:nawork_uri/Resources/Private/Language/locallang.xml:label.clearUrlCache');
 			$cacheActions[] = array(
 				'id' => 'clearUrlCache',
-				'title' => $title,
+				'title' => $title = $GLOBALS['LANG']->sL('LLL:EXT:nawork_uri/Resources/Private/Language/locallang.xml:label.clearUrlCache'),
 				'href' => $GLOBALS['BACK_PATH'] . 'ajax.php?ajaxID=tx_naworkuri::clearUrlCache',
-				'icon' => '<img' . t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], '../typo3conf/ext/nawork_uri/Resources/Public/Icons/module.png', 'width="16" height="16"') . ' title="' . $title . '" alt="' . $title . '" />'
+				'icon' => '<img' . \TYPO3\CMS\Backend\Utility\IconUtility::skinImg($GLOBALS['BACK_PATH'], '../typo3conf/ext/nawork_uri/Resources/Public/Icons/module.png', 'width="16" height="16"') . ' title="' . $title . '" alt="' . $title . '" />'
 			);
 			$optionValues[] = 'clearUrlCache';
 		}

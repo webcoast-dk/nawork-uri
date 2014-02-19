@@ -48,8 +48,8 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 	 * This function takes the link config and the tsfe as arguments and initializes the conversion of
 	 * the totalURL to a path
 	 *
-	 * @param array    $link
-	 * @param tslib_fe $ref
+	 * @param array                                                       $link
+	 * @param \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController $ref
 	 */
 	function params2uri(&$link, $ref) {
 		global $TYPO3_CONF_VARS;
@@ -86,7 +86,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 					}
 					$totalURL = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($totalURL);
 					$link['LD']['totalURL'] = $totalURL;
-				} catch (Tx_NaworkUri_Exception_DbErrorException $ex) {
+				} catch (\Nawork\NaworkUri\Exception\DbErrorException $ex) {
 					/* log db errors to belog */
 					\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
 					$totalURL = 'index.php';
@@ -111,8 +111,8 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 	 * Whatever redirect is sent, the state of enable and redirect option of nawork_uri in config are checked. Additionally
 	 * it is checked that the page is not called as preview from admin panel and there is a sitescript at all.
 	 *
-	 * @param unknown_type $params
-	 * @param tslib_fe     $ref
+	 * @param unknown_type                                                $params
+	 * @param \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController $ref
 	 */
 	function redirect2uri($params, $ref) {
 		global $TYPO3_CONF_VARS;
@@ -231,27 +231,12 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 					} catch (\Nawork\NaworkUri\Exception\UrlIsNotUniqueException $ex) {
 						/* log unique failure to belog */
 						\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
-					} catch (Tx_NaworkUri_Exception_DbErrorException $ex) {
+					} catch (\Nawork\NaworkUri\Exception\DbErrorException $ex) {
 						/* log db errors to belog */
 						\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
 					}
 				}
 			}
-		}
-	}
-
-	/**
-	 * Update the md5 values automatically
-	 *
-	 * @param unknown_type $incomingFieldArray
-	 * @param unknown_type $table
-	 * @param unknown_type $id
-	 * @param unknown_type $res
-	 */
-	public function processDatamap_preProcessFieldArray(&$incomingFieldArray, &$table, &$id, &$res) {
-		if ($table == "tx_naworkuri_uri") {
-			if ($incomingFieldArray['path'] || $incomingFieldArray['path'] == '') $incomingFieldArray['hash_path'] = md5($incomingFieldArray['path']);
-			if ($incomingFieldArray['params'] || $incomingFieldArray['params'] == '') $incomingFieldArray['hash_params'] = md5($incomingFieldArray['params']);
 		}
 	}
 

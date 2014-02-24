@@ -18,18 +18,21 @@ class UrlController extends AbstractController {
 	/**
 	 *
 	 * @var \Nawork\NaworkUri\Domain\Repository\UrlRepository
+	 * @inject
 	 */
 	protected $urlRepository;
 
 	/**
 	 *
 	 * @var \Nawork\NaworkUri\Domain\Repository\DomainRepository
+	 * @inject
 	 */
 	protected $domainRepository;
 
 	/**
 	 *
 	 * @var \Nawork\NaworkUri\Domain\Repository\LanguageRepository
+	 * @inject
 	 */
 	protected $languageRepository;
 	protected $userSettingsKey = 'tx_naworkuri_moduleUrl';
@@ -43,9 +46,6 @@ class UrlController extends AbstractController {
 			$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/jquery.urlModule.js');
 			$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/urlModule.js');
 		}
-		$this->urlRepository = $this->objectManager->get('Tx_NaworkUri_Domain_Repository_UrlRepository');
-		$this->domainRepository = $this->objectManager->get('Tx_NaworkUri_Domain_Repository_DomainRepository');
-		$this->languageRepository = $this->objectManager->get('Tx_NaworkUri_Domain_Repository_LanguageRepository');
 	}
 
 	public function initializeIndexRedirectsAction() {
@@ -89,7 +89,7 @@ class UrlController extends AbstractController {
 	 */
 	public function ajaxLoadUrlsAction($domain = NULL, $language = NULL, $types = array(), $scope = NULL, $path = NULL, $offset = NULL, $limit = NULL) {
 		/* @var $filter \Nawork\NaworkUri\Domain\Model\Filter */
-		$filter = $this->objectManager->get('Filter');
+		$filter = $this->objectManager->get('Nawork\\NaworkUri\\Domain\\Model\\Filter');
 		$filter->setPageId($this->pageId);
 
 		if ($domain instanceof \Nawork\NaworkUri\Domain\Model\Domain) {

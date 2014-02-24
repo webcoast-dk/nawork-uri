@@ -277,9 +277,8 @@ class UrlCache {
 			// make the uri unique
 			$append = 0;
 			$baseUri = substr($path, -(strlen($this->config->getAppend()))) == $this->config->getAppend() ? substr($path, 0, -strlen($this->config->getAppend())) : $path;
-			$tmp_uri = $path;
 			do {
-				$append++;
+				++$append;
 				if ($append > 10) {
 					return FALSE; // return false, to throw an exception in writeUrl function
 				}
@@ -289,8 +288,8 @@ class UrlCache {
 					$tmp_uri = $append . $this->config->getAppend();
 				}
 				$search_hash = md5($tmp_uri);
-				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid', $this->tableConfiguration->getUrlTable(), '(page_uid!=' . intval($pageUid) . ' OR sys_language_uid!=' . intval($language) . ' OR hash_params != ' . $this->db->fullQuoteStr($parameterHash, $this->tableConfiguration->getUrlTable()) . ') AND hash_path=' . $this->db->fullQuoteStr($search_hash, $this->tableConfiguration->getUrlTable()) . $additionalWhere, '', '', '1');
-			} while (count($dbres) > 0);
+				$dbRes = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid', $this->tableConfiguration->getUrlTable(), '(page_uid!=' . intval($pageUid) . ' OR sys_language_uid!=' . intval($language) . ' OR hash_params != ' . $this->db->fullQuoteStr($parameterHash, $this->tableConfiguration->getUrlTable()) . ') AND hash_path=' . $this->db->fullQuoteStr($search_hash, $this->tableConfiguration->getUrlTable()) . $additionalWhere, '', '', '1');
+			} while (count($dbRes) > 0);
 
 			return $tmp_uri;
 		}

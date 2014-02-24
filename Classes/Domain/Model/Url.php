@@ -11,13 +11,13 @@ class Url extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 
 	/**
 	 *
-	 * @var Tx_NaworkUri_Domain_Model_Language
+	 * @var \Nawork\NaworkUri\Domain\Model\Language
 	 */
 	protected $language;
 
 	/**
 	 *
-	 * @var Tx_NaworkUri_Domain_Model_Domain
+	 * @var \Nawork\NaworkUri\Domain\Model\Domain
 	 */
 	protected $domain;
 

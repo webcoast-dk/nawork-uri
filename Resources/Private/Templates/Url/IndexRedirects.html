@@ -91,7 +91,7 @@
 								ajax: "]]>{f:uri.action(action: 'ajaxLoadRedirects', additionalParams: '{ajax: 1}')}<![CDATA[",
 								settings: "]]>{f:uri.action(action: 'updateSettings', additionalParams: '{ajax: 1}')}<![CDATA[",
 							},
-							settings: ]]><n:format.raw>{userSettings}</n:format.raw><![CDATA[,
+							settings: ]]><f:format.raw>{userSettings}</f:format.raw><![CDATA[,
 							messages: {
 								error:"]]><f:translate key="message_error" default="An error occured while loading the urls, change the filter to try other settings" /><![CDATA[",
 								loading: "]]><f:translate key="message_loading" default="Loading urls... please wait..." /><![CDATA["

@@ -13,13 +13,14 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 
 	/**
 	 *
-	 * @var t3lib_PageRenderer
+	 * @var \TYPO3\CMS\Core\Page\PageRenderer
 	 */
 	protected $pageRenderer;
 
 	/**
 	 *
-	 * @var template
+	 * @var \TYPO3\CMS\Backend\Template\DocumentTemplate
+	 * @inject
 	 */
 	protected $template;
 	protected $userSettingsKey = '';
@@ -29,15 +30,14 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 	/**
 	 * Processes a general request. The result can be returned by altering the given response.
 	 *
-	 * @param Tx_Extbase_MVC_RequestInterface $request The request object
-	 * @param Tx_Extbase_MVC_ResponseInterface $response The response, modified by this handler
-	 * @throws Tx_Extbase_MVC_Exception_UnsupportedRequestType if the controller doesn't support the current request type
+	 * @param \TYPO3\CMS\Extbase\Mvc\RequestInterface $request The request object
+	 * @param \TYPO3\CMS\Extbase\Mvc\ResponseInterface $response The response, modified by this handler
+	 * @throws \TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException if the controller doesn't support the current request type
 	 * @return void
 	 */
 	public function processRequest(\TYPO3\CMS\Extbase\Mvc\RequestInterface $request, \TYPO3\CMS\Extbase\Mvc\ResponseInterface $response) {
 
 		if (intval(\TYPO3\CMS\Core\Utility\GeneralUtility::_GP('ajax')) < 1) {
-			$this->template = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('template');
 			$this->pageRenderer = $this->template->getPageRenderer();
 			$this->pageRenderer->addCssFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/CSS/module.css');
 			$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Contrib/jQuery/jquery-1.9.0.min.js');
@@ -45,7 +45,7 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 			$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Contrib/moo4q/Class.Mutators.jQuery.js');
 			$this->pageRenderer->addInlineLanguageLabelFile('EXT:nawork_uri/Resources/Private/Language/locallang_mod_url.xml', '', '', 2);
 
-			$GLOBALS['SOBE'] = new stdClass();
+			$GLOBALS['SOBE'] = new \stdClass();
 			$GLOBALS['SOBE']->doc = $this->template;
 
 			parent::processRequest($request, $response);
@@ -72,6 +72,8 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 	 *
 	 * @param string $key
 	 * @param mixed $value
+	 *
+	 * @return int
 	 */
 	public function updateSettingsAction($key, $value) {
 		if (!empty($key) && !empty($value)) {

@@ -23,13 +23,11 @@ $tempColumns = Array(
 	)
 );
 
-t3lib_div::loadTCA('pages');
-t3lib_extMgm::addTCAcolumns('pages', $tempColumns, 1);
-t3lib_extMgm::addToAllTCAtypes('pages', 'tx_naworkuri_pathsegment,tx_naworkuri_exclude', '', 'after:title');
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns('pages', $tempColumns, 1);
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('pages', 'tx_naworkuri_pathsegment,tx_naworkuri_exclude', '', 'after:title');
 
-t3lib_div::loadTCA('pages_language_overlay');
-t3lib_extMgm::addTCAcolumns('pages_language_overlay', $tempColumns, 1);
-t3lib_extMgm::addToAllTCAtypes('pages_language_overlay', 'tx_naworkuri_pathsegment', '', 'after:title');
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns('pages_language_overlay', $tempColumns, 1);
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('pages_language_overlay', 'tx_naworkuri_pathsegment', '', 'after:title');
 
 $tempColumns = array(
 	'tx_naworkuri_masterDomain' => array(
@@ -49,9 +47,8 @@ $tempColumns = array(
 		),
 	),
 );
-t3lib_div::loadTCA('sys_domain');
-t3lib_extMgm::addTCAcolumns('sys_domain', $tempColumns, 1);
-t3lib_extMgm::addToAllTCAtypes('sys_domain', 'tx_naworkuri_masterDomain');
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns('sys_domain', $tempColumns, 1);
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('sys_domain', 'tx_naworkuri_masterDomain');
 
 // add URI-Records
 $TCA['tx_naworkuri_uri'] = Array(
@@ -67,25 +64,25 @@ $TCA['tx_naworkuri_uri'] = Array(
 		'rootLevel' => '-1',
 		'enablecolumns' => array(
 		),
-		'dynamicConfigFile' => t3lib_extMgm::extPath($_EXTKEY) . 'Configuration/TCA/Url.php',
-		'iconfile' => t3lib_extMgm::extRelPath($_EXTKEY) . 'Resources/Public/Icons/Types/uri.png',
+		'dynamicConfigFile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath($_EXTKEY) . 'Configuration/TCA/Url.php',
+		'iconfile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($_EXTKEY) . 'Resources/Public/Icons/Types/uri.png',
 		'hideTable' => true,
 		'typeicon_column' => 'type',
 		'typeicons' => Array(
-			'0' => t3lib_extMgm::extRelPath($_EXTKEY) . 'Resources/Public/Icons/Types/uri.png',
-			'1' => t3lib_extMgm::extRelPath($_EXTKEY) . 'Resources/Public/Icons/Types/old.png',
-			'2' => t3lib_extMgm::extRelPath($_EXTKEY) . 'Resources/Public/Icons/Types/redirect.png',
+			'0' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($_EXTKEY) . 'Resources/Public/Icons/Types/uri.png',
+			'1' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($_EXTKEY) . 'Resources/Public/Icons/Types/old.png',
+			'2' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($_EXTKEY) . 'Resources/Public/Icons/Types/redirect.png',
 		),
 	),
 );
 
-t3lib_extMgm::allowTableOnStandardPages('tx_naworkuri_uri');
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::allowTableOnStandardPages('tx_naworkuri_uri');
 
 if (TYPO3_MODE == 'BE') {
 	$mainModuleName = 'naworkuri';
-	t3lib_extMgm::addModule($mainModuleName, '', '', t3lib_extMgm::extPath('nawork_uri').'Configuration/Module/');
+	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule($mainModuleName, '', '', \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('nawork_uri').'Configuration/Module/');
 
-	Tx_Extbase_Utility_Extension::registerModule($_EXTKEY, $mainModuleName, 'uri', '', array(
+	\TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule('Nawork.' . $_EXTKEY, $mainModuleName, 'uri', '', array(
 		'Url' => 'indexUrls,ajaxLoadUrls,updateSettings,contextMenu,lockToggle,delete'
 		), array(
 		'access' => 'user,group',
@@ -94,7 +91,7 @@ if (TYPO3_MODE == 'BE') {
 			'navigationComponentId' => 'typo3-pagetree'
 	));
 
-	Tx_Extbase_Utility_Extension::registerModule($_EXTKEY, $mainModuleName, 'redirect', '', array(
+	\TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule('Nawork.' . $_EXTKEY, $mainModuleName, 'redirect', '', array(
 		'Url' => 'indexRedirects,ajaxLoadRedirects,updateSettings,contextMenu,lockToggle,delete'
 		), array(
 		'access' => 'user,group',
@@ -102,12 +99,12 @@ if (TYPO3_MODE == 'BE') {
 		'labels' => 'LLL:EXT:' . $_EXTKEY . '/Resources/Private/Language/locallang_mod_redirect.xml',
 	));
 
-	t3lib_extMgm::addTypoScriptSetup('
+	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTypoScriptSetup('
 		module.tx_naworkuri {
 			persistence {
 				storagePid = 0
 				classes {
-					Tx_NaworkUri_Domain_Model_Url {
+					Nawork\NaworkUri\Domain\Model\Url {
 						mapping {
 							tableName = tx_naworkuri_uri
 							columns {
@@ -116,12 +113,12 @@ if (TYPO3_MODE == 'BE') {
 							}
 						}
 					}
-					Tx_NaworkUri_Domain_Model_Domain {
+					Nawork\NaworkUri\Domain\Model\Domain {
 						mapping {
 							tableName = sys_domain
 						}
 					}
-					Tx_NaworkUri_Domain_Model_Language {
+					Nawork\NaworkUri\Domain\Model\Language {
 						mapping {
 							tableName = sys_language
 						}

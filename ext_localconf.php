@@ -7,7 +7,7 @@ $TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_fe.php']['checkAlternativeIdMe
 // redirect old urls to new
 $TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_fe.php']['configArrayPostProc']['nawork_uri'] = 'EXT:nawork_uri/Classes/Controller/Frontend/UrlController.php:&Nawork\NaworkUri\Controller\Frontend\UrlController->redirect2uri';
 //
-$TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::clearUrlCache'] = 'EXT:nawork_uri/Classes/Cache/ClearCache.php:&Tx_NaworkUri_Cache_ClearCache->clearUrlCache';
+$TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::clearUrlCache'] = '&Nawork\\NaworkUri\\Cache\\ClearCache->clearUrlCache';
 
 $TYPO3_CONF_VARS['SC_OPTIONS']['tce']['formevals']['tx_naworkuri_path'] = 'EXT:nawork_uri/Classes/Validation/class.tx_naworkuri_path.php';
 

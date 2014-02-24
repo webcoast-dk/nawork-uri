@@ -80,21 +80,9 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 				} catch (\Nawork\NaworkUri\Exception\UrlIsNotUniqueException $ex) {
 					/* log unique failure to belog */
 					\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
-					$totalURL = 'index.php';
-					if (!empty($params)) {
-						$totalURL .= '?' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters(\Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params));
-					}
-					$totalURL = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($totalURL);
-					$link['LD']['totalURL'] = $totalURL;
 				} catch (\Nawork\NaworkUri\Exception\DbErrorException $ex) {
 					/* log db errors to belog */
 					\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
-					$totalURL = 'index.php';
-					if (!empty($params)) {
-						$totalURL .= '?' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters(\Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params));
-					}
-					$totalURL = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($totalURL);
-					$link['LD']['totalURL'] = $totalURL;
 				}
 			}
 		}

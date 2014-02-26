@@ -185,6 +185,7 @@ class UrlController extends AbstractController {
 	 */
 	public function lockToggleAction($url) {
 		$url->setLocked(!$url->getLocked());
+		$this->urlRepository->update($url);
 		return '';
 	}
 

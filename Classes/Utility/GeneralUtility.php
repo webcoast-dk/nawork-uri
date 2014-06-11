@@ -226,6 +226,7 @@ class GeneralUtility {
 		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
 		/* @var $db \TYPO3\CMS\Core\Database\DatabaseConnection */
 		$db = $GLOBALS['TYPO3_DB'];
+		$domain = 0;
 		$domainName = \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_HOST');
 		$domainRes = $db->exec_SELECTgetRows('uid,tx_naworkuri_masterDomain', $tableConfiguration->getDomainTable(), 'domainName LIKE \'' . $domainName . '\'', 'hidden=0');
 		if ($domainRes && count($domainRes)) {
@@ -245,29 +246,9 @@ class GeneralUtility {
 					}
 				} while ($continue);
 			}
-		} else { // try to find the first domain record
-			$domain = self::findDomainRecursive();
 		}
 
 		return $domain;
-	}
-
-	private static function findDomainRecursive($pid = 0) {
-		/* @var $db \TYPO3\CMS\Core\Database\DatabaseConnection */
-		$db = $GLOBALS['TYPO3_DB'];
-		/* @var $tableConfiguration \Nawork\NaworkUri\Configuration\TableConfiguration */
-		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
-		$pagesRes = $db->exec_SELECTgetRows('uid', $tableConfiguration->getPageTable(), 'pid=' . intval($pid), NULL, 'sorting ASC');
-		if (is_array($pagesRes)) {
-			foreach ($pagesRes as $pageRec) {
-				$domainRes = $db->exec_SELECTgetRows('uid', $tableConfiguration->getDomainTable(), 'pid=' . intval($pageRec['uid']) . ' AND tx_naworkuri_masterDomain < 1', NULL, 'sorting ASC', '1');
-				if ($domainRes && count($domainRes) > 0) {
-					return $domainRes[0]['uid'];
-				} else {
-					return static::findDomainRecursive($pageRec['uid']);
-				}
-			}
-		}
 	}
 
 	/**

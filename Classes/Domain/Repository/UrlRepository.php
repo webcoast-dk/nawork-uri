@@ -57,6 +57,9 @@ class UrlRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
 	 */
 	private function buildUrlQueryByFilter(\Nawork\NaworkUri\Domain\Model\Filter $filter) {
 		$query = $this->createQuery();
+		// ignore language, because all urls should be selected
+		$query->getQuerySettings()->setRespectSysLanguage(FALSE);
+
 		$constraints = array();
 
 		if ($filter->getDomain() instanceof Tx_NaworkUri_Domain_Model_Domain) {

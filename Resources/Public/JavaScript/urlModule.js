@@ -406,8 +406,8 @@ NaworkUri.UrlModule = new Class({
 		});
 		cm.find(".delete").click(function(ev) {
 			if(window.confirm("Do you really want to delete the url \"" + jQuery(this).attr("data-path") + "\"?")) {
-				if(obj.request.ajax != null && obj.request.ajax.abort) {
-					obj.request.ajax.abort();
+				if(obj.requests.ajax != null && obj.requests.ajax.abort) {
+					obj.requests.ajax.abort();
 				}
 				request = jQuery.ajax({
 					url: jQuery(this).attr("data-ajaxurl"),

@@ -96,7 +96,7 @@ class UrlRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
 					$pidConstraints[] = $query->equals('pageUid', $pid);
 				}
 				if (count($pidConstraints) > 0) {
-					$constraints = $query->logicalOr($pidConstraints);
+					$constraints[] = $query->logicalOr($pidConstraints);
 				}
 				break;
 			case 'global':

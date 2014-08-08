@@ -119,24 +119,13 @@ $TCA['tx_naworkuri_uri'] = Array(
 	),
 	'types' => array(
 		'0' => array(
-			'showitem' => 'type, sys_language_uid, page_uid, path, params, locked'
+			'showitem' => 'type, domain, sys_language_uid, page_uid, path, params, locked'
 		),
 		'1' => array(
-			'showitem' => 'type, sys_language_uid, page_uid, path'
+			'showitem' => 'type, domain, sys_language_uid, page_uid, path'
 		),
 		'2' => array(
-			'showitem' => 'type, path, page_uid, redirect_mode'
+			'showitem' => 'type, domain, path, page_uid, redirect_mode'
 		)
 	)
 );
-
-/*
- * show domain only in Multidomain Setups
- */
-$confArray = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
-if ($confArray['MULTIDOMAIN']) {
-	$TCA['tx_naworkuri_uri']['types'][0]['showitem'] = 'domain, ' . $TCA['tx_naworkuri_uri']['types'][0]['showitem'];
-	$TCA['tx_naworkuri_uri']['types'][1]['showitem'] = 'domain, ' . $TCA['tx_naworkuri_uri']['types'][1]['showitem'];
-	$TCA['tx_naworkuri_uri']['types'][2]['showitem'] = 'domain, ' . $TCA['tx_naworkuri_uri']['types'][2]['showitem'];
-}
-?>

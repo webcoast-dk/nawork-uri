@@ -27,7 +27,7 @@ $tempColumns = Array(
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('pages', 'tx_naworkuri_pathsegment,tx_naworkuri_exclude', '', 'after:title');
 
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns('pages_language_overlay', $tempColumns, 1);
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('pages_language_overlay', 'tx_naworkuri_pathsegment', '', 'after:title');
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('pages_language_overlay', 'tx_naworkuri_pathsegment,tx_naworkuri_exclude', '', 'after:title');
 
 $tempColumns = array(
 	'tx_naworkuri_masterDomain' => array(

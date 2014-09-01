@@ -41,16 +41,17 @@ class PagePathTransformationService implements \Nawork\NaworkUri\Service\Transfo
 					// with translation as the base to return its values.
 					// If a non-integer (in original) field not empty in translation and
 					// in original, return 0 to keep it from the intersection.
-					$page = array_uintersect_assoc($translatedPage, $page, function($translatedFieldValue, $originalFieldValue) {
-						if (!\TYPO3\CMS\Core\Utility\MathUtility::canBeInterpretedAsInteger($originalFieldValue)) {
+					$page = array_uintersect_assoc(
+						$translatedPage,
+						$page,
+						function ($translatedFieldValue, $originalFieldValue) {
 							if (!empty($translatedFieldValue) && !empty($originalFieldValue)) {
 								return 0;
 							}
-							return 1;
-						} else {
+
 							return 1;
 						}
-					});
+					);
 				}
 			}
 			// if the page should not be excluded from the page path

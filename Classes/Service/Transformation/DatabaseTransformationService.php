@@ -31,9 +31,13 @@ class DatabaseTransformationService implements \Nawork\NaworkUri\Service\Transfo
 		}
 		// if select fields are not empty, continue with the transformation
 		if (is_array($selectFields) && !empty($selectFields)) {
-			$record = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow(implode(',', $selectFields), $table, $compareField . '=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($value, $table));
+			$record = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('uid,pid,' . ($GLOBALS['TCA'][$table]['ctrl']['languageField'] ? $GLOBALS['TCA'][$table]['ctrl']['languageField'] . ',' : '') . implode(',', $selectFields), $table, $compareField . '=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($value, $table));
 			if (!is_array($record) || empty($record)) {
 				throw new \Nawork\NaworkUri\Exception\TransformationErrorException('The returned record array is empty or not an array');
+			}
+			// try to translate the record
+			if(array_key_exists($GLOBALS['TCA'][$table]['ctrl']['languageField'], $record) && $record[$GLOBALS['TCA'][$table]['ctrl']['languageField']] == 0 && $transformationUtility->getLanguage() > 0) {
+				$record = $GLOBALS['TSFE']->sys_page->getRecordOverlay($table, $record, $transformationUtility->getLanguage());
 			}
 			$value = $replacement;
 			foreach ($record as $key => $field) {

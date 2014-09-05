@@ -176,7 +176,7 @@ class UrlCache {
 			$this->makeOldUrl($domain, $pageUid, $language, $parameters, $existingUrl['uid']);
 			$this->updateUrl($existingUrl['uid'], $pageUid, $language, $parameters);
 
-			return $path;
+			return $uniquePath;
 		}
 		$this->createUrl($pageUid, $language, $domain, $parameters, $uniquePath, $path);
 

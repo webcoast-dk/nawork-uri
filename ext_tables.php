@@ -140,5 +140,6 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['additionalBackendItems']['cacheActions'][] = 'Nawork\\NaworkUri\\Hooks\\ClearCache';
 	// register command controller for uri testing
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = 'Nawork\\NaworkUri\\Command\\NaworkUriCommandController';
+	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = 'Nawork\\NaworkUri\\Command\\MigrationCommandController';
 }
 ?>

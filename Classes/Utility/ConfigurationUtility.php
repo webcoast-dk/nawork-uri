@@ -68,6 +68,23 @@ class ConfigurationUtility {
 
 		return self::$configurationReader;
 	}
+
+	/**
+	 * @param string $domain           The domain name or keyword "default"
+	 * @param string $path             The path to the configuration file, e.g. EXT:my_ext/Configuration/Url/Default.xml
+	 * @param bool   $overrideExisting Set to false if you do not want to override an existing configuration for this domain
+	 */
+	public static function registerConfiguration($domain, $path, $overrideExisting = TRUE) {
+		if (!is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['Configurations'])) {
+			$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['Configurations'] = array();
+		}
+		$absolutePath = \TYPO3\CMS\Core\Utility\GeneralUtility::getFileAbsFileName($path);
+		if ($overrideExisting || !array_key_exists($domain,
+				$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['Configurations'])
+		) {
+			$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['Configurations'][$domain] = $absolutePath;
+		}
+	}
 }
 
 ?>

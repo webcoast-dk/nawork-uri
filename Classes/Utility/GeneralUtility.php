@@ -346,10 +346,7 @@ class GeneralUtility {
 	 * @param string $classReference The class reference to the transformation service, e.g. "EXT:myext/Classes/Service/MyTransformationService.php:My\MyExt\Service\MyTransformationService
 	 */
 	public static function registerTransformationService($type, $classReference) {
-		if (!is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['transformationServices'])) {
-			$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['transformationServices'] = array();
-		}
-		$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['transformationServices'][$type] = $classReference;
+		TransformationUtility::registerTransformationService($type, $classReference);
 	}
 
 	/**
@@ -360,12 +357,7 @@ class GeneralUtility {
 	 * @param boolean $overridePrevious If set to FALSE a domain is not overridden
 	 */
 	public static function registerConfiguration($domain, $file, $overridePrevious = TRUE) {
-		if (!is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['configurations'])) {
-			$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['configurations'] = array();
-		}
-		if ($overridePrevious || !array_key_exists($domain, $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['configurations'])) {
-			$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['configurations'][$domain] = $file;
-		}
+		ConfigurationUtility::registerConfiguration($domain, $file, $overridePrevious);
 	}
 
 }

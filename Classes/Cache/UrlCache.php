@@ -8,11 +8,6 @@ class UrlCache {
 	const URI_TYPE_OLD = 1;
 	const URI_TYPE_REDIRECT = 2;
 
-	/**
-	 *
-	 * @var \Nawork\NaworkUri\Configuration\ConfigurationReader
-	 */
-	private $config;
 	private $timeout = 86400;
 
 	/**
@@ -32,7 +27,6 @@ class UrlCache {
 	 *
 	 */
 	public function __construct() {
-		$this->config = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfigurationReader();
 		$this->db = $GLOBALS['TYPO3_DB'];
 		$this->db->store_lastBuiltQuery = 1;
 		$this->tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
@@ -217,7 +211,7 @@ class UrlCache {
 	 */
 	public function createUrl($page, $language, $domain, $parameters, $path, $originalPath) {
 		$parameters = \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE);
-		$result = $this->db->exec_INSERTquery($this->tableConfiguration->getUrlTable(), array('pid' => $this->config->getStoragePage(), 'page_uid' => intval($page), 'tstamp' => time(), 'crdate' => time(), 'sys_language_uid' => intval($language), 'domain' => $domain, 'path' => $path, 'hash_path' => md5($path), 'params' => $parameters, 'hash_params' => md5($parameters), 'original_path' => $originalPath), array('pid', 'page_uid', 'tstamp', 'crdate', 'sys_language_uid'));
+		$result = $this->db->exec_INSERTquery($this->tableConfiguration->getUrlTable(), array('pid' => \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getStoragePage(), 'page_uid' => intval($page), 'tstamp' => time(), 'crdate' => time(), 'sys_language_uid' => intval($language), 'domain' => $domain, 'path' => $path, 'hash_path' => md5($path), 'params' => $parameters, 'hash_params' => md5($parameters), 'original_path' => $originalPath), array('pid', 'page_uid', 'tstamp', 'crdate', 'sys_language_uid'));
 
 		if (!$result) {
 			throw new \Nawork\NaworkUri\Exception\DbErrorException($this->db->sql_error());
@@ -275,17 +269,18 @@ class UrlCache {
 				return $cachedUrl[0]['path'];
 			}
 			// make the uri unique
-			$append = 0;
-			$baseUri = substr($path, -(strlen($this->config->getAppend()))) == $this->config->getAppend() ? substr($path, 0, -strlen($this->config->getAppend())) : $path;
+			$appendIteration = 0;
+			$appendValue = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getAppend();
+			$baseUri = substr($path, -(strlen($appendValue))) == $appendValue ? substr($path, 0, -strlen($appendValue)) : $path;
 			do {
-				++$append;
-				if ($append > 10) {
+				++$appendIteration;
+				if ($appendIteration > 10) {
 					return FALSE; // return false, to throw an exception in writeUrl function
 				}
 				if (!empty($baseUri)) {
-					$tmp_uri = $baseUri . '-' . $append . $this->config->getAppend(); // add the unique part and the uri append part to the base uri
+					$tmp_uri = $baseUri . '-' . $appendIteration . $appendValue; // add the unique part and the uri append part to the base uri
 				} else {
-					$tmp_uri = $append . $this->config->getAppend();
+					$tmp_uri = $appendIteration . $appendValue;
 				}
 				$search_hash = md5($tmp_uri);
 				$dbRes = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid', $this->tableConfiguration->getUrlTable(), '(page_uid!=' . intval($pageUid) . ' OR sys_language_uid!=' . intval($language) . ' OR hash_params != ' . $this->db->fullQuoteStr($parameterHash, $this->tableConfiguration->getUrlTable()) . ') AND hash_path=' . $this->db->fullQuoteStr($search_hash, $this->tableConfiguration->getUrlTable()) . $additionalWhere, '', '', '1');

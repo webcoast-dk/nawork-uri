@@ -12,11 +12,11 @@ $TYPO3_CONF_VARS['BE']['AJAX']['tx_naworkuri::clearUrlCache'] = '&Nawork\\Nawork
 $TYPO3_CONF_VARS['SC_OPTIONS']['tce']['formevals']['tx_naworkuri_path'] = 'EXT:nawork_uri/Classes/Validation/class.tx_naworkuri_path.php';
 
 // register transformation services
-\Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('Hidden', 'EXT:nawork_uri/Classes/Service/Transformation/HiddenTransformationService.php:Nawork\\NaworkUri\\Service\\Transformation\\HiddenTransformationService');
-\Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('Plain', 'EXT:nawork_uri/Classes/Service/Transformation/PlainTransformationService.php:Nawork\\NaworkUri\\Service\\Transformation\\PlainTransformationService');
-\Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('ValueMap', 'EXT:nawork_uri/Classes/Service/Transformation/ValueMapTransformationService.php:Nawork\\NaworkUri\\Service\\Transformation\\ValueMapTransformationService');
-\Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('PagePath', 'EXT:nawork_uri/Classes/Service/Transformation/PagePathTransformationService.php:Nawork\\NaworkUri\\Service\\Transformation\\PagePathTransformationService');
-\Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('Database', 'EXT:nawork_uri/Classes/Service/Transformation/DatabaseTransformationService.php:Nawork\\NaworkUri\\Service\\Transformation\\DatabaseTransformationService');
+\Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('Hidden', 'Nawork\\NaworkUri\\Transformation\\Hidden\\TransformationService');
+\Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('Plain', 'Nawork\\NaworkUri\\Transformation\\Plain\\TransformationService');
+\Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('ValueMap', 'Nawork\\NaworkUri\\Transformation\\ValueMap\\TransformationService');
+\Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('PagePath', 'Nawork\\NaworkUri\\Transformation\\PagePath\\TransformationService');
+\Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('Database', 'Nawork\\NaworkUri\\Transformation\\Database\\TransformationService');
 
 // register default configuration, but do not override if default is already set
 \Nawork\NaworkUri\Utility\GeneralUtility::registerConfiguration('default', 'EXT:nawork_uri/Configuration/Url/DefaultConfiguration.xml', FALSE);

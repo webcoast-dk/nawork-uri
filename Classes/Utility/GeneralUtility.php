@@ -137,9 +137,8 @@ class GeneralUtility {
 	}
 
 	public static function uriTransliterate($uri) {
-		$config = ConfigurationUtility::getConfigurationReader();
-		foreach ($config->getTransliterations() as $char) {
-			$uri = str_replace((string) $char->attributes()->from, (string) $char->attributes()->to, $uri);
+		foreach (ConfigurationUtility::getConfiguration()->getTransliterationsConfiguration()->getCharacters() as $from => $to) {
+			$uri = str_replace($from, $to, $uri);
 		}
 		$uri = iconv('UTF-8', 'ASCII//TRANSLIT', $uri);
 
@@ -299,12 +298,10 @@ class GeneralUtility {
 	public static function filterConfiguredParameters($parameters) {
 		$encodableParameters = array();
 		$parameterNames = array_keys($parameters);
-		$configuration = ConfigurationUtility::getConfigurationReader();
 		// check parameter configurations, which parameters can be encoded
-		foreach ($configuration->getParameterConfigurations() as $parameterConfiguration) {
-			$parameterName = (string) $parameterConfiguration->name;
-			if (in_array($parameterName, $parameterNames)) {
-				$encodableParameters[$parameterName] = $parameters[$parameterName];
+		foreach (ConfigurationUtility::getConfiguration()->getParametersConfiguration()->getParameterTransformationConfigurations() as $parameterConfiguration) {
+			if (in_array($parameterConfiguration->getName(), $parameterNames)) {
+				$encodableParameters[$parameterConfiguration->getName()] = $parameters[$parameterConfiguration->getName()];
 			}
 		}
 
@@ -358,6 +355,51 @@ class GeneralUtility {
 	 */
 	public static function registerConfiguration($domain, $file, $overridePrevious = TRUE) {
 		ConfigurationUtility::registerConfiguration($domain, $file, $overridePrevious);
+	}
+
+	/**
+	 * Uses host name to determine current domain record. Respects master domain
+	 * and does a recursive lookup.
+	 *
+	 * @return int
+	 */
+	public static function findCurrentDomain() {
+		/* @var $tableConfiguration \Nawork\NaworkUri\Configuration\TableConfiguration */
+		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
+		$host = \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
+		$domainRecord = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('*',
+			$tableConfiguration->getDomainTable(),
+			'hidden=0 AND domainName=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($host,
+				$tableConfiguration->getDomainTable()));
+		/* if no record was found, set 0 as domain uid */
+		if (is_array($domainRecord)) {
+			if (intval($domainRecord['tx_naworkuri_masterDomain']) > 0) {
+				$recursion = 0;
+				do {
+					$domainRecord = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('*',
+						$tableConfiguration->getDomainTable(),
+						'uid=' . intval($domainRecord['tx_naworkuri_masterDomain']));
+					++$recursion;
+				} while (intval($domainRecord['tx_naworkuri_masterDomain']) > 0 && $recursion < 10); // stop after 10 iterations to avoid an endless loop
+			}
+			return intval($domainRecord['uid']);
+		}
+		return 0;
+	}
+
+	public static function getCurrentDomainName() {
+		/* @var $tableConfiguration \Nawork\NaworkUri\Configuration\TableConfiguration */
+		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
+		$domainUid = self::findCurrentDomain();
+		if ($domainUid > 0) {
+			$domainRecord = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('domainName',
+				$tableConfiguration->getDomainTable(),
+				'uid=' . (int)$domainUid);
+			if (is_array($domainRecord)) {
+				return $domainRecord['domainName'];
+			}
+		}
+		throw new \Exception('Could not find a domain name for uid "' . $domainUid . '"', 1394133428);
 	}
 
 }

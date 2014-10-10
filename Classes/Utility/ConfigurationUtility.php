@@ -10,6 +10,13 @@ class ConfigurationUtility {
 	 */
 	private static $configurationReader;
 
+	/**
+	 * @var \Nawork\NaworkUri\Configuration\Configuration
+	 */
+	protected static $configuration;
+
+	protected static $inheritanceLock = array();
+
 	public static function getConfigurationFileForCurrentDomain() {
 		/** @var \Nawork\NaworkUri\Configuration\TableConfiguration $tableConfiguration */
 		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
@@ -84,6 +91,508 @@ class ConfigurationUtility {
 		) {
 			$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['Configurations'][$domain] = $absolutePath;
 		}
+	}
+
+	/**
+	 * The public method that is to be used to get the configuration object
+	 *
+	 * @return \Nawork\NaworkUri\Configuration\Configuration
+	 */
+	public static function getConfiguration() {
+		if (!self::$configuration instanceof \Nawork\NaworkUri\Configuration\Configuration) {
+			self::$configuration = self::getConfigurationObject();
+		}
+		return self::$configuration;
+	}
+
+	/**
+	 * Try to find a configuration object by trying the following options:
+	 *
+	 * 1. current host name
+	 * 2. determined master domain
+	 * 3. default configuration
+	 *
+	 * @return \Nawork\NaworkUri\Configuration\Configuration
+	 *
+	 * @throws \Nawork\NaworkUri\Exception\InheritanceException
+	 */
+	private static function getConfigurationObject() {
+		try {
+			return self::getConfigurationObjectForDomain(\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY'));
+		} catch (\Exception $ex) {
+			// inheritance exceptions must bubble up
+			if ($ex instanceof \Nawork\NaworkUri\Exception\InheritanceException) {
+				throw $ex;
+			}
+			try {
+				return self::getConfigurationObjectForDomain(GeneralUtility::getCurrentDomainName());
+			} catch (\Exception $ex) {
+				// inheritance exceptions must bubble up
+				if ($ex instanceof \Nawork\NaworkUri\Exception\InheritanceException) {
+					throw $ex;
+				}
+				return self::getConfigurationObjectForDomain('default');
+			}
+		}
+	}
+
+	/**
+	 * Check if a configuration was registered for the given domain. If yes, try to load it from the compiled
+	 * configuration files. If that fails, build the configuration from the xml
+	 *
+	 * @param string $domain
+	 *
+	 * @return \Nawork\NaworkUri\Configuration\Configuration
+	 *
+	 * @throws \Exception
+	 */
+	private static function getConfigurationObjectForDomain($domain) {
+		try {
+			return self::readCompiledConfigurationFile($domain);
+		} catch (\Exception $e) {
+			if (array_key_exists($domain, $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['Configurations'])) {
+				$configuration = self::buildConfigurationForDomain($domain);
+				self::storeCompiledConfigurationToFile($configuration,
+					\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY'));
+				return $configuration;
+			}
+			throw new \Exception('No configuration is registered for domain "' . $domain . '"', 1394135040);
+		}
+	}
+
+	private static function storeCompiledConfigurationToFile($configuration, $domain) {
+		/* @var $extensionConfiguration \Nawork\NaworkUri\Configuration\ExtensionConfiguration */
+		$extensionConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\ExtensionConfiguration');
+		$file = $extensionConfiguration->getConfigurationCacheDirectory() . $domain;
+		file_put_contents($file, serialize($configuration));
+	}
+
+	/**
+	 * Read and unserialize the configuration file, if it exists. Throw an exception if not.
+	 *
+	 * @param string $domain
+	 *
+	 * @return \Nawork\NaworkUri\Configuration\Configuration
+	 *
+	 * @throws \Exception
+	 */
+	private static function readCompiledConfigurationFile($domain) {
+		/* @var $extensionConfiguration \Nawork\NaworkUri\Configuration\ExtensionConfiguration */
+		$extensionConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\ExtensionConfiguration');
+		$file = $extensionConfiguration->getConfigurationCacheDirectory() . $domain;
+		if (!file_exists($file)) {
+			throw new \Exception('The configuration file "' . $file . '" does not exist', 1394131984);
+		}
+		return unserialize(file_get_contents($file));
+	}
+
+	/**
+	 * Determine the xml configuration file from registered configurations and put it
+	 * into a SimpleXMLElement
+	 *
+	 * @param string $domain
+	 *
+	 * @return \SimpleXMLElement
+	 *
+	 * @throws \Exception
+	 */
+	private static function readXmlConfigurationFile($domain) {
+		if (!array_key_exists($domain, $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['Configurations'])) {
+			throw new \Exception('No configuration registered for domain "' . $domain . '"', 1394137785);
+		}
+		$file = \TYPO3\CMS\Core\Utility\GeneralUtility::getFileAbsFileName($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['Configurations'][$domain]);
+		if (file_exists($file) && is_readable($file)) {
+			return new \SimpleXMLElement($file, 0, TRUE);
+		}
+		throw new \Exception('The xml configuration file "' . $file . '" does not exist, or is not readable', 1394137986);
+	}
+
+	/**
+	 * Read xml configuration file and build a configuration object out of it
+	 *
+	 * @param string $domain
+	 *
+	 * @return \Nawork\NaworkUri\Configuration\Configuration
+	 *
+	 * @throws \Nawork\NaworkUri\Exception\InheritanceException
+	 */
+	private static function buildConfigurationForDomain($domain) {
+		$xml = self::readXmlConfigurationFile($domain);
+		$configuration = NULL;
+		if ($xml->attributes()->extends && strcmp('', (string)$xml->attributes()->extends)) {
+			$extendedDomainName = (string)$xml->attributes()->extends;
+			// the domain is already used for extending this type of configuration, throw an exception
+			if (self::$inheritanceLock[$extendedDomainName]) {
+				throw new \Nawork\NaworkUri\Exception\InheritanceException('UrlConfiguration', $extendedDomainName);
+			}
+			try {
+				self::$inheritanceLock[$extendedDomainName] = TRUE;
+				$configuration = self::getConfigurationObjectForDomain((string)$xml->attributes()->extends);
+			} catch (\Exception $e) {
+				// inheritance exceptions must bubble up
+				if ($e instanceof \Nawork\NaworkUri\Exception\InheritanceException) {
+					throw $e;
+				}
+				self::$inheritanceLock[$extendedDomainName] = FALSE;
+			}
+		}
+		if ($configuration === NULL) {
+			$configuration = new \Nawork\NaworkUri\Configuration\Configuration();
+		}
+
+		$configuration->setGeneralConfiguration(self::buildGeneralConfiguration($xml->General,
+				$configuration->getGeneralConfiguration()));
+		if (!$configuration->getGeneralConfiguration()->getDisabled()) {
+			$configuration->setTransliterationsConfiguration(self::buildTransliterationsConfiguration($xml->Transliterations,
+					$configuration->getTransliterationsConfiguration()));
+			$configuration->setPageNotFoundConfiguration(self::buildPageNotFoundConfiguration($xml->PageNotFound,
+					$configuration->getPageNotFoundConfiguration()));
+			$configuration->setPageNotAccessibleConfiguration(self::buildPageNotAccessibleConfiguration($xml->PageNotAccessible,
+					$configuration->getPageNotAccessibleConfiguration()));
+			$configuration->setPageNotTranslatedConfiguration(self::buildPageNotTranslatedConfiguration($xml->PageNotTranslated,
+					$configuration->getPageNotTranslatedConfiguration()));
+			$configuration->setParametersConfiguration(self::buildParametersConfiguration($xml->Parameters,
+					$configuration->getParametersConfiguration()));
+		}
+
+		return $configuration;
+	}
+
+	/**
+	 * @param \SimpleXMLElement                                   $xml
+	 * @param \Nawork\NaworkUri\Configuration\GeneralConfiguration $configuration |NULL
+	 *
+	 * @return \Nawork\NaworkUri\Configuration\GeneralConfiguration
+	 *
+	 * @throws \Nawork\NaworkUri\Exception\InheritanceException
+	 */
+	private static function buildGeneralConfiguration($xml, $configuration) {
+		// if there is an extends set it overrides already given $configuration
+		if ($xml && $xml->attributes()->extends && strcmp('', (string)$xml->attributes()->extends)) {
+			$extendedDomainName = (string)$xml->attributes()->extends;
+			// the domain is already used for extending this type of configuration, throw an exception
+			if (self::$inheritanceLock[$extendedDomainName . '.General']) {
+				throw new \Nawork\NaworkUri\Exception\InheritanceException('GeneralConfiguration', $extendedDomainName);
+			}
+			try {
+				self::$inheritanceLock[$extendedDomainName . '.General'] = TRUE;
+				$configuration = self::getConfigurationObjectForDomain((string)$xml->attributes()->extends)
+					->getGeneralConfiguration();
+			} catch (\Exception $e) {
+				if ($e instanceof \Nawork\NaworkUri\Exception\InheritanceException) {
+					throw $e;
+				}
+				$configuration = NULL;
+				self::$inheritanceLock[$extendedDomainName . '.General'] = FALSE;
+			}
+		}
+		if ($configuration === NULL) {
+			$configuration = new \Nawork\NaworkUri\Configuration\GeneralConfiguration();
+		}
+		if ($xml->Append) {
+			$configuration->setAppend((string)$xml->Append);
+		}
+		$configuration->setDisabled((bool)(int)$xml->Disabled);
+		if ($xml->PathSeparator) {
+			$configuration->setPathSeparator((string)$xml->PathSeparator);
+		}
+		if ($xml->StoratePage) {
+			$configuration->setStoragePage((int)$xml->StoragePage);
+		}
+		return $configuration;
+	}
+
+	/**
+	 * @param $xml           \SimpleXMLElement
+	 * @param $configuration \Nawork\NaworkUri\Configuration\TransliterationsConfiguration
+	 *
+	 * @throws \Nawork\NaworkUri\Exception\InheritanceException
+	 */
+	private static function buildTransliterationsConfiguration($xml, $configuration) {
+		// if there is an extends set it overrides already given $configuration
+		if ($xml && $xml->attributes()->extends && strcmp('', (string)$xml->attributes()->extends)) {
+			$extendedDomainName = (string)$xml->attributes()->extends;
+			// the domain is already used for extending this type of configuration, throw an exception
+			if (self::$inheritanceLock[$extendedDomainName . '.Transliterations']) {
+				throw new \Nawork\NaworkUri\Exception\InheritanceException('TransliterationsConfiguration', $extendedDomainName);
+			}
+			try {
+				self::$inheritanceLock[$extendedDomainName . '.Transliterations'] = TRUE;
+				$configuration = self::getConfigurationObjectForDomain((string)$xml->attributes()->extends)
+					->getTransliterationsConfiguration();
+			} catch (\Exception $e) {
+				if ($e instanceof \Nawork\NaworkUri\Exception\InheritanceException) {
+					throw $e;
+				}
+				$configuration = NULL;
+				self::$inheritanceLock[$extendedDomainName . '.Transliterations'] = FALSE;
+			}
+		}
+		if ($configuration === NULL) {
+			$configuration = new \Nawork\NaworkUri\Configuration\TransliterationsConfiguration();
+		}
+		if ($xml) {
+			/* @var $character \SimpleXMLElement */
+			foreach ($xml->children() as $character) {
+				if ($character->getName() == 'Character') {
+					$configuration->addCharacter((string)$character->attributes()->From,
+						(string)$character->attributes()->To);
+				}
+			}
+		}
+		return $configuration;
+	}
+
+	private static function buildPageNotFoundConfiguration($xml, $configuration) {
+		// if there is an extends set it overrides already given $configuration
+		if ($xml && $xml->attributes()->extends && strcmp('', (string)$xml->attributes()->extends)) {
+			$extendedDomainName = (string)$xml->attributes()->extends;
+			// the domain is already used for extending this type of configuration, throw an exception
+			if (self::$inheritanceLock[$extendedDomainName . '.PageNotFound']) {
+				throw new \Nawork\NaworkUri\Exception\InheritanceException('PageNotFoundConfiguration', $extendedDomainName);
+			}
+			try {
+				self::$inheritanceLock[$extendedDomainName . '.PageNotFound'] = TRUE;
+				$configuration = self::getConfigurationObjectForDomain((string)$xml->attributes()->extends)
+					->getPageNotFoundConfiguration();
+			} catch (\Exception $e) {
+				if ($e instanceof \Nawork\NaworkUri\Exception\InheritanceException) {
+					throw $e;
+				}
+				$configuration = NULL;
+				self::$inheritanceLock[$extendedDomainName . '.PageNotFound'] = FALSE;
+			}
+		}
+		if ($configuration === NULL) {
+			$configuration = new \Nawork\NaworkUri\Configuration\PageNotFoundConfiguration();
+		}
+		if ($xml->Behavior && strcmp('', (string)$xml->Behavior)) {
+			switch ((string)$xml->Behavior) {
+				case 'Page':
+					$configuration->setBehavior(\Nawork\NaworkUri\Configuration\PageNotFoundConfiguration::BEHAVIOR_PAGE);
+					break;
+				case 'Redirect':
+					$configuration->setBehavior(\Nawork\NaworkUri\Configuration\PageNotFoundConfiguration::BEHAVIOR_REDIRECT);
+					break;
+				case 'Message':
+				default:
+					$configuration->setBehavior(\Nawork\NaworkUri\Configuration\PageNotFoundConfiguration::BEHAVIOR_MESSAGE);
+			}
+		}
+		if ($xml->Status && strcmp('', (string)$xml->Status)) {
+			$configuration->setStatus((string)$xml->Status);
+		}
+		if ($xml->Value && strcmp('', (string)$xml->Value)) {
+			$configuration->setValue((string)$xml->Value);
+		}
+
+		return $configuration;
+	}
+
+	private static function buildPageNotAccessibleConfiguration($xml, $configuration) {
+		// if there is an extends set it overrides already given $configuration
+		if ($xml && $xml->attributes()->extends && strcmp('', (string)$xml->attributes()->extends)) {
+			$extendedDomainName = (string)$xml->attributes()->extends;
+			// the domain is already used for extending this type of configuration, throw an exception
+			if (self::$inheritanceLock[$extendedDomainName . '.PageNotAccessible']) {
+				throw new \Nawork\NaworkUri\Exception\InheritanceException('PageNotAccessibleConfiguration', $extendedDomainName);
+			}
+			try {
+				self::$inheritanceLock[$extendedDomainName . '.PageNotAccessible'] = TRUE;
+				$configuration = self::getConfigurationObjectForDomain((string)$xml->attributes()->extends)
+					->getPageNotAccessibleConfiguration();
+			} catch (\Exception $e) {
+				if ($e instanceof \Nawork\NaworkUri\Exception\InheritanceException) {
+					throw $e;
+				}
+				$configuration = NULL;
+				self::$inheritanceLock[$extendedDomainName . '.PageNotAccessible'] = FALSE;
+			}
+		}
+		if ($configuration === NULL) {
+			$configuration = new \Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration();
+		}
+		if ($xml->Behavior && strcmp('', (string)$xml->Behavior)) {
+			switch ((string)$xml->Behavior) {
+				case 'Page':
+					$configuration->setBehavior(\Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration::BEHAVIOR_PAGE);
+					break;
+				case 'Redirect':
+					$configuration->setBehavior(\Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration::BEHAVIOR_REDIRECT);
+					break;
+				case 'Message':
+				default:
+					$configuration->setBehavior(\Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration::BEHAVIOR_MESSAGE);
+			}
+		}
+		if ($xml->Status && strcmp('', (string)$xml->Status)) {
+			$configuration->setStatus((string)$xml->Status);
+		}
+		if ($xml->Value && strcmp('', (string)$xml->Value)) {
+			$configuration->setValue((string)$xml->Value);
+		}
+
+
+		return $configuration;
+	}
+
+	private static function buildPageNotTranslatedConfiguration($xml, $configuration) {
+		// if there is an extends set it overrides already given $configuration
+		if ($xml && $xml->attributes()->extends && strcmp('', (string)$xml->attributes()->extends)) {
+			$extendedDomainName = (string)$xml->attributes()->extends;
+			// the domain is already used for extending this type of configuration, throw an exception
+			if (self::$inheritanceLock[$extendedDomainName . '.PageNotTranslated']) {
+				throw new \Nawork\NaworkUri\Exception\InheritanceException('PageNotTranslatedConfiguration', $extendedDomainName);
+			}
+			try {
+				self::$inheritanceLock[$extendedDomainName . '.PageNotTranslated'] = TRUE;
+				$configuration = self::getConfigurationObjectForDomain((string)$xml->attributes()->extends)
+					->getPageNotTranslatedConfiguration();
+			} catch (\Exception $e) {
+				if ($e instanceof \Nawork\NaworkUri\Exception\InheritanceException) {
+					throw $e;
+				}
+				$configuration = NULL;
+				self::$inheritanceLock[$extendedDomainName . '.PageNotTranslated'] = FALSE;
+			}
+		}
+		if ($configuration === NULL) {
+			$configuration = new \Nawork\NaworkUri\Configuration\PageNotTranslatedConfiguration();
+		}
+		if ($xml->Behavior && strcmp('', (string)$xml->Behavior)) {
+			switch ((string)$xml->Behavior) {
+				case 'Page':
+					$configuration->setBehavior(\Nawork\NaworkUri\Configuration\PageNotTranslatedConfiguration::BEHAVIOR_PAGE);
+					break;
+				case 'Redirect':
+					$configuration->setBehavior(\Nawork\NaworkUri\Configuration\PageNotTranslatedConfiguration::BEHAVIOR_REDIRECT);
+					break;
+				case 'Message':
+				default:
+					$configuration->setBehavior(\Nawork\NaworkUri\Configuration\PageNotTranslatedConfiguration::BEHAVIOR_MESSAGE);
+			}
+		}
+		if ($xml->Status && strcmp('', (string)$xml->Status)) {
+			$configuration->setStatus((string)$xml->Status);
+		}
+		if ($xml->Value && strcmp('', (string)$xml->Value)) {
+			$configuration->setValue((string)$xml->Value);
+		}
+
+
+		return $configuration;
+	}
+
+	/**
+	 * @param \SimpleXMLElement                                      $xml
+	 * @param \Nawork\NaworkUri\Configuration\ParametersConfiguration $configuration
+	 *
+	 * @return \Nawork\NaworkUri\Configuration\ParametersConfiguration
+	 *
+	 * @throws \Nawork\NaworkUri\Exception\InheritanceException
+	 */
+	private static function buildParametersConfiguration($xml, $configuration) {
+		// if there is an extends set it overrides already given $configuration
+		if ($xml && $xml->attributes()->extends && strcmp('', (string)$xml->attributes()->extends)) {
+			$extendedDomainName = (string)$xml->attributes()->extends;
+			// the domain is already used for extending this type of configuration, throw an exception
+			if (self::$inheritanceLock[$extendedDomainName . '.Parameters']) {
+				throw new \Nawork\NaworkUri\Exception\InheritanceException('ParametersConfiguration', $extendedDomainName);
+			}
+			try {
+				self::$inheritanceLock[$extendedDomainName . '.Parameters'] = TRUE;
+				$configuration = self::getConfigurationObjectForDomain((string)$xml->attributes()->extends)
+					->getParametersConfiguration();
+			} catch (\Exception $e) {
+				if ($e instanceof \Nawork\NaworkUri\Exception\InheritanceException) {
+					throw $e;
+				}
+				$configuration = NULL;
+				self::$inheritanceLock[$extendedDomainName . '.Parameters'] = FALSE;
+			}
+		}
+		if ($configuration === NULL) {
+			$configuration = new \Nawork\NaworkUri\Configuration\ParametersConfiguration();
+		}
+		if ($xml) {
+
+			/* @var $transformationConfigurationXml \SimpleXMLElement */
+			foreach ($xml->children() as $transformationConfigurationXml) {
+				if ($transformationConfigurationXml->getName() == 'TransformationConfiguration') {
+					$parameterName = (string)$transformationConfigurationXml->Name;
+					if ($transformationConfigurationXml->attributes()->extends && strcmp('',
+							(string)$transformationConfigurationXml->attributes()->extends)
+					) {
+						$extendedDomainName = (string)$transformationConfigurationXml->attributes()->extends;
+						// the domain is already used for extending this type of configuration, throw an exception
+						if (self::$inheritanceLock[$extendedDomainName . '.Parameters.' . $parameterName]) {
+							throw new \Nawork\NaworkUri\Exception\InheritanceException('TransformationConfiguration:' . $parameterName, $extendedDomainName);
+						}
+						try {
+							self::$inheritanceLock[$extendedDomainName . '.Parameters.' . $parameterName] = TRUE;
+							$transformationConfiguration = self::getConfigurationObjectForDomain((string)$transformationConfigurationXml->attributes()->extends)
+								->getParametersConfiguration()
+								->getParameterTransformationConfigurationByName($parameterName);
+						} catch (\Exception $e) {
+							if ($e instanceof \Nawork\NaworkUri\Exception\InheritanceException) {
+								throw $e;
+							}
+							$transformationConfiguration = NULL;
+							self::$inheritanceLock[$extendedDomainName . '.Parameters.' . $parameterName] = FALSE;
+						}
+					} else {
+						$transformationConfiguration = NULL;
+					}
+					if ($transformationConfiguration === NULL) {
+						$type = (string)$transformationConfigurationXml->Type;
+					} else {
+						$type = $transformationConfiguration->getType();
+					}
+					if (TransformationUtility::isTransformationServiceRegistered($type)) {
+						$transformationServiceClassName = TransformationUtility::getTransformationServiceClassName($type);
+						$classNameParts = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode('\\',
+							$transformationServiceClassName);
+						array_pop($classNameParts);
+						array_push($classNameParts, 'ConfigurationReader');
+						$configurationReaderClassName = implode('\\', $classNameParts);
+						// if the class does not exist - and is not loadable - log this and continue
+						// this leaves this parameter out of the configuration
+						if (!class_exists($configurationReaderClassName)) {
+							/**
+							 * @todo Log this somewhere
+							 */
+							continue;
+						}
+						$configurationReader = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance($configurationReaderClassName);
+						if ($configurationReader instanceof \Nawork\NaworkUri\Transformation\AbstractConfigurationReader) {
+							if ($transformationConfiguration === NULL) {
+								// build configuration class name
+								array_pop($classNameParts);
+								array_push($classNameParts, 'TransformationConfiguration');
+								$transformationConfigurationClassName = implode('\\', $classNameParts);
+								// if the configuration class does not exist - and can not be loaded - log this and continue
+								// this leaves this parameter out of the configuration
+								if (!class_exists($transformationConfigurationClassName)) {
+									/**
+									 * @todo Log this somewhere
+									 */
+									continue;
+								}
+								/* @var $transformationConfiguration \Nawork\NaworkUri\Transformation\AbstractTransformationConfiguration */
+								$transformationConfiguration = new $transformationConfigurationClassName();
+								$transformationConfiguration->setName((string)$transformationConfigurationXml->Name);
+							}
+							$configurationReader->buildConfiguration($transformationConfigurationXml,
+								$transformationConfiguration);
+							// add the built transformation configuration to the parameters configuration object
+							$configuration->addTransformationConfiguration($transformationConfiguration);
+						}
+					}
+				}
+			}
+		}
+
+		return $configuration;
 	}
 }
 

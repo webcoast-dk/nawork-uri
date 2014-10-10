@@ -12,18 +12,6 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 
 	/**
 	 *
-	 * @var \Nawork\NaworkUri\Configuration\ConfigurationReader
-	 */
-	private $config;
-
-	/**
-	 *
-	 * @var string
-	 */
-	private $domain;
-
-	/**
-	 *
 	 * @var \TYPO3\CMS\Core\Database\DatabaseConnection
 	 */
 	private $db;
@@ -46,15 +34,10 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @param boolean $multidomain
 	 * @param string $domain
 	 */
-	public function __construct($multidomain = false, $domain = '') {
+	public function __construct() {
 		$this->db = $GLOBALS['TYPO3_DB'];
-		// read configuration
-		$this->config = ConfigurationUtility::getConfigurationReader();
-		// get the domain, if multiple domain is not enabled the helper return ""
-		$this->domain = $domain;
-		if (empty($this->domain)) {
-			$this->domain = GeneralUtility::getCurrentDomain();
-		}
+		// get the domain
+		$this->domain = GeneralUtility::findCurrentDomain();
 		$this->cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Cache\UrlCache');
 		$this->cache->setTimeout(30);
 	}
@@ -69,7 +52,7 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 		// remove opening slash
 		if (empty($uri))
 			return;
-		$append = (string) $this->config->getAppend();
+		$append = ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getAppend();
 		list($path, $params) = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode('?', $uri);
 		// save the original path to check that if the "slashed" one does not return anything
 		$path = urldecode($path);
@@ -78,7 +61,7 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 		if ($cache === FALSE) {
 			/* if we have not found an entry, try to append a "/" an try again */
 			if (!empty($path) && $append == '/' && substr($path, -strlen($append)) != $append && !preg_match('/\.\w{3,5}\d?$/', $path)) {
-				$path .= (string) $this->config->getAppend();
+				$path .= $append;
 			}
 			$cache = $this->cache->read_path($path, $this->domain);
 		}
@@ -128,20 +111,20 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 		$params['id'] = GeneralUtility::aliasToId($params['id']);
 
 		/* check if type should be casted to int to avoid strange behavior when creating links */
-		if ($this->config->getCastTypeToInt()) {
-			$type = !empty($params['type']) ? $params['type'] : \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('type');
-			if (!empty($type) && !GeneralUtility::canBeInterpretedAsInteger($type)) { // if type is not an int
-				unset($params['type']); // remove type param to use systems default
-			}
-		}
+//		if ($this->config->getCastTypeToInt()) {
+//			$type = !empty($params['type']) ? $params['type'] : \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('type');
+//			if (!empty($type) && !GeneralUtility::canBeInterpretedAsInteger($type)) { // if type is not an int
+//				unset($params['type']); // remove type param to use systems default
+//			}
+//		}
 
 		/* check if L should be casted to int to avoid strange behavior when creating links */
-		if ($this->config->getCastLToInt()) {
-			$L = !empty($params['L']) ? $params['L'] : \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('L');
-			if (!empty($L) && !GeneralUtility::canBeInterpretedAsInteger($L)) { // if L is not an int
-				unset($params['L']); // remove L param to use system default
-			}
-		}
+//		if ($this->config->getCastLToInt()) {
+//			$L = !empty($params['L']) ? $params['L'] : \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('L');
+//			if (!empty($L) && !GeneralUtility::canBeInterpretedAsInteger($L)) { // if L is not an int
+//				unset($params['L']); // remove L param to use system default
+//			}
+//		}
 		if (!isset($params['L'])) {
 			/* append an empty string to make sure this value is a string when given to \TYPO3\CMS\Core\Utility\GeneralUtility::calculateCHash */
 			$params['L'] = '' . ($GLOBALS['TSFE']->sys_language_uid ? $GLOBALS['TSFE']->sys_language_uid : 0);
@@ -211,7 +194,7 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 
 		// append
 		if ($result_path) {
-			$append = $this->config->getAppend();
+			$append = ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getAppend();
 			if (substr($result_path, -strlen($append)) != $append) {
 				$result_path = $result_path . $append;
 			}
@@ -233,39 +216,45 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 		return($uri);
 	}
 
-	/**
-	 * Take parameter array and transform it into an array of path elements.
-	 * 
-	 * @param array $parameters The original parameter array
-	 * @return array The transformed values
-	 * @throws Exception
-	 */
 	public function transformParametersToPath($parameters) {
-		$pathElements = array();
-		/* @var $parameterConfiguration \SimpleXMLElement */
-		foreach ($this->config->getParameterConfigurations() as $parameterConfiguration) {
-			$parameterName = (string) $parameterConfiguration->name;
-			if (array_key_exists($parameterName, $parameters)) {
-				$transformationType = (string) $parameterConfiguration->type;
-				if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['transformationServices']) && array_key_exists($transformationType, $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['transformationServices'])) {
-					/* @var $transformationService \Nawork\NaworkUri\Service\TransformationServiceInterface */
-					$transformationService = \TYPO3\CMS\Core\Utility\GeneralUtility::getUserObj($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['transformationServices'][$transformationType]);
-					if (!is_object($transformationService)) {
-						throw new \Nawork\NaworkUri\Exception\InvalidTransformationServiceException('The transformation service for type \'' . $transformationType . '\' could not be instatiated, the class was not found');
+		$pathParts = array();
+		foreach (ConfigurationUtility::getConfiguration()->getParametersConfiguration()
+			->getParameterTransformationConfigurations() as $transformationConfiguration) {
+			if (array_key_exists($transformationConfiguration->getName(), $parameters)) {
+				try {
+					if (self::isTransformationServiceRegistered($transformationConfiguration->getType())) {
+						$transformationServiceClassName = self::getTransformationServiceClassName($transformationConfiguration->getType());
+						if (class_exists($transformationServiceClassName)) {
+							/* @var $transformationService \Nawork\NaworkUri\Transformation\AbstractTransformationService */
+							$transformationService = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance($transformationServiceClassName);
+							if (!$transformationService instanceof \Nawork\NaworkUri\Transformation\AbstractTransformationService) {
+								throw new \Nawork\NaworkUri\Exception\TransformationServiceException($transformationConfiguration->getName(), $transformationConfiguration->getType(), $transformationServiceClassName . ' must extend Kapp\\UrlRewrite\\Transformation\\AbstractTransformationService');
+							}
+							try {
+								$transformedValue = $transformationService->transform($transformationConfiguration,
+									$parameters[$transformationConfiguration->getName()],
+									$this);
+								// only add non-empty values to the path to avoid "//" in the resulting path
+//								if (!empty($transformedValue)) {
+									$pathParts[$transformationConfiguration->getName()] = $transformedValue;
+//								}
+							} catch (\Nawork\NaworkUri\Exception\TransformationException $e) {
+								throw new \Nawork\NaworkUri\Exception\TransformationServiceException($transformationConfiguration->getName(), $transformationConfiguration->getType(), 'An exception was thrown while transforming the value. The message was: ' . $e->getMessage(), $e);
+							}
+						} else {
+							throw new \Nawork\NaworkUri\Exception\TransformationServiceException($transformationConfiguration->getName(), $transformationConfiguration->getType(), 'The transformation service class "' . $transformationServiceClassName . '" was not found, please check, if it exists');
+						}
+					} else {
+						throw new \Nawork\NaworkUri\Exception\TransformationServiceException($transformationConfiguration->getName(), $transformationConfiguration->getType(), 'No transformation service for type "' . $transformationConfiguration->getType() . '" registered');
 					}
-					if (!$transformationService instanceof \Nawork\NaworkUri\Service\TransformationServiceInterface) {
-						throw new \Nawork\NaworkUri\Exception\InvalidTransformationServiceException('The transformation service for type \'' . $transformationType . '\' must implement \'\\Nawork\\NaworkUri\\Service\\TransformationServiceInterface\'');
-					}
-					$pathElements[$parameterName] = $transformationService->transform($parameterConfiguration, $parameters[$parameterName], $this);
-				} else {
-					throw new \Nawork\NaworkUri\Exception\MissingTransformationServiceException('No transformation service for type \'' . $transformationType . '\' registered');
+				} catch (\Exception $ex) {
 					/**
-					 * @todo Improve handling of missing transformation service
+					 * @todo Do some logging here
 					 */
 				}
 			}
 		}
-		return $pathElements;
+		return $pathParts;
 	}
 
 	public function getLanguage() {
@@ -279,10 +268,33 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @param string $classReference The class reference to the transformation service, e.g. "EXT:myext/Classes/Service/MyTransformationService.php:My\MyExt\Service\MyTransformationService
 	 */
 	public static function registerTransformationService($type, $classReference) {
-		if (!is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['transformationServices'])) {
-			$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['transformationServices'] = array();
+		if (!is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['TransformationServices'])) {
+			$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['TransformationServices'] = array();
 		}
-		$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['transformationServices'][$type] = $classReference;
+		$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['TransformationServices'][$type] = $classReference;
+	}
+
+	/**
+	 * Check if a transformation service for the given type is registered
+	 *
+	 * @param string $type The type as used in the configuration file, e.g. "Hidden"
+	 *
+	 * @return bool Returns true, if there is a transformation service registered for the given type, false otherwise
+	 */
+	public static function isTransformationServiceRegistered($type) {
+		return array_key_exists($type, $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['TransformationServices']);
+	}
+
+	/**
+	 * Get the class name of the transformation service for the given type.
+	 * !!!Important: Check if it is registered first to avoid errors for non existing array key
+	 *
+	 * @param string $type The type as used in the configuration file, e.g. "Hidden"
+	 *
+	 * @return string Returns the namespaced class name as it was registered before
+	 */
+	public static function getTransformationServiceClassName($type) {
+		return $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['TransformationServices'][$type];
 	}
 
 }

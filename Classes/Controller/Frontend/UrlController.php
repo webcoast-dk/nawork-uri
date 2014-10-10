@@ -10,32 +10,28 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 	 * decode uri and extract parameters
 	 *
 	 * @param unknown_type                                               $params
-	 * @param TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController $ref
+	 * @param \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController $ref
 	 */
 	function uri2params($params, $ref) {
 		global $TYPO3_CONF_VARS;
 
-		$configReader = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfigurationReader();
-		if (!$configReader->isDisabled()) {
+		if (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getDisabled()) {
 
 			if ($params['pObj']->siteScript && substr($params['pObj']->siteScript, 0, 9) != 'index.php' && substr($params['pObj']->siteScript, 0, 1) != '?') {
 				$uri = $params['pObj']->siteScript;
 				list($uri, $parameters) = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode('?', $uri);
 				// translate uri
 				$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
-				/* @var $translator Nawork\NaworkUri\Utility\TransformationUtility */
+				/* @var $translator \Nawork\NaworkUri\Utility\TransformationUtility */
 				$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $configReader, $extConf['MULTIDOMAIN']);
 				try {
 					$uri_params = $translator->uri2params($uri);
-					/* should the path be converted to lowercase to treat uppercase paths like normal paths */
-					if (($configReader->getCheckForUpperCaseURI() && $uri == strtolower($uri)) || !$configReader->getCheckForUpperCaseURI()) {
-						if (is_array($uri_params)) { // uri found
-							$params['pObj']->id = $uri_params['id'];
-							unset($uri_params['id']);
-							$params['pObj']->mergingWithGetVars($uri_params);
-						} else { // handle 404
-							$this->handlePagenotfound(array('currentUrl' => $ref->siteScript, 'reaseonText' => 'The requested path could not be found', 'pageAccessFailureReasons' => array()), $ref);
-						}
+					if (is_array($uri_params)) { // uri found
+						$params['pObj']->id = $uri_params['id'];
+						unset($uri_params['id']);
+						$params['pObj']->mergingWithGetVars($uri_params);
+					} else { // handle 404
+						$this->handlePagenotfound(array('currentUrl' => $ref->siteScript, 'reaseonText' => 'The requested path could not be found', 'pageAccessFailureReasons' => array()), $ref);
 					}
 				} catch (\Nawork\NaworkUri\Exception\UrlIsRedirectException $ex) {
 					$this->redirectUrl = $ex->getUrl();
@@ -53,12 +49,12 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 	 */
 	function params2uri(&$link, $ref) {
 		global $TYPO3_CONF_VARS;
-		$configReader = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfigurationReader();
-		if (!$configReader->isDisabled()) {
+		if (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getDisabled()) {
 			if ($GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1 && $link['LD']['url']) {
 				list($path, $params) = explode('?', $link['LD']['totalURL']);
 				$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
-				$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $configReader, (boolean) $extConf['MULTIDOMAIN']);
+				/** @var \Nawork\NaworkUri\Utility\TransformationUtility $translator */
+				$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility');
 				try {
 					$url = $translator->params2uri($params);
 					$link['LD']['totalURL'] = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($url);
@@ -104,8 +100,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 	 */
 	function redirect2uri($params, $ref) {
 		global $TYPO3_CONF_VARS;
-		$configReader = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfigurationReader();
-		if (!$configReader->isDisabled()) {
+		if (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getDisabled()) {
 			/*
 			 * if we set a redirectUrl above because an old url was called we should
 			 * redirect it here because at this point we have the full tsfe to get
@@ -143,61 +138,6 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 				$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 				$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $configReader, $extConf['MULTIDOMAIN']);
 				$tempParams = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params);
-
-				/* should the path be converted to lowercase to treat uppercase paths like normal paths */
-				if ($configReader->getCheckForUpperCaseURI()) {
-					if ($path != strtolower($path)) {
-						$uri = $GLOBALS['TSFE']->config['config']['baseURL'] . strtolower($path);
-						if (empty($uri)) {
-							$uri = '/';
-						}
-						if (!empty($params)) {
-							$uri .= '?' . $params;
-						}
-						header('Location: ' . $uri, TRUE, $configReader->getRedirectStatus());
-						exit;
-					}
-				}
-
-				/* check if type should be casted to int to avoid strange behavior when creating links */
-				if ($configReader->getCastTypeToInt()) {
-					$type = !empty($tempParams['type']) ? $tempParams['type'] : \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('type');
-					if (!empty($type) && !\Nawork\NaworkUri\Utility\GeneralUtility::canBeInterpretedAsInteger($type)) { // if type is not an int
-						unset($tempParams['type']); // unset type param to use system default
-						/* should we redirect if the parameter is wrong */
-						if ($configReader->getRedirectOnParameterDiff()) {
-							$uri = $GLOBALS['TSFE']->config['config']['baseURL'] . $path;
-							if (empty($uri)) {
-								$uri = '/';
-							}
-							if (count($tempParams) > 0) {
-								$uri .= '?' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($tempParams);
-							}
-							header('Location: ' . $uri, TRUE, $configReader->getRedirectStatus());
-							exit;
-						}
-					}
-				}
-
-				/* check if L should be casted to int to avoid strange behavior when creating links */
-				if ($configReader->getCastLToInt()) {
-					$L = !empty($tempParams['L']) ? $tempParams['L'] : \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('L');
-					if (!empty($L) && !\Nawork\NaworkUri\Utility\GeneralUtility::canBeInterpretedAsInteger($L)) { // if L is not an int
-						unset($tempParams['L']); // unset L param to use system default
-						/* should we redirect if the parameter is wrong */
-						if ($configReader->getRedirectOnParameterDiff()) {
-							$uri = $GLOBALS['TSFE']->config['config']['baseURL'] . $path;
-							if (empty($uri)) {
-								$uri = '/';
-							}
-							if (count($tempParams) > 0) {
-								$uri .= '?' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($tempParams);
-							}
-							header('Location: ' . $uri, TRUE, $configReader->getRedirectStatus());
-							exit;
-						}
-					}
-				}
 
 				/* if the page is called via parameterized form look for a path to redirect to */
 				if ((substr($GLOBALS['TSFE']->siteScript, 0, 9) == 'index.php' || substr($GLOBALS['TSFE']->siteScript, 0, 1) == '?')) {

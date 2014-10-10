@@ -228,28 +228,27 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 	 * optional behavior.
 	 *
 	 * @param array                                                      $params
-	 * @param TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController $frontendController
+	 * @param \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController $frontendController
 	 *
 	 * @todo Handle not found and not accessible differently
 	 */
 	public function handlePagenotfound($params, $frontendController) {
-		$configReader = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfigurationReader();
-		if (!$configReader->isDisabled()) {
+		if (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getDisabled()) {
 			$output = '';
 			$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
-			/* @var $configReader Nawork\NaworkUri\Configuration\ConfigurationReader */
 			/* the page is not accessible without being logged in, so handle this, if configured */
-			if (array_key_exists('pageAccessFailureReasons', $params) && is_array($params['pageAccessFailureReasons']) && array_key_exists('fe_group', $params['pageAccessFailureReasons']) && $configReader->hasPageNotAccessibleConfiguration()) {
-				header($configReader->getPageNotAccessibleConfigurationStatus());
+			if (array_key_exists('pageAccessFailureReasons', $params) && is_array($params['pageAccessFailureReasons']) && array_key_exists('fe_group', $params['pageAccessFailureReasons']) && \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getPageNotAccessibleConfiguration() instanceof \Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration) {
+				$pageNotAccessibleConfiguration = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getPageNotAccessibleConfiguration();
+				header($pageNotAccessibleConfiguration->getStatus());
 				header('Content-type: text/html; charset=utf8');
-				switch ($configReader->getPageNotAccessibleConfigurationBehaviorType()) {
-					case 'message':
-						$output = $configReader->getPageNotAccessibleConfigurationBehaviorValue();
+				switch ($pageNotAccessibleConfiguration->getBehavior()) {
+					case \Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration::BEHAVIOR_MESSAGE:
+						$output = $pageNotAccessibleConfiguration->getValue();
 						break;
-					case 'page':
+					case \Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration::BEHAVIOR_PAGE:
 						if (\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
 							$curl = curl_init();
-							curl_setopt($curl, CURLOPT_URL, $configReader->getPageNotAccessibleConfigurationBehaviorValue());
+							curl_setopt($curl, CURLOPT_URL, $pageNotAccessibleConfiguration->getValue());
 							curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
 							curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
 							curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
@@ -266,28 +265,29 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 							}
 							$output = $this->curl_exec_follow($curl);
 						} else {
-							$output = '404 not found! The 404 Page URL ' . $configReader->getPageNotAccessibleConfigurationBehaviorValue() . ' seems to cause a loop.';
+							$output = '404 not found! The 404 Page URL ' . $pageNotAccessibleConfiguration->getValue() . ' seems to cause a loop.';
 						}
 						break;
-					case 'redirect':
-						$path = html_entity_decode($configReader->getPageNotAccessibleConfigurationBehaviorValue());
+					case \Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration::BEHAVIOR_REDIRECT:
+						$path = html_entity_decode($pageNotAccessibleConfiguration->getValue());
 						if (!($_SERVER['REQUEST_METHOD'] == 'POST' && preg_match('/index.php/', $_SERVER['SCRIPT_NAME']))) {
 							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($path, 301); // send headers and exits
 						}
 					default:
 						$output = '<html><head><title>403 Forbidden</title></head><body><h1>403 Forbidden</h1><p>You don\'t have the permission to access this page</p></body></html>';
 				}
-			} elseif ($configReader->hasPageNotFoundConfig()) {
+			} elseif (\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getPageNotFoundConfiguration() instanceof \Nawork\NaworkUri\Configuration\PageNotFoundConfiguration) {
+				$pageNotFoundConfiguration = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getPageNotFoundConfiguration();
 				header('Content-Type: text/html; charset=utf-8');
-				header($configReader->getPageNotFoundConfigStatus());
-				switch ($configReader->getPageNotFoundConfigBehaviorType()) {
-					case 'message':
-						$output = $configReader->getPageNotFoundConfigBehaviorValue();
+				header($pageNotFoundConfiguration->getStatus());
+				switch ($pageNotFoundConfiguration->getBehavior()) {
+					case \Nawork\NaworkUri\Configuration\PageNotFoundConfiguration::BEHAVIOR_MESSAGE:
+						$output = $pageNotFoundConfiguration->getValue();
 						break;
-					case 'page':
+					case \Nawork\NaworkUri\Configuration\PageNotFoundConfiguration::BEHAVIOR_PAGE:
 						if (\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
 							$curl = curl_init();
-							curl_setopt($curl, CURLOPT_URL, $configReader->getPageNotFoundConfigBehaviorValue());
+							curl_setopt($curl, CURLOPT_URL, $pageNotFoundConfiguration->getValue());
 							curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
 							curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
 							curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
@@ -298,11 +298,11 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 							curl_setopt($curl, CURLOPT_REFERER, \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
 							$output = $this->curl_exec_follow($curl);
 						} else {
-							$output = '404 not found! The 404 Page URL ' . $configReader->getPageNotFoundConfigBehaviorValue() . ' seems to cause a loop.';
+							$output = '404 not found! The 404 Page URL ' . $pageNotFoundConfiguration->getValue() . ' seems to cause a loop.';
 						}
 						break;
-					case 'redirect':
-						$path = html_entity_decode($configReader->getPageNotFoundConfigBehaviorValue());
+					case \Nawork\NaworkUri\Configuration\PageNotFoundConfiguration::BEHAVIOR_REDIRECT:
+						$path = html_entity_decode($pageNotFoundConfiguration->getValue());
 						if (!($_SERVER['REQUEST_METHOD'] == 'POST' && preg_match('/index.php/', $_SERVER['SCRIPT_NAME']))) {
 							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($path, 301); // send headers and exits
 						}

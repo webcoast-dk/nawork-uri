@@ -7,9 +7,11 @@
 	<data type="array">
 		<languageKey index="default" type="array">
 			<label index="label.clearUrlCache">Clear URL cache</label>
+			<label index="label.clearUrlConfigurationCache">Clear URL configuration cache</label>
 		</languageKey>
 		<languageKey index="de" type="array">
 			<label index="label.clearUrlCache">URL Cache leeren</label>
+			<label index="label.clearUrlConfigurationCache">URL-Konfigurations-Cache leeren</label>
 		</languageKey>
 	</data>
 </T3locallang>

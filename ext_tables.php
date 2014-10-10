@@ -138,6 +138,10 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = 'Nawork\\NaworkUri\\Hooks\\TceMainProcessDatamap';
 	// add an additional cache clearing function to the menu
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['additionalBackendItems']['cacheActions'][] = 'Nawork\\NaworkUri\\Hooks\\ClearCache';
+	/* register the ajax ids for the clear cache options (urls and url configuration) */
+	$GLOBALS['TYPO3_CONF_VARS']['BE']['AJAX']['tx_naworkuri::clearUrlCache'] = '&Nawork\\NaworkUri\\Cache\\ClearCache->clearUrlCache';
+	$GLOBALS['TYPO3_CONF_VARS']['BE']['AJAX']['tx_naworkuri::clearUrlConfigurationCache'] = '&Nawork\\NaworkUri\\Cache\ClearCache->clearConfigurationCache';
+
 	// register command controller for uri testing
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = 'Nawork\\NaworkUri\\Command\\NaworkUriCommandController';
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = 'Nawork\\NaworkUri\\Command\\MigrationCommandController';

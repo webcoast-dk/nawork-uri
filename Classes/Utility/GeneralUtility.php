@@ -271,8 +271,7 @@ class GeneralUtility {
 
 	public static function sendRedirect($url, $status) {
 		header('X-Redirect-By: nawork_uri');
-		header('Location: ' . $url, TRUE, $status);
-		exit(0);
+		\TYPO3\CMS\Core\Utility\HttpUtility::redirect($url, $status);
 	}
 
 	public static function getLocale() {

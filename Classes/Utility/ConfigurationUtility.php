@@ -299,6 +299,9 @@ class ConfigurationUtility {
 		if ($xml->StoratePage) {
 			$configuration->setStoragePage((int)$xml->StoragePage);
 		}
+		if($xml->RedirectStatus) {
+			$configuration->setRedirectStatus((string)$xml->RedirectStatus);
+		}
 		return $configuration;
 	}
 

@@ -24,6 +24,11 @@ class GeneralConfiguration {
 	protected $storagePage = 0;
 
 	/**
+	 * @var string
+	 */
+	protected $redirectStatus = \TYPO3\CMS\Core\Utility\HttpUtility::HTTP_STATUS_301;
+
+	/**
 	 * @return string
 	 */
 	public function getAppend() {
@@ -52,6 +57,13 @@ class GeneralConfiguration {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getRedirectStatus() {
+		return $this->redirectStatus;
+	}
+
+	/**
 	 * @param string $append
 	 */
 	public function setAppend($append) {
@@ -77,6 +89,13 @@ class GeneralConfiguration {
 	 */
 	public function setStoragePage($storagePage) {
 		$this->storagePage = $storagePage;
+	}
+
+	/**
+	 * @param string $redirectStatus
+	 */
+	public function setRedirectStatus($redirectStatus) {
+		$this->redirectStatus = $redirectStatus;
 	}
 }
  

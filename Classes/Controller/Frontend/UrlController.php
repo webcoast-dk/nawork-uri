@@ -136,7 +136,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 				list($path, $params) = explode('?', $GLOBALS['TSFE']->siteScript);
 				$params = rawurldecode(html_entity_decode($params)); // decode the query string because it is expected by the further processing functions
 				$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
-				$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $configReader, $extConf['MULTIDOMAIN']);
+				$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility');
 				$tempParams = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params);
 
 				/* if the page is called via parameterized form look for a path to redirect to */
@@ -151,9 +151,9 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 					$ignoreTimeout = TRUE;
 					try {
 						$uri = $translator->params2uri($params, $dontCreateNewUrls, $ignoreTimeout);
-						if ($_SERVER['REQUEST_METHOD'] == 'GET' && ($path == 'index.php' || $path == '') && $uri !== FALSE && $uri != $GLOBALS['TSFE']->siteScript) {
+						if (in_array($_SERVER['REQUEST_METHOD'], array('GET','HEAD')) && ($path == 'index.php' || $path == '') && $uri !== FALSE && $uri != $GLOBALS['TSFE']->siteScript) {
 							$uri = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($uri, TRUE); // TRUE is for redirect, this applies "/" by default and the baseURL if set
-							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($uri, $configReader->getRedirectStatus());
+							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($uri, \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getRedirectStatus());
 							exit;
 						}
 					} catch (\Nawork\NaworkUri\Exception\UrlIsNotUniqueException $ex) {

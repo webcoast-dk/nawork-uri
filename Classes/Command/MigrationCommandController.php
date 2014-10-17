@@ -14,6 +14,34 @@ class MigrationCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\Comma
 	}
 
 	/**
+	 * Delete deleted or hidden records. (2.0 -> 2.1)
+	 *
+	 * This is only necessary for upgrades from 2.0
+	 */
+	public function removeDeletedAndHiddenCommand() {
+		$this->databaseConnection->exec_DELETEquery('tx_naworkuri_uri', 'deleted=1 OR hidden=1');
+	}
+
+	/**
+	 * Migrate from sticky to locked (2.0 -> 2.1)
+	 *
+	 * This only necessary for the upgrades form 2.0
+	 */
+	public function stickyCommand() {
+		$this->databaseConnection->sql_query('UPDATE tx_naworkuri_uri SET locked=sticky');
+	}
+
+	/**
+	 * Migrate the pid to page_uid field (2.0 -> 2.1)
+	 *
+	 * This is only necessary for upgrades from 2.0
+	 */
+	public function pidToPageUidCommand() {
+		$this->databaseConnection->sql_query('UPDATE tx_naworkuri_uri SET page_uid=pid WHERE pid!=0');
+		$this->databaseConnection->sql_query('UPDATE tx_naworkuri_uri SET pid=0');
+	}
+
+	/**
 	 * Migrate domain names to domain records
 	 *
 	 * Convert the domain names in the url records

@@ -49,37 +49,35 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 	 */
 	function params2uri(&$link, $ref) {
 		global $TYPO3_CONF_VARS;
-		if (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getDisabled()) {
-			if ($GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1 && $link['LD']['url']) {
-				list($path, $params) = explode('?', $link['LD']['totalURL']);
-				$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
-				/** @var \Nawork\NaworkUri\Utility\TransformationUtility $translator */
-				$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility');
-				try {
-					$url = $translator->params2uri($params);
-					$link['LD']['totalURL'] = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($url);
-					/* add hook for post processing the url */
-					if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'])) {
-						$hookParams = array('url' => $url, 'params' => \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params), 'LD' => $link['LD']);
-						foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'] as $funcRef) {
-							\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($funcRef, $hookParams, $this);
-						}
-						if ($hookParams['url'] !== FALSE) { // if the url is not false set it
-							$link['LD']['totalURL'] = $hookParams['url'];
-						}
+		if (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getDisabled() && $link['LD']['url']) {
+			list($path, $params) = explode('?', $link['LD']['totalURL']);
+			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
+			/** @var \Nawork\NaworkUri\Utility\TransformationUtility $translator */
+			$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility');
+			try {
+				$url = $translator->params2uri($params);
+				$link['LD']['totalURL'] = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($url);
+				/* add hook for post processing the url */
+				if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'])) {
+					$hookParams = array('url' => $url, 'params' => \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params), 'LD' => $link['LD']);
+					foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'] as $funcRef) {
+						\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($funcRef, $hookParams, $this);
 					}
-					if (!preg_match('/https?:\/\//', $link['LD']['totalURL']) && !empty($GLOBALS['TSFE']->config['config']['absRefPrefix'])) {
-						if (substr($link['LD']['totalURL'], 0, strlen($GLOBALS['TSFE']->config['config']['absRefPrefix'])) != $GLOBALS['TSFE']->config['config']['absRefPrefix']) {
-							$link['LD']['totalURL'] = $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $link['LD']['totalURL'];
-						}
+					if ($hookParams['url'] !== FALSE) { // if the url is not false set it
+						$link['LD']['totalURL'] = $hookParams['url'];
 					}
-				} catch (\Nawork\NaworkUri\Exception\UrlIsNotUniqueException $ex) {
-					/* log unique failure to belog */
-					\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
-				} catch (\Nawork\NaworkUri\Exception\DbErrorException $ex) {
-					/* log db errors to belog */
-					\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
 				}
+				if (!preg_match('/https?:\/\//', $link['LD']['totalURL']) && !empty($GLOBALS['TSFE']->config['config']['absRefPrefix'])) {
+					if (substr($link['LD']['totalURL'], 0, strlen($GLOBALS['TSFE']->config['config']['absRefPrefix'])) != $GLOBALS['TSFE']->config['config']['absRefPrefix']) {
+						$link['LD']['totalURL'] = $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $link['LD']['totalURL'];
+					}
+				}
+			} catch (\Nawork\NaworkUri\Exception\UrlIsNotUniqueException $ex) {
+				/* log unique failure to belog */
+				\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
+			} catch (\Nawork\NaworkUri\Exception\DbErrorException $ex) {
+				/* log db errors to belog */
+				\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
 			}
 		}
 	}
@@ -132,7 +130,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 					$uri .= '#' . $newUrl['fragment'];
 				}
 				\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($uri, 301);
-			} elseif ($GLOBALS['TSFE']->config['config']['tx_naworkuri.']['enable'] == 1 && empty($_GET['ADMCMD_prev']) && $GLOBALS['TSFE']->config['config']['tx_naworkuri.']['redirect'] == 1 && $GLOBALS['TSFE']->siteScript) {
+			} elseif (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getDisabled() && empty($_GET['ADMCMD_prev']) && $GLOBALS['TSFE']->siteScript) {
 				list($path, $params) = explode('?', $GLOBALS['TSFE']->siteScript);
 				$params = rawurldecode(html_entity_decode($params)); // decode the query string because it is expected by the further processing functions
 				$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);

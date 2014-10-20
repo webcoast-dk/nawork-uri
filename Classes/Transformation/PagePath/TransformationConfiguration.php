@@ -21,9 +21,9 @@ class TransformationConfiguration extends \Nawork\NaworkUri\Transformation\Abstr
 	protected $table = 'pages';
 	protected $translationTable = 'pages_language_overlay';
 	protected $fields = 'nav_title//title';
-	protected $pathOverrideField = 'tx_urlrewrite_pathoverride';
+	protected $pathOverrideField = 'tx_naworkuri_pathoverride';
 	protected $pathSeparator = '/';
-	protected $excludeFromPathField = 'tx_urlrewrite_exclude';
+	protected $excludeFromPathField = 'tx_naworkuri_exclude';
 
 	public function getTable() {
 		return $this->table;

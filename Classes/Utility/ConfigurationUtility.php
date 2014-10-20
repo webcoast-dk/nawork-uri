@@ -555,41 +555,66 @@ class ConfigurationUtility {
 						$transformationServiceClassName = TransformationUtility::getTransformationServiceClassName($type);
 						$classNameParts = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode('\\',
 							$transformationServiceClassName);
+						// build configuration class name
 						array_pop($classNameParts);
-						array_push($classNameParts, 'ConfigurationReader');
-						$configurationReaderClassName = implode('\\', $classNameParts);
-						// if the class does not exist - and is not loadable - log this and continue
+						array_push($classNameParts, 'TransformationConfiguration');
+						$transformationConfigurationClassName = implode('\\', $classNameParts);
+						// if the configuration class does not exist - and can not be loaded - log this and continue
 						// this leaves this parameter out of the configuration
-						if (!class_exists($configurationReaderClassName)) {
+						if (!class_exists($transformationConfigurationClassName)) {
 							/**
 							 * @todo Log this somewhere
 							 */
 							continue;
 						}
-						$configurationReader = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance($configurationReaderClassName);
-						if ($configurationReader instanceof \Nawork\NaworkUri\Transformation\AbstractConfigurationReader) {
-							if ($transformationConfiguration === NULL) {
-								// build configuration class name
-								array_pop($classNameParts);
-								array_push($classNameParts, 'TransformationConfiguration');
-								$transformationConfigurationClassName = implode('\\', $classNameParts);
-								// if the configuration class does not exist - and can not be loaded - log this and continue
-								// this leaves this parameter out of the configuration
-								if (!class_exists($transformationConfigurationClassName)) {
-									/**
-									 * @todo Log this somewhere
-									 */
-									continue;
+						/* @var $transformationConfiguration \Nawork\NaworkUri\Transformation\AbstractTransformationConfiguration */
+						$transformationConfiguration = new $transformationConfigurationClassName();
+						$transformationConfiguration->setName((string)$transformationConfigurationXml->Name);
+						// build the configuration based in the given properties
+						foreach($transformationConfiguration->getAdditionalProperties() as $name => $type) {
+							// exclude name and type values as there are set already
+							if(!in_array($name, array('Name', 'Type'))) {
+								$setFunctionName = 'set'.ucfirst($name);
+								if($transformationConfigurationXml->$name && $transformationConfigurationXml->$name instanceof \SimpleXMLElement && method_exists($transformationConfiguration, $setFunctionName)) {
+									$value = NULL;
+									switch ($type) {
+										case 'bool':
+										case 'boolean':
+											$value = (bool) (int) $transformationConfigurationXml->$name;
+											break;
+										case 'int':
+										case 'integer':
+											$value = (int) $transformationConfigurationXml->$name;
+											break;
+										case 'string':
+											$value = (string) $transformationConfigurationXml->$name;
+									}
+									$transformationConfiguration->$setFunctionName($value);
 								}
-								/* @var $transformationConfiguration \Nawork\NaworkUri\Transformation\AbstractTransformationConfiguration */
-								$transformationConfiguration = new $transformationConfigurationClassName();
-								$transformationConfiguration->setName((string)$transformationConfigurationXml->Name);
 							}
-							$configurationReader->buildConfiguration($transformationConfigurationXml,
-								$transformationConfiguration);
-							// add the built transformation configuration to the parameters configuration object
-							$configuration->addTransformationConfiguration($transformationConfiguration);
 						}
+						// try to find an additional configuration reader
+						array_pop($classNameParts);
+						array_push($classNameParts, 'ConfigurationReader');
+						$configurationReaderClassName = implode('\\', $classNameParts);
+						// if the class exists create an instance and let it change the
+						// given transformation configuration
+						if (class_exists($configurationReaderClassName)) {
+							$configurationReader = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
+								$configurationReaderClassName
+							);
+							if ($configurationReader
+								instanceof
+								\Nawork\NaworkUri\Transformation\AbstractConfigurationReader
+							) {
+								$configurationReader->buildConfiguration(
+									$transformationConfigurationXml,
+									$transformationConfiguration
+								);
+							}
+						}
+						// add the built transformation configuration to the parameters configuration object
+						$configuration->addTransformationConfiguration($transformationConfiguration);
 					}
 				}
 			}

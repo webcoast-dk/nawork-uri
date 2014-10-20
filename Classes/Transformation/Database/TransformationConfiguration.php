@@ -5,6 +5,12 @@ namespace Nawork\NaworkUri\Transformation\Database;
 
 class TransformationConfiguration extends \Nawork\NaworkUri\Transformation\AbstractTransformationConfiguration {
 	protected $type = 'Database';
+
+	protected $additionalProperties = array(
+		'Table' => 'string',
+		'CompareField' => 'string'
+	);
+
 	/**
 	 * @var string
 	 */

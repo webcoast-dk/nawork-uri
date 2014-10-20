@@ -4,6 +4,12 @@ namespace Nawork\NaworkUri\Transformation;
 
 
 class AbstractTransformationConfiguration {
+
+	/**
+	 * @var array
+	 */
+	protected $additionalProperties = array();
+
 	/**
 	 * @var string
 	 */
@@ -12,6 +18,10 @@ class AbstractTransformationConfiguration {
 	 * @var string
 	 */
 	protected $type;
+
+	public final function getAdditionalProperties() {
+		return $this->additionalProperties;
+	}
 
 	/**
 	 * @return string

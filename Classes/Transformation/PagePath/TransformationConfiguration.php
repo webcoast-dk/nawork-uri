@@ -5,6 +5,16 @@ namespace Nawork\NaworkUri\Transformation\PagePath;
 
 class TransformationConfiguration extends \Nawork\NaworkUri\Transformation\AbstractTransformationConfiguration {
 	protected $type = 'PagePath';
+
+	protected $additionalProperties = array(
+		'Table' => 'string',
+		'TranslationTable' => 'string',
+		'Fields' => 'string',
+		'PathOverrideField' => 'string',
+		'PathSeparator' => 'string',
+		'ExcludeFromPathField' => 'string'
+	);
+
 	/**
 	 * @var string
 	 */

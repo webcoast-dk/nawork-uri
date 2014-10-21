@@ -42,6 +42,61 @@ class MigrationCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\Comma
 	}
 
 	/**
+	 * Update CacheHash parameter in url records.
+	 *
+	 * This helps to avoid "-1" urls, because of change in the cache hash calculation
+	 * in TYPO3 and nawork_uri versions.
+	 */
+	public function updateCacheHashCommand() {
+		$urls = $this->databaseConnection->exec_SELECTgetRows(
+			'uid,page_uid,sys_language_uid,params',
+			'tx_naworkuri_uri',
+			'params LIKE "%cHash%"'
+		);
+		/** @var \TYPO3\CMS\Frontend\Page\CacheHashCalculator $cacheHashCalculator */
+		$cacheHashCalculator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
+			'TYPO3\\CMS\\Frontend\\Page\\CacheHashCalculator'
+		);
+		$urlsFound = count($urls);
+		$counter = 0;
+		$lastPercentageUpdate = 0;
+		$this->outputLine('Found ' . $urlsFound . ' urls to update');
+		foreach ($urls as $index => $url) {
+			$parametersAsArray = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($url['params']);
+			$parametersAsArray['id'] = $url['page_uid'];
+			$parametersAsArray['L'] = $url['sys_language_uid'];
+			$cacheHash = $cacheHashCalculator->generateForParameters(
+				\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parametersAsArray, FALSE)
+			);
+			if ($parametersAsArray['cHash'] !== $cacheHash) {
+				unset($parametersAsArray['id']);
+				unset($parametersAsArray['L']);
+				$parametersAsArray['cHash'] = $cacheHash;
+				$parameterString = \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters(
+					$parametersAsArray,
+					FALSE
+				);
+				if ($this->databaseConnection->exec_UPDATEquery(
+					'tx_naworkuri_uri',
+					'uid=' . (int) $url['uid'],
+					array('params' => $parameterString, 'hash_params' => md5($parameterString))
+				)
+				) {
+					++$counter;
+				} else {
+					$this->outputLine('Error: ' . $this->databaseConnection->sql_error());
+				}
+			}
+			$percentage = floor((($index + 1) / $urlsFound) * 100);
+			if ($percentage > $lastPercentageUpdate) {
+				$lastPercentageUpdate = $percentage;
+				$this->outputLine($lastPercentageUpdate . ' %');
+			}
+		}
+		$this->outputLine('Updated ' . $counter . ' urls');
+	}
+
+	/**
 	 * Migrate domain names to domain records
 	 *
 	 * Convert the domain names in the url records

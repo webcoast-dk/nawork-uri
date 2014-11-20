@@ -2,6 +2,8 @@
 
 namespace Nawork\NaworkUri\Controller\Frontend;
 
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 
 	protected $redirectUrl = NULL;
@@ -246,7 +248,10 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 					case \Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration::BEHAVIOR_PAGE:
 						if (\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
 							$curl = curl_init();
-							curl_setopt($curl, CURLOPT_URL, $pageNotAccessibleConfiguration->getValue());
+							$urlParts = parse_url($pageNotAccessibleConfiguration->getValue());
+							$urlParts['scheme'] = GeneralUtility::getIndpEnv('TYPO3_SSL') ? 'https' : 'http';
+							$notFoundUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . $urlParts['path'] . (!empty($urlParts['query']) ? '?' . $urlParts['query'] : '');
+							curl_setopt($curl, CURLOPT_URL, $notFoundUrl);
 							curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
 							curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
 							curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);

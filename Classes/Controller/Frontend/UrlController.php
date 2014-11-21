@@ -290,7 +290,10 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 					case \Nawork\NaworkUri\Configuration\PageNotFoundConfiguration::BEHAVIOR_PAGE:
 						if (\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
 							$curl = curl_init();
-							curl_setopt($curl, CURLOPT_URL, $pageNotFoundConfiguration->getValue());
+							$urlParts = parse_url($pageNotFoundConfiguration->getValue());
+							$urlParts['scheme'] = GeneralUtility::getIndpEnv('TYPO3_SSL') ? 'https' : 'http';
+							$notFoundUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . $urlParts['path'] . (!empty($urlParts['query']) ? '?' . $urlParts['query'] : '');
+							curl_setopt($curl, CURLOPT_URL, $notFoundUrl);
 							curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
 							curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
 							curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
@@ -299,6 +302,12 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 							curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
 							curl_setopt($curl, CURLOPT_MAXREDIRS, 1);
 							curl_setopt($curl, CURLOPT_REFERER, \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
+							// disable check for valid peer certificate: this should not be used in
+							// production environments for security reasons
+							if ((bool) $extConf['noSslVerify']) {
+								curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+								curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+							}
 							$output = $this->curl_exec_follow($curl);
 						} else {
 							$output = '404 not found! The 404 Page URL ' . $pageNotFoundConfiguration->getValue() . ' seems to cause a loop.';

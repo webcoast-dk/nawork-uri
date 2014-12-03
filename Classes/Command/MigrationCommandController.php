@@ -42,6 +42,44 @@ class MigrationCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\Comma
 	}
 
 	/**
+	 * Remove duplicate paths per domain (2.0 -> 2.1)
+	 *
+	 * Remove duplicates because they would cause the key creation to fail.
+	 */
+	public function cleanupDuplicatesCommand() {
+		$duplicateUrls = $this->databaseConnection->exec_SELECTgetRows(
+			'path',
+			'tx_naworkuri_uri',
+			'',
+			'path HAVING COUNT(*) > 1'
+		);
+		foreach ($duplicateUrls as $duplicateUrl) {
+			$domains = $this->databaseConnection->exec_SELECTgetRows(
+				'domain',
+				'tx_naworkuri_uri',
+				'path=' . $this->databaseConnection->fullQuoteStr($duplicateUrl['path'], 'tx_naworkuri_uri'),
+				'domain'
+			);
+			foreach ($domains as $domain) {
+				$urls = $this->databaseConnection->exec_SELECTgetRows(
+					'uid,path,domain',
+					'tx_naworkuri_uri',
+					'path=' . $this->databaseConnection->fullQuoteStr(
+						$duplicateUrl['path'],
+						'tx_naworkuri_uri'
+					) . ' AND domain=' . $this->databaseConnection->fullQuoteStr($domain['domain'], 'tx_naworkuri_uri')
+				);
+				if (count($urls) > 1) {
+					array_shift($urls);
+					foreach ($urls as $url) {
+						$this->databaseConnection->exec_DELETEquery('tx_naworkuri_uri', 'uid=' . (int) $url['uid']);
+					}
+				}
+			}
+		}
+	}
+
+	/**
 	 * Update CacheHash parameter in url records.
 	 *
 	 * This helps to avoid "-1" urls, because of change in the cache hash calculation

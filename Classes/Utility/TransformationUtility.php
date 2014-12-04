@@ -143,7 +143,7 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 		$this->language = $params['L'];
 		/* find cached urls with the given parameters from the current domain */
 		list($encodableParameters, $unencodableParameters) = GeneralUtility::filterConfiguredParameters($params);
-		$cachedUri = $this->cache->findCachedUrl($encodableParameters, $this->domain, $this->language);
+		$cachedUri = $this->cache->findCachedUrl($encodableParameters, $this->domain, $this->language, $ignoreTimeout);
 		if ($cachedUri !== FALSE) {
 			/* compute the unencoded parameters */
 			if (count($unencodableParameters) > 0) {

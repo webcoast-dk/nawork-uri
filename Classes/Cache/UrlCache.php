@@ -47,7 +47,7 @@ class UrlCache {
 	 * @param array  $params
 	 * @param string $domain
 	 */
-	public function findCachedUrl($params, $domain, $language) {
+	public function findCachedUrl($params, $domain, $language, $ignoreTimeout) {
 		$uid = (int) $params['id'];
 		unset($params['id']);
 		unset($params['L']);
@@ -66,8 +66,12 @@ class UrlCache {
 		if (\Nawork\NaworkUri\Utility\GeneralUtility::isActiveBeUserSession()) {
 			$displayPageCondition = '';
 		}
+		$timeoutConstraint = '';
+		if(!$ignoreTimeout) {
+			$timeoutConstraint = ' AND ( u.tstamp > ' . (time() - $this->timeout) . ' OR locked=1 )';
+		}
 		$domainCondition = ' AND u.domain=' . (int) $domain;
-		$urls = $this->db->exec_SELECTgetRows('u.*', $this->tableConfiguration->getUrlTable() . ' u, ' . $this->tableConfiguration->getPageTable() . ' p', 'u.page_uid=' . intval($uid) . ' AND sys_language_uid=' . intval($language) . ' AND hash_params="' . md5(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($params, FALSE)) . '" ' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND p.uid=u.page_uid AND type=0 AND ( u.tstamp > ' . (time() - $this->timeout) . ' OR locked=1 )', // lets find type 0 urls only from the cache
+		$urls = $this->db->exec_SELECTgetRows('u.*', $this->tableConfiguration->getUrlTable() . ' u, ' . $this->tableConfiguration->getPageTable() . ' p', 'u.page_uid=' . intval($uid) . ' AND sys_language_uid=' . intval($language) . ' AND hash_params="' . md5(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($params, FALSE)) . '" ' . $domainCondition . $displayPageCondition . ' AND p.deleted=0 AND p.uid=u.page_uid AND type=0' . $timeoutConstraint, // lets find type 0 urls only from the cache
 			'', '', '1');
 		if (is_array($urls) && count($urls) > 0) {
 			return $urls[0]['path'];

@@ -111,12 +111,19 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 				$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 				/* @var $translator \Nawork\NaworkUri\Utility\TransformationUtility */
 				$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $configReader, $extConf['MULTIDOMAIN']);
-				$newUrlParameters = array('id' => $this->redirectUrl['page_uid'], 'L' => $this->redirectUrl['sys_language_uid']);
-				if (!empty($this->redirectUrl['params'])) {
-					$newUrlParameters = array_merge($newUrlParameters, \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($this->redirectUrl['params']));
+				/**
+				 * @TODO: Remove this dirty hack and make the switch based on the type. There should be a separate type for page based redirects.
+				 */
+				if(!empty($this->redirectUrl['redirect_path'])) {
+					$newUrl = $this->redirectUrl['redirect_path'];
+				} else {
+					$newUrlParameters = array('id' => $this->redirectUrl['page_uid'], 'L' => $this->redirectUrl['sys_language_uid']);
+					if (!empty($this->redirectUrl['params'])) {
+						$newUrlParameters = array_merge($newUrlParameters, \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($this->redirectUrl['params']));
+					}
+					$newUrl = $translator->params2uri(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($newUrlParameters, FALSE), TRUE, TRUE);
+					$newUrl = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($newUrl, TRUE);
 				}
-				$newUrl = $translator->params2uri(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($newUrlParameters, FALSE), TRUE, TRUE);
-				$newUrl = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($newUrl, TRUE);
 				/* parse the current request url and prepend the scheme and host to the url */
 				$requestUrl = parse_url(\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
 				$newUrl = parse_url($newUrl);

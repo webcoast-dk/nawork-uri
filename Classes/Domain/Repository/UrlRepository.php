@@ -119,7 +119,8 @@ class UrlRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
 	
 	private function buildRedirectQueryByFilter(\Nawork\NaworkUri\Domain\Model\Filter $filter) {
 		$query = $this->createQuery();
-		$constraints = array();
+		// ignore language, because all urls should be selected
+		$query->getQuerySettings()->setRespectSysLanguage(FALSE);$constraints = array();
 
 		if ($filter->getDomain() instanceof \Nawork\NaworkUri\Domain\Model\Domain) {
 			$constraints[] = $query->equals('domain', $filter->getDomain());
@@ -129,7 +130,7 @@ class UrlRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
 		if(!empty($path)) {
 			$constraints[] = $query->like('path', str_replace('*', '%', $path));
 		}
-		$constraints[] = $query->equals('type', 2); // we want only redirects in this result
+		$constraints[] = $query->logicalOr($query->equals('type', 2), $query->equals('type', 3)); // we want only redirects in this result
 		if (count($constraints) > 0) {
 			$query = $query->matching($query->logicalAnd($constraints));
 		}

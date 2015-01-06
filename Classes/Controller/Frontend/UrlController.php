@@ -2,7 +2,9 @@
 
 namespace Nawork\NaworkUri\Controller\Frontend;
 
+use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\HttpUtility;
 
 class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 
@@ -110,35 +112,96 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 				// translate uri
 				$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 				/* @var $translator \Nawork\NaworkUri\Utility\TransformationUtility */
-				$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $configReader, $extConf['MULTIDOMAIN']);
-				/**
-				 * @TODO: Remove this dirty hack and make the switch based on the type. There should be a separate type for page based redirects.
-				 */
-				if(!empty($this->redirectUrl['redirect_path'])) {
-					$newUrl = $this->redirectUrl['redirect_path'];
-				} else {
-					$newUrlParameters = array('id' => $this->redirectUrl['page_uid'], 'L' => $this->redirectUrl['sys_language_uid']);
-					if (!empty($this->redirectUrl['params'])) {
-						$newUrlParameters = array_merge($newUrlParameters, \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($this->redirectUrl['params']));
-					}
-					$newUrl = $translator->params2uri(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($newUrlParameters, FALSE), TRUE, TRUE);
+				$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility');
+				$newUrl = NULL;
+				$redirectStatus = HttpUtility::HTTP_STATUS_301;
+				// switch for determining the url
+				switch((int)$this->redirectUrl['type']) {
+					case 1:
+						// get the id, language and parameters and try to find a current url to this set
+						$newUrlParameters = array('id' => $this->redirectUrl['page_uid'], 'L' => $this->redirectUrl['sys_language_uid']);
+						if (!empty($this->redirectUrl['params'])) {
+							$newUrlParameters = array_merge($newUrlParameters, \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($this->redirectUrl['params']));
+						}
+						// do not create new urls when trying to find one
+						$newUrl = $translator->params2uri(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($newUrlParameters, FALSE), TRUE, TRUE);
+						break;
+					case 2:
+						// use the redirect path set via the backend
+						$newUrl = $this->redirectUrl['redirect_path'];
+						break;
+					case 3:
+						$newUrlParameters = array('id' => $this->redirectUrl['page_uid'], 'L' => $this->redirectUrl['sys_language_uid']);
+						// try to find a new url or create one, if it does not exist
+						$newUrl = $translator->params2uri(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($newUrlParameters, FALSE), FALSE, TRUE);
+						if (!empty($this->redirectUrl['params'])) {
+							$newUrlParts = parse_url($newUrl);
+							$additionalParameters = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($this->redirectUrl['params']);
+							// unset id and L parameters
+							unset($additionalParameters['id']);
+							unset($additionalParameters['L']);
+							$urlParameters = array();
+							if(!empty($additionalParameters)) {
+								if(!empty($newUrlParts['query'])) {
+									$urlParameters = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($newUrlParts['query']);
+								}
+								ArrayUtility::mergeRecursiveWithOverrule($urlParameters, $additionalParameters);
+							}
+							$newUrl = $newUrlParts['path'] . (!empty($urlParameters) ? '?' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($urlParameters) : '');
+						}
+						break;
+
+				}
+				if($newUrl != NULL) {
 					$newUrl = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($newUrl, TRUE);
+					// switch for determining the status code
+					switch((int)$this->redirectUrl['type']) {
+						case 1:
+							$redirectStatus = HttpUtility::HTTP_STATUS_301;
+							break;
+						default:
+							switch((int)$this->redirectUrl['redirect_mode']) {
+								case 301:
+									$redirectStatus = HttpUtility::HTTP_STATUS_301;
+									break;
+								case 302:
+									$redirectStatus = HttpUtility::HTTP_STATUS_302;
+									break;
+								case 303:
+									$redirectStatus = HttpUtility::HTTP_STATUS_303;
+									break;
+								case 307:
+									$redirectStatus = HttpUtility::HTTP_STATUS_307;
+									break;
+							}
+					}
+					/* parse the current request url and prepend the scheme and host to the url */
+					$requestUrl = parse_url(\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
+					$newUrl = parse_url($newUrl);
+					if (empty($newUrl['scheme'])) {
+						$newUrl['scheme'] = $requestUrl['scheme'];
+					}
+					if (empty($newUrl['host'])) {
+						$newUrl['host'] = $requestUrl['host'];
+					}
+					if (substr($newUrl['path'], 0, 1) != '/') {
+						$newUrl['path'] = '/' . $newUrl['path'];
+					}
+					$uri = $newUrl['scheme'] . '://' . $newUrl['host'] . $newUrl['path'];
+					$queryParams = array_merge(
+						\Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters(
+							rawurldecode($requestUrl['query'])
+						),
+						\Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($newUrl['query'])
+					);
+					if (!empty($queryParams)) {
+						$uri .= '?' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($queryParams);
+					}
+					if (array_key_exists('fragment', $newUrl) && !empty($newUrl['fragment'])) {
+						$uri .= '#' . $newUrl['fragment'];
+					}
+					\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($uri, $redirectStatus);
 				}
-				/* parse the current request url and prepend the scheme and host to the url */
-				$requestUrl = parse_url(\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
-				$newUrl = parse_url($newUrl);
-				if (empty($newUrl['scheme'])) $newUrl['scheme'] = $requestUrl['scheme'];
-				if (empty($newUrl['host'])) $newUrl['host'] = $requestUrl['host'];
-				if (substr($newUrl['path'], 0, 1) != '/') $newUrl['path'] = '/' . $newUrl['path'];
-				$uri = $newUrl['scheme'] . '://' . $newUrl['host'] . $newUrl['path'];
-				$queryParams = array_merge(\Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters(rawurldecode($requestUrl['query'])), \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($newUrl['query']));
-				if (!empty($queryParams)) {
-					$uri .= '?' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($queryParams);
-				}
-				if (array_key_exists('fragment', $newUrl) && !empty($newUrl['fragment'])) {
-					$uri .= '#' . $newUrl['fragment'];
-				}
-				\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($uri, 301);
 			} elseif (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getDisabled() && empty($_GET['ADMCMD_prev']) && $GLOBALS['TSFE']->siteScript) {
 				list($path, $params) = explode('?', $GLOBALS['TSFE']->siteScript);
 				$params = rawurldecode(html_entity_decode($params)); // decode the query string because it is expected by the further processing functions

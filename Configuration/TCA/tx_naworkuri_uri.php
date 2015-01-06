@@ -23,6 +23,7 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 			'0' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Icons/Types/uri.png',
 			'1' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Icons/Types/old.png',
 			'2' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Icons/Types/redirect.png',
+			'3' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Icons/Types/redirect.png',
 		),
 	),
 	'interface' => Array(
@@ -117,7 +118,8 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 				'items' => array(
 					array('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.type.0', 0), // normal url
 					array('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.type.1', 1), // old url
-					array('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.type.2', 2), // redirect
+					array('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.type.2', 2), // redirect to path
+					array('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.type.3', 3), // redirect to page
 				),
 				'default' => '2'
 			)
@@ -134,6 +136,15 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 					array('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode.307', 307)
 				)
 			)
+		),
+		'redirect_path' => array(
+			'exclude' => '1',
+			'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.redirect_path',
+			'config' => array(
+				'type' => 'input',
+				'size' => 100,
+				'maxLength' => 500
+			)
 		)
 	),
 	'types' => array(
@@ -144,7 +155,10 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 			'showitem' => 'type, domain, sys_language_uid, page_uid, path'
 		),
 		'2' => array(
-			'showitem' => 'type, domain, path, page_uid, redirect_mode'
+			'showitem' => 'type, domain, path, redirect_path, redirect_mode'
+		),
+		'3' => array(
+			'showitem' => 'type, domain, sys_language_uid, path, page_uid, params;LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.params_redirect, redirect_mode'
 		)
 	)
 );

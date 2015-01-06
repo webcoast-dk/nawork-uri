@@ -3,12 +3,31 @@
 if (!defined('TYPO3_MODE'))
 	die('Access denied.');
 
-$TCA['tx_naworkuri_uri'] = Array(
-	'ctrl' => $TCA['tx_naworkuri_uri']['ctrl'],
+$GLOBALS['TCA']['tx_naworkuri_uri'] = array(
+	'ctrl' => Array(
+		'title' => 'URI',
+		'label' => 'path',
+		'type' => 'type',
+		'tstamp' => 'tstamp',
+		'crdate' => 'crdate',
+		'cruser_id' => 'cruser_id',
+		'languageField' => 'sys_language_uid',
+		'sortby' => 'crdate',
+		'rootLevel' => '-1',
+		'enablecolumns' => array(
+		),
+		'iconfile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Icons/Types/uri.png',
+		'hideTable' => true,
+		'typeicon_column' => 'type',
+		'typeicons' => Array(
+			'0' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Icons/Types/uri.png',
+			'1' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Icons/Types/old.png',
+			'2' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Icons/Types/redirect.png',
+		),
+	),
 	'interface' => Array(
 		'showRecordFieldList' => 'sys_language_uid,domain,path,params,hash_path,hash_params,locked,type,redirect_mode'
 	),
-	'feInterface' => $TCA['tx_naworkuri_uri']['feInterface'],
 	'columns' => Array(
 		'page_uid' => Array(
 			'exclude' => 1,

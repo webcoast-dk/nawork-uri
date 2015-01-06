@@ -50,34 +50,6 @@ $tempColumns = array(
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns('sys_domain', $tempColumns, 1);
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('sys_domain', 'tx_naworkuri_masterDomain');
 
-// add URI-Records
-$TCA['tx_naworkuri_uri'] = Array(
-	'ctrl' => Array(
-		'title' => 'URI',
-		'label' => 'path',
-		'type' => 'type',
-		'tstamp' => 'tstamp',
-		'crdate' => 'crdate',
-		'cruser_id' => 'cruser_id',
-		'languageField' => 'sys_language_uid',
-		'sortby' => 'crdate',
-		'rootLevel' => '-1',
-		'enablecolumns' => array(
-		),
-		'dynamicConfigFile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath($_EXTKEY) . 'Configuration/TCA/Url.php',
-		'iconfile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($_EXTKEY) . 'Resources/Public/Icons/Types/uri.png',
-		'hideTable' => true,
-		'typeicon_column' => 'type',
-		'typeicons' => Array(
-			'0' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($_EXTKEY) . 'Resources/Public/Icons/Types/uri.png',
-			'1' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($_EXTKEY) . 'Resources/Public/Icons/Types/old.png',
-			'2' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($_EXTKEY) . 'Resources/Public/Icons/Types/redirect.png',
-		),
-	),
-);
-
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::allowTableOnStandardPages('tx_naworkuri_uri');
-
 if (TYPO3_MODE == 'BE') {
 	$mainModuleName = 'naworkuri';
 	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule($mainModuleName, '', '', \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('nawork_uri').'Configuration/Module/');

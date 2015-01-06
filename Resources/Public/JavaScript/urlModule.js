@@ -364,7 +364,7 @@ NaworkUri.UrlModule = new Class({
 		});
 		
 		cm.find(".add").click(function(ev) {
-			window.location.href="alt_doc.php?returnUrl=" + encodeURIComponent(window.location.href) + "&edit[tx_naworkuri_uri][" + jQuery(this).attr("data-storagePage") + "]=new";
+			window.location.href="alt_doc.php?returnUrl=" + encodeURIComponent(window.location.href) + "&edit[tx_naworkuri_uri][0]=new";
 		});
 		cm.find(".show").click(function(ev) {
 			var popup = window.open(window.location.protocol + "//" + (window.location.host ? window.location.host : window.location.hostname) + "/" + jQuery(this).attr("data-path"), "tx_naworkuri_preview");

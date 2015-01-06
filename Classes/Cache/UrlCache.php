@@ -215,7 +215,7 @@ class UrlCache {
 	 */
 	public function createUrl($page, $language, $domain, $parameters, $path, $originalPath) {
 		$parameters = \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE);
-		$result = $this->db->exec_INSERTquery($this->tableConfiguration->getUrlTable(), array('pid' => \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getStoragePage(), 'page_uid' => intval($page), 'tstamp' => time(), 'crdate' => time(), 'sys_language_uid' => intval($language), 'domain' => $domain, 'path' => $path, 'hash_path' => md5($path), 'params' => $parameters, 'hash_params' => md5($parameters), 'original_path' => $originalPath), array('pid', 'page_uid', 'tstamp', 'crdate', 'sys_language_uid'));
+		$result = $this->db->exec_INSERTquery($this->tableConfiguration->getUrlTable(), array('page_uid' => intval($page), 'tstamp' => time(), 'crdate' => time(), 'sys_language_uid' => intval($language), 'domain' => $domain, 'path' => $path, 'hash_path' => md5($path), 'params' => $parameters, 'hash_params' => md5($parameters), 'original_path' => $originalPath), array('page_uid', 'tstamp', 'crdate', 'sys_language_uid'));
 
 		if (!$result) {
 			throw new \Nawork\NaworkUri\Exception\DbErrorException($this->db->sql_error());

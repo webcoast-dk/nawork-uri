@@ -19,11 +19,6 @@ class GeneralConfiguration {
 	protected $pathSeparator = '/';
 
 	/**
-	 * @var int
-	 */
-	protected $storagePage = 0;
-
-	/**
 	 * @var string
 	 */
 	protected $redirectStatus = \TYPO3\CMS\Core\Utility\HttpUtility::HTTP_STATUS_301;
@@ -47,13 +42,6 @@ class GeneralConfiguration {
 	 */
 	public function getPathSeparator() {
 		return $this->pathSeparator;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getStoragePage() {
-		return $this->storagePage;
 	}
 
 	/**
@@ -82,13 +70,6 @@ class GeneralConfiguration {
 	 */
 	public function setPathSeparator($pathSeparator) {
 		$this->pathSeparator = $pathSeparator;
-	}
-
-	/**
-	 * @param int $storagePage
-	 */
-	public function setStoragePage($storagePage) {
-		$this->storagePage = $storagePage;
 	}
 
 	/**

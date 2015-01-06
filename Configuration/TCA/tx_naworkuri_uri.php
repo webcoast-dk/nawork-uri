@@ -25,6 +25,9 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 			'2' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Icons/Types/redirect.png',
 			'3' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Icons/Types/redirect.png',
 		),
+		'security' => array(
+			'ignoreRootLevelRestriction' => TRUE
+		)
 	),
 	'interface' => Array(
 		'showRecordFieldList' => 'sys_language_uid,domain,path,params,hash_path,hash_params,locked,type,redirect_mode'

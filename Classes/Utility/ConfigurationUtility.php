@@ -296,9 +296,6 @@ class ConfigurationUtility {
 		if ($xml->PathSeparator) {
 			$configuration->setPathSeparator((string)$xml->PathSeparator);
 		}
-		if ($xml->StoratePage) {
-			$configuration->setStoragePage((int)$xml->StoragePage);
-		}
 		if($xml->RedirectStatus) {
 			$configuration->setRedirectStatus((string)$xml->RedirectStatus);
 		}

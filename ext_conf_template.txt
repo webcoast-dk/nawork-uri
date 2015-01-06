@@ -1,6 +1,3 @@
-# cat=basic; type=int; label=URL storage page: The page where to store urls, default is "0", but if editors should work with the urls you need to set it to a specific sysfolder
-storagePage = 0
-
 # cat=basic; type=string; label=Default locale: The default locale that should be used for transliteration if no locale is set in the config
 default_locale = en_US
 

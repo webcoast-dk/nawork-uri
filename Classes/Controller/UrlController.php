@@ -59,16 +59,12 @@ class UrlController extends AbstractController {
 		$this->view->assign('domains', $this->domainRepository->findAll());
 		$this->view->assign('languages', $this->languageRepository->findAll());
 		$this->view->assign('userSettings', json_encode($this->userSettings));
-		$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
-		$this->view->assign('storagePage', $extConf['storagePage']);
 		$this->view->assign('id', $this->pageId);
 	}
 
 	public function indexRedirectsAction() {
 		$this->view->assign('domains', $this->domainRepository->findAll());
 		$this->view->assign('userSettings', json_encode($this->userSettings));
-		$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
-		$this->view->assign('storagePage', $extConf['storagePage']);
 	}
 
 	public function noPageIdAction() {

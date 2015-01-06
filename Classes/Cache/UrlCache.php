@@ -250,7 +250,7 @@ class UrlCache {
 	 */
 	private function makeOldUrl($domain, $pageId, $language, $parameters, $excludeUid = FALSE) {
 		$domainCondition = ' AND domain=' . (int) $domain;
-		$this->db->exec_UPDATEquery($this->tableConfiguration->getUrlTable(), 'hash_params=' . $this->db->fullQuoteStr(md5(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE)), $this->tableConfiguration->getUrlTable()) . $domainConstraint . ' AND page_uid=' . intval($pageId) . ' AND sys_language_uid=' . intval($language) . ($excludeUid !== FALSE ? ' AND uid!=' . intval($excludeUid) : '') . ' AND type=0', array('type' => self::URI_TYPE_OLD, 'tstamp' => time()), array('type', 'tstamp'));
+		$this->db->exec_UPDATEquery($this->tableConfiguration->getUrlTable(), 'hash_params=' . $this->db->fullQuoteStr(md5(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE)), $this->tableConfiguration->getUrlTable()) . $domainCondition . ' AND page_uid=' . intval($pageId) . ' AND sys_language_uid=' . intval($language) . ($excludeUid !== FALSE ? ' AND uid!=' . intval($excludeUid) : '') . ' AND type=0', array('type' => self::URI_TYPE_OLD, 'tstamp' => time()), array('type', 'tstamp'));
 	}
 
 	/**

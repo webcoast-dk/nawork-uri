@@ -97,10 +97,10 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 	 * Whatever redirect is sent, the state of enable and redirect option of nawork_uri in config are checked. Additionally
 	 * it is checked that the page is not called as preview from admin panel and there is a sitescript at all.
 	 *
-	 * @param unknown_type                                                $params
+	 * @param array                                                       $incomingParameters
 	 * @param \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController $ref
 	 */
-	function redirect2uri($params, $ref) {
+	function redirect2uri($incomingParameters, $ref) {
 		global $TYPO3_CONF_VARS;
 		if (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getDisabled()) {
 			/*

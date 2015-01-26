@@ -62,8 +62,12 @@ class UrlRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
 
 		$constraints = array();
 
-		if ($filter->getDomain() instanceof Tx_NaworkUri_Domain_Model_Domain) {
-			$constraints[] = $query->equals('domain', $filter->getDomain());
+		$domainContraints = array();
+		foreach($filter->getDomains() as $domain) {
+			$domainContraints[] = $query->equals('domain', $domain);
+		}
+		if(count($domainContraints) > 0) {
+			$constraints[] = $query->logicalOr($domainContraints);
 		}
 
 		if ($filter->getLanguage() > -1) {
@@ -122,8 +126,12 @@ class UrlRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
 		// ignore language, because all urls should be selected
 		$query->getQuerySettings()->setRespectSysLanguage(FALSE);$constraints = array();
 
-		if ($filter->getDomain() instanceof \Nawork\NaworkUri\Domain\Model\Domain) {
-			$constraints[] = $query->equals('domain', $filter->getDomain());
+		$domainContraints = array();
+		foreach($filter->getDomains() as $domain) {
+			$domainContraints[] = $query->equals('domain', $domain);
+		}
+		if(count($domainContraints) > 0) {
+			$constraints[] = $query->logicalOr($domainContraints);
 		}
 
 		$path = $filter->getPath();

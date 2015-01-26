@@ -60,7 +60,7 @@ if (TYPO3_MODE == 'BE') {
 		'access' => 'user,group',
 		'icon' => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/module.png',
 		'labels' => 'LLL:EXT:' . $_EXTKEY . '/Resources/Private/Language/locallang_mod_url.xml',
-			'navigationComponentId' => 'typo3-pagetree'
+		'navigationComponentId' => 'typo3-pagetree'
 	));
 
 	\TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule('Nawork.' . $_EXTKEY, $mainModuleName, 'redirect', '', array(
@@ -68,7 +68,7 @@ if (TYPO3_MODE == 'BE') {
 		), array(
 		'access' => 'user,group',
 		'icon' => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/module.png',
-		'labels' => 'LLL:EXT:' . $_EXTKEY . '/Resources/Private/Language/locallang_mod_redirect.xml',
+		'labels' => 'LLL:EXT:' . $_EXTKEY . '/Resources/Private/Language/locallang_mod_redirect.xml'
 	));
 
 	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTypoScriptSetup('

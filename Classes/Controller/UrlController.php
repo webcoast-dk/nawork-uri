@@ -1,6 +1,8 @@
 <?php
 
 namespace Nawork\NaworkUri\Controller;
+use TYPO3\CMS\Core\Database\DatabaseConnection;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Description of UrlController
@@ -35,6 +37,12 @@ class UrlController extends AbstractController {
 	 * @inject
 	 */
 	protected $languageRepository;
+
+	/**
+	 * @var DatabaseConnection
+	 */
+	protected $databaseConnection;
+
 	protected $userSettingsKey = 'tx_naworkuri_moduleUrl';
 
 	public function initializeAction() {
@@ -46,6 +54,7 @@ class UrlController extends AbstractController {
 			$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/jquery.urlModule.js');
 			$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/urlModule.js');
 		}
+		$this->databaseConnection = $GLOBALS['TYPO3_DB'];
 	}
 
 	public function initializeIndexRedirectsAction() {
@@ -63,8 +72,34 @@ class UrlController extends AbstractController {
 	}
 
 	public function indexRedirectsAction() {
-		$this->view->assign('domains', $this->domainRepository->findAll());
+		$pageRoots = $this->determineRootPages();
+		// get page roots
+		if(count($pageRoots) === 1) {
+			$pageId = $pageRoots[0]['uid'];
+		} else {
+			$pageId = GeneralUtility::_GP('pageRoot');
+			if(empty($pageId)) {
+				$pageId = $this->userSettings['pageRoot'];
+			}
+		}
+		if(empty($pageId)) {
+			$pageId = $pageRoots[0]['uid'];
+		}
+		// make sure we store the selected page root
+		$this->setUserSettings('pageRoot', $pageId);
+		$this->view->assign('domains', $this->domainRepository->findByRootPage($pageId));
 		$this->view->assign('userSettings', json_encode($this->userSettings));
+		$this->view->assign('pageRoots', $pageRoots);
+		$this->view->assign('currentPageRoot', $pageId);
+	}
+
+	private function determineRootPages() {
+		// get page roots
+		$pageRoots = $this->databaseConnection->exec_SELECTgetRows('uid, title', 'pages', 'is_siteroot=1');
+		if(!is_array($pageRoots) || empty($pageRoots)) {
+			$pageRoots = $this->databaseConnection->exec_SELECTgetRows('uid, title', 'pages', 'pid=0', '', 'sorting ASC', 1);
+		}
+		return $pageRoots;
 	}
 
 	public function noPageIdAction() {
@@ -89,7 +124,7 @@ class UrlController extends AbstractController {
 		$filter->setPageId($this->pageId);
 
 		if ($domain instanceof \Nawork\NaworkUri\Domain\Model\Domain) {
-			$filter->setDomain($domain);
+			$filter->setDomains(array($domain));
 		}
 
 		if ($language > -1) {
@@ -120,6 +155,10 @@ class UrlController extends AbstractController {
 		}
 
 		$this->view->assign('urls', $this->urlRepository->findUrlsByFilter($filter));
+		$tsConfig = \TYPO3\CMS\Backend\Utility\BackendUtility::getPagesTSconfig($this->pageId);
+		if(is_array($tsConfig) && !empty($tsConfig['mod.']['SHARED.']['defaultLanguageLabel'])) {
+			$this->view->assign('defaultLanguage', array('label' => $tsConfig['mod.']['SHARED.']['defaultLanguageLabel'], 'flag' => $tsConfig['mod.']['SHARED.']['defaultLanguageFlag']));
+		}
 		return json_encode(array(
 				'html' => $this->view->render(),
 				'count' => $this->urlRepository->countUrlsByFilter($filter)
@@ -136,11 +175,14 @@ class UrlController extends AbstractController {
 	 * @return string
 	 */
 	public function ajaxLoadRedirectsAction($domain = NULL, $path = NULL, $offset = NULL, $limit = NULL) {
+		$pageRoot = $this->userSettings['pageRoot'];
 		/* @var $filter \Nawork\NaworkUri\Domain\Model\Filter */
 		$filter = $this->objectManager->get('Nawork\\NaworkUri\\Domain\\Model\\Filter');
 
 		if ($domain instanceof \Nawork\NaworkUri\Domain\Model\Domain) {
-			$filter->setDomain($domain);
+			$filter->setDomains(array($domain));
+		} elseif($domain === NULL) {
+			$filter->setDomains($this->domainRepository->findByRootPage($pageRoot));
 		}
 
 		if ($path != NULL) {
@@ -157,6 +199,10 @@ class UrlController extends AbstractController {
 		}
 
 		$this->view->assign('urls', $this->urlRepository->findRedirectsByFilter($filter));
+		$tsConfig = \TYPO3\CMS\Backend\Utility\BackendUtility::getPagesTSconfig($pageRoot);
+		if(is_array($tsConfig) && !empty($tsConfig['mod.']['SHARED.']['defaultLanguageLabel'])) {
+			$this->view->assign('defaultLanguage', array('label' => $tsConfig['mod.']['SHARED.']['defaultLanguageLabel'], 'flag' => $tsConfig['mod.']['SHARED.']['defaultLanguageFlag']));
+		}
 		return json_encode(array(
 				'html' => $this->view->render(),
 				'count' => $this->urlRepository->countRedirectsByFilter($filter)

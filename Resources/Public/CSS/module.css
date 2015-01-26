@@ -2,6 +2,18 @@ a label {
 	cursor: pointer;
 }
 
+#typo3-docheader #typo3-docheader-row2 {
+	padding: 0;
+}
+
+#typo3-docheader #typo3-docheader-row2 .docheader-row2-left {
+	color: #585858;
+}
+
+#typo3-docheader #typo3-docheader-row2 .docheader-row2-left label {
+	color: #fff;
+}
+
 div#typo3-inner-docbody {
 	padding: 0 10px;
 }

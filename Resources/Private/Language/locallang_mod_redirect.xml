@@ -9,12 +9,14 @@
 			<label index="mlang_tabs_tab">Redirect Management</label>
 			<label index="mlang_labels_tabdescr">This module is used to view existing redirects and alter or delete them.</label>
 			<label index="mlang_labels_tablabel">Redirect management tool</label>
+			<label index="pageRoots">Page roots:</label>
 		</languageKey>
 
         <languageKey index="de" type="array">
             <label index="mlang_tabs_tab">Weiterleitungen</label>
             <label index="mlang_labels_tabdescr">Mit diesem Modul können Weiterleitungen angelegt, angezeigt, geändert und gelöscht werden.</label>
             <label index="mlang_labels_tablabel">Verwaltung der Weiterleitungen</label>
+			<label index="pageRoots">Startpunkte:</label>
         </languageKey>
 	</data>
 </T3locallang>

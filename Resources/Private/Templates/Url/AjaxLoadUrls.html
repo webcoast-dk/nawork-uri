@@ -17,14 +17,30 @@
 			</f:if>
 
 			<td class="language">
-			<f:if condition="{url.language.flag}">
-				<f:then>
-					<img src="/typo3/gfx/flags/{url.language.flag}.gif" width="20" height="12" alt="{url.language.title}" />
-				</f:then>
-				<f:else>
-					{url.language.title}
-				</f:else>
-			</f:if>
+				<f:if condition="{url.language}">
+					<f:then>
+						<f:if condition="{url.language.flag}">
+							<f:then>
+								<img src="/typo3/gfx/flags/{url.language.flag}.gif" width="20" height="12" alt="{url.language.title}" />
+							</f:then>
+							<f:else>
+								{url.language.title}
+							</f:else>
+						</f:if>
+					</f:then>
+					<f:else>
+						<f:if condition="{defaultLanguage}">
+							<f:if condition="{defaultLanguage.flag}">
+								<f:then>
+									<img src="/typo3/gfx/flags/{defaultLanguage.flag}" width="20" height="12" alt="{defaultLanguage.label}" />
+								</f:then>
+								<f:else>
+									{defaultLanguage.label}
+								</f:else>
+							</f:if>
+						</f:if>
+					</f:else>
+				</f:if>
 			</td>
 			<td class="path">{url.path}</td>
 			<td class="parameters">{url.parameters}</td>

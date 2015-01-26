@@ -2,12 +2,13 @@
 	<!-- Page header with buttons, path details and csh -->
 	<div id="typo3-docheader">
 		<div id="typo3-docheader-row1">
-			<div class="buttonsleft"></div>
+			<div class="buttonsleft">
+			</div>
 			<div class="buttonsright"></div>
 		</div>
 		<div id="typo3-docheader-row2">
 			<div class="docheader-row2-left">
-				<f:render partial="moduleHeader" />
+				<f:render section="moduleHeader" optional="1" arguments="{_all}" />
 			</div>
 			<div class="docheader-row2-right">
 				<f:if condition="{pageId} > 0">

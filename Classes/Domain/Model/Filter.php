@@ -17,9 +17,9 @@ class Filter extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 
 	/**
 	 *
-	 * @var \Nawork\NaworkUri\Domain\Model\Domain
+	 * @var \Nawork\NaworkUri\Domain\Model\Domain[]|array
 	 */
-	protected $domain;
+	protected $domains;
 
 	/**
 	 *
@@ -61,8 +61,8 @@ class Filter extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		return $this->pageId;
 	}
 
-	public function getDomain() {
-		return $this->domain;
+	public function getDomains() {
+		return $this->domains;
 	}
 
 	public function getLanguage() {
@@ -97,8 +97,8 @@ class Filter extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		$this->types = $types;
 	}
 
-	public function setDomain($domain) {
-		$this->domain = $domain;
+	public function setDomains($domains) {
+		$this->domains = $domains;
 	}
 
 	public function setLanguage($language) {

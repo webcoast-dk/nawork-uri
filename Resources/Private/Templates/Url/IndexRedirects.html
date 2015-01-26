@@ -1,6 +1,30 @@
 {namespace n=Tx_NaworkUri_ViewHelpers}
 <f:layout name="Module" />
 
+<f:section name="moduleHeader">
+	<f:if condition="{pageRoots -> f:count() > 0">
+		<f:then>
+			<f:form>
+			<label for="page-root">
+				<f:translate id="LLL:EXT:nawork_uri/Resources/Private/Language/locallang_mod_redirect.xml:pageRoots" />
+			</label>
+			<select id="page-root" name="pageRoot" onchange="this.form.submit();">
+				<f:for each="{pageRoots}" as="page">
+					<f:if condition="{page.uid} == {currentPageRoot}">
+						<f:then>
+							<option value="{page.uid}" selected="selected">{page.title} [ID: {page.uid}]</option>
+						</f:then>
+						<f:else>
+							<option value="{page.uid}">{page.title} [ID: {page.uid}]</option>
+						</f:else>
+					</f:if>
+				</f:for>
+			</select>
+			</f:form>
+		</f:then>
+	</f:if>
+</f:section>
+
 <f:section name="Main">
 	<section id="url_module">
 		<div id="filter">
@@ -26,6 +50,7 @@
 					<thead>
 						<tr>
 							<th class="uid fixedwidth" data-cellClassName="uid"></th>
+							<th class="language fixedwidth">L</th>
 							<th class="path resizeable dynamic" data-cellClassName="path">Path</th>
 							<th class="redirect_path resizeable dynamic" data-cellClassName="redirect_path">Target path</th>
 							<th class="domain minwidth" data-cellClassName="domain">Domain</th>
@@ -39,6 +64,7 @@
 					<thead>
 						<tr>
 							<th class="uid fixedwidth"></th>
+							<th class="language fixedwidth"></th>
 							<th class="path"></th>
 							<th class="redirect_path"></th>
 							<th class="domain"></th>

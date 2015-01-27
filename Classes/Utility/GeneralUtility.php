@@ -305,9 +305,6 @@ class GeneralUtility {
 		}
 
 		ksort($encodableParameters);
-		if (count($parameters) > count($encodableParameters) && array_key_exists('cHash', $encodableParameters)) {
-			unset($encodableParameters['cHash']);
-		}
 		$unencodableParameters = array_diff_key($parameters, $encodableParameters);
 
 		return array($encodableParameters, $unencodableParameters);

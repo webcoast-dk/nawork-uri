@@ -87,7 +87,7 @@ class UrlController extends AbstractController {
 		}
 		// make sure we store the selected page root
 		$this->setUserSettings('pageRoot', $pageId);
-		$this->view->assign('domains', $this->domainRepository->findByRootPage($pageId));
+		$this->view->assign('domains', $this->domainRepository->findByRootPage($pageId)->toArray());
 		$this->view->assign('userSettings', json_encode($this->userSettings));
 		$this->view->assign('pageRoots', $pageRoots);
 		$this->view->assign('currentPageRoot', $pageId);

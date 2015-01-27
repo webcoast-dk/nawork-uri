@@ -1,3 +1,131 @@
+2.2.8:
+* fixes bug when re-calculating cache hash: use class CacheHashCalculator if is available; use CacheHashCalculator::getRelevantParameters before calculating cache hash
+
+2.2.7:
+* fix php warning that is caused by an empty transliterations or non-existing tag in config file
+
+2.2.6:
+* fix for TYPO3 4.5: add module typoscript in ext_tables.php instead of static file because 4.5 can't handle this in the redirect module without the page tree
+
+2.2.5:
+* compatibility with TYPO3 6.0: renamed the template files to UpperCamelCase
+* re-add the "add" button
+
+2.2.4:
+* fixes url without ending "/" not found if the url exists also with an ending "/"
+
+2.2.3:
+* fixes screwed up query string on redirecting old url: provided query string must be urldecoded before merging with parameters from url record
+
+2.2.2:
+* change determination of page not found behavior: default was not override if domain matching item was found
+
+2.2.1:
+* fix some locallang references in ext_tables.php
+* cleanup locallang files for modules
+* cleanup ext_tables.php
+* add note to registration of command controller, works with TYPO3 4.6
+
+2.2.0:
+* limits query results to 1 when finding url in tx_naworkuri_cache::read_path
+* rewritten backend modules: now seperated into two modules
+* domains are now stored with uid instead of domain to avoid transformation to and from database
+
+2.1.52:
+* change hook for redirects: use configArrayPostProc instead of isOutputting to avoid rendering of content
+* exit after setting headers to really exit processing and avoid rendering
+
+2.1.51:
+* fixes page not found behavior not determined correctly: the first one without domain must be returned by default
+
+2.1.50:
+* fixes urls not generated correctly for redirect because of encoded parameters
+* add the possibility to use regular expresions for predefined parts
+
+2.1.49:
+* fixes unencoded parameters in database when a url is updated, that caused the parameter hash to be wrong and thereby the url might not recognized later
+
+2.1.47:
+* fixes alias not determined correctly: the query should not respect deleted pages
+
+2.1.42: Compatability update for TYPO3 CMS 6.0
+* SimpleXMLElement can not be serialized so it must be deleted before serialization and re-instantiated on wake up
+* t3lib_div::testInt is not available anymore, so we must replace it with MathUtility::canBeInterpretedAsInteger if available (means 6.0)
+* add tx_naworkuri_cache to ext_autoload.php
+
+2.1.41:
+* fixes PHP Fatal Errors with turkish locales: do not set LC_CTYPE for turkish locales like typo3 does in tsfe
+
+2.1.40:
+* fixes wrong select fields, should be "*" by default and only overwritten if there are set in configuration
+* fixes debug message when saving a record, because extension name for hook was wrong
+
+2.1.39:
+* fixes missing fragment (anchor) on redirect (type=2)
+* fixes missing fragment (anchor) on redirect old urls (type=1)
+
+2.1.38:
+* fixes double encoding of append not encoded parameters
+* fixes missing language icons
+* note: empty 404 fix in 2.1.37 was not needed, was already working
+
+2.1.37:
+* fixes empty 404 page due to curl not following redirects, curl follows one redirect now
+* fixes redirects not saved correctly on create, due to id check for integer failed
+* fixes current domain not beeing display but first one, when editing a redirect
+
+2.1.36:
+* fixes "-1" urls because deleted or hidden pages have them, in the findOldUrl function we try to find a url on a hidden or deleted page if we haven't found one, the normal way
+
+2.1.35:
+* introduces new attribute "ignoreMasterDomain" of type int in behavior tag in page not found configuration
+* adds check for a 404 setting for the real current domain where the masterdomain should be ignored when getting behaviour type and value
+
+2.1.34:
+* adds fallback property to the uri part configuration for the case that there is no result in the database
+
+2.1.33:
+* fixes not working overlay when selectFields are given: uid and pid are needed for the overlay to work, so we have to make sure that they are selected
+
+2.1.32:
+* fixes endless redirects: query string must be url decoded for further processing
+
+2.1.31:
+* corrects misspelled variable name for domain constraint in make old function
+* fixes parameter diff when evaluating encodable and unencodable parameters, array_diff was used but array_diff_key compares keys and must be used here
+* fixes sql error when a parameter value is empty, checks before transformation
+* fixes domain value for redirects: it was not saved as a string, this is fixed via postProcess hook in TCEmain
+* removes itemProcFunc for domain list in url record
+
+2.1.30:
+* FIX: Redirects must not be made if request method is anything but GET
+* FIX: Records with language uid -1 (all) was not found
+
+2.1.29:
+* FIX: Wrong sql query syntax in tx_naworkuri_cache::unique
+
+2.1.28:
+* FIX: Missing parameters after explode and implode: explode_parameters and implode_parameters can handle array valued parameters now
+* FIX: Float values were shown with comma instead of point due to setlocale(LC_ALL,...): We don't set LC_ALL anymore
+* FIX: Unit tests does not fit the current development state: Changed unit tests and added several data sets
+
+2.1.27
+* FIX: Cache can not be cleared: Removes deleted field from clear cache query, that was removed in 2.1.17
+* FIX: Urls are not converted to old urls: Corrects the spelling mistake in the page id parameter, parameter hash must not be encoded for hashing
+* FIX: Extension configuration containes reference to cool uri config file: Changes the description for the xml path configuration
+* FIX: Queries are stored for debugging: Disables the storing of queries
+* FIX: Removes unnecessary line in function tx_naworkuri_cache::setTimeout that set the timeout to 0
+
+2.1.26
+* FIX: The interface backend_cacheActionsHook wasn't autoloaded anymore in 4.7
+
+2.1.25
+* FIX: Set L param as string, this led to wrong cHashes
+* FIX: Recalculate cHash to avoid the same url with another cHash to generated because of encoded vs. non-encoded parameters, e.g. from crawler
+
+2.1.24
+* FIX: Remove table alias from query in function for finding old url, that caused the url not to be found when used in multidomain mode
+
 2.1.23
 * FIX: an empty uri part was returned if a record was not available in default language
 

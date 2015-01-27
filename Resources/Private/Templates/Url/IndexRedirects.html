@@ -1,0 +1,136 @@
+{namespace n=Tx_NaworkUri_ViewHelpers}
+<f:layout name="Module" />
+
+<f:section name="moduleHeader">
+	<f:if condition="{pageRoots -> f:count() > 0">
+		<f:then>
+			<f:form>
+			<label for="page-root">
+				<f:translate id="LLL:EXT:nawork_uri/Resources/Private/Language/locallang_mod_redirect.xml:pageRoots" />
+			</label>
+			<select id="page-root" name="pageRoot" onchange="this.form.submit();">
+				<f:for each="{pageRoots}" as="page">
+					<f:if condition="{page.uid} == {currentPageRoot}">
+						<f:then>
+							<option value="{page.uid}" selected="selected">{page.title} [ID: {page.uid}]</option>
+						</f:then>
+						<f:else>
+							<option value="{page.uid}">{page.title} [ID: {page.uid}]</option>
+						</f:else>
+					</f:if>
+				</f:for>
+			</select>
+			</f:form>
+		</f:then>
+	</f:if>
+</f:section>
+
+<f:section name="Main">
+	<section id="url_module">
+		<div id="filter">
+			<div class="filter_option">
+				<label for="domain"><f:translate key="label_filter_domain" default="Domain:" /></label>
+				<select id="domain">
+					<f:if condition="{domains -> f:count()} > 0">
+						<f:then>
+							<f:for each="{domains}" as="domain">
+								<option value="{domain.uid}">{domain.domainName}</option>
+							</f:for>
+						</f:then>
+						<f:else>
+							<option value="0"><f:translate key="label_filter_domain_all" default="All"/></option>
+						</f:else>
+					</f:if>
+				</select>
+			</div>
+
+			<div class="filter_option">
+				<label for="path"><f:translate key="label_filter_path" default="Path:" /></label>
+				<input type="text" id="path" value="" placeholder="[Filter by path]" autocomplete="off"/>
+			</div>
+			<div class="add"><a href="javascript:;" onclick="window.location.href='alt_doc.php?returnUrl=' + encodeURIComponent(window.location.href) + '&edit[tx_naworkuri_uri][0]=new&edit[tx_naworkuri_uri][type]=3{f:if(condition: '{domains -> f:count()} > 0', then: '&edit[tx_naworkuri_uri][domain]={domains.0.uid}', else: '')}'; return false;" ><span class="icon"></span><label><f:translate key="label_contextmenu_add" default="Add" /></label></a></div>
+		</div>
+		<div id="table_outer">
+			<div id="table_head">
+				<table>
+					<thead>
+						<tr>
+							<th class="uid fixedwidth" data-cellClassName="uid"></th>
+							<th class="language fixedwidth">L</th>
+							<th class="path resizeable dynamic" data-cellClassName="path">Path</th>
+							<th class="redirect_path resizeable dynamic" data-cellClassName="redirect_path">Target path</th>
+							<th class="domain minwidth" data-cellClassName="domain">Domain</th>
+							<th class="scrollbarFiller fixedwidth"></th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+			<div id="table_body">
+				<table class="typo3-dblist">
+					<thead>
+						<tr>
+							<th class="uid fixedwidth"></th>
+							<th class="language fixedwidth"></th>
+							<th class="path"></th>
+							<th class="redirect_path"></th>
+							<th class="domain"></th>
+						</tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div id="pagination">
+			<a href="javascript:;" id="pagination_first" class="icon first"></a>
+			<a href="javascript:;" id="pagination_previous" class="icon previous"></a>
+			<a href="javascript:;" id="pagination_next" class="icon next"></a>
+			<a href="javascript:;" id="pagination_last" class="icon last"></a>
+			<label for="pagination_pageSize">
+				<f:translate key="label_pagination_pagesize" default="URLs per page:" />
+			</label>
+			<select id="pagination_pageSize" autocomplete="off">
+				<option value="10">10</option>
+				<option value="20">20</option>
+				<option value="30">30</option>
+				<option value="40">40</option>
+				<option value="50">50</option>
+				<option value="100">100</option>
+			</select>
+			<label>
+				<f:translate key="label_pagination_pages" default="Showing page" />
+			</label>
+			<span id="pagination_pagenumber">0</span>
+			<span><f:translate key="label_pagination_pages_of" default="of" /></span>
+			<span id="pagination_maxpages">0</span>
+			<label>
+				<f:translate key="label_pagination_urls" default="Showing urls"  />
+			</label>
+			<span id="pagination_urlcount_from">0</span>
+			<span><f:translate key="label_pagination_urls_to" default="to" /></span>
+			<span id="pagination_urlcount_to">0</span>
+			<span><f:translate key="label_pagination_urls_of" default="of" /></span>
+			<span id="pagination_urlcount_of">0</span>
+			<a href="javascript:;" id="pagination_reload" class="icon refresh"></a>
+		</div>
+	</section>
+	<script type="text/javascript">
+			<![CDATA[
+				jQuery(document).ready(function() {
+					if(NaworkUri && NaworkUri.RedirectModule){
+						document.tx_naworkuri_redirectModule = new NaworkUri.RedirectModule("#url_module", {
+							urls: {
+								ajax: "]]>{f:uri.action(action: 'ajaxLoadRedirects', additionalParams: '{ajax: 1}')}<![CDATA[",
+								settings: "]]>{f:uri.action(action: 'updateSettings', additionalParams: '{ajax: 1}')}<![CDATA[",
+							},
+							settings: ]]><f:format.raw>{userSettings}</f:format.raw><![CDATA[,
+							messages: {
+								error:"]]><f:translate key="message_error" default="An error occured while loading the urls, change the filter to try other settings" /><![CDATA[",
+								loading: "]]><f:translate key="message_loading" default="Loading urls... please wait..." /><![CDATA["
+							}
+						});
+					}
+				]]>
+			});
+	</script>
+</f:section>

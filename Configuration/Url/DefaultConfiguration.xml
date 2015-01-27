@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<nawork_uri>
+	<General>
+		<Append>/</Append>
+	</General>
+
+	<castTypeToInt>1</castTypeToInt>
+    <castLToInt>1</castLToInt>
+    <redirectOnParameterDiff>1</redirectOnParameterDiff>
+    <redirectStatus>301</redirectStatus>
+
+    <PageNotFound>
+        <Status>HTTP/1.0 404 Not Found</Status>
+		<Behavior>Message</Behavior>
+        <Value><![CDATA[ <h1>Page not found!</h1> ]]></Value>
+    </PageNotFound>
+
+    <PageNotAccessible>
+        <Status>HTTP/1.0 403 Forbidden</Status>
+		<Behavior>Message</Behavior>
+        <Value><![CDATA[<html><head><title>403 Forbidden</title></head><body><h1>Forbidden!</h1><p>You don't have the permission to access the requested page</p></body></html>]]></Value>
+    </PageNotAccessible>
+
+    <Transliterations>
+        <Character From="ä" To="ae" />
+        <Character From="ö" To="oe" />
+        <Character From="ü" To="ue" />
+        <Character From="Ä" To="ae" />
+        <Character From="Ö" To="oe" />
+        <Character From="Ü" To="ue" />
+
+        <!-- cyrillic (russian) transliterations, not supported by glibc :: begin-->
+        <Character From="а" To="a"/>
+        <Character From="б" To="b"/>
+        <Character From="в" To="v"/>
+        <Character From="г" To="g"/>
+        <Character From="д" To="d"/>
+        <Character From="е" To="e"/>
+        <Character From="ж" To="z"/>
+        <Character From="з" To="z"/>
+        <Character From="и" To="i"/>
+        <Character From="й" To="j"/>
+        <Character From="к" To="k"/>
+        <Character From="л" To="l"/>
+        <Character From="м" To="m"/>
+        <Character From="н" To="n"/>
+        <Character From="о" To="o"/>
+        <Character From="п" To="p"/>
+        <Character From="р" To="r"/>
+        <Character From="с" To="s"/>
+        <Character From="т" To="t"/>
+        <Character From="у" To="u"/>
+        <Character From="ф" To="f"/>
+        <Character From="х" To="ch"/>
+        <Character From="ц" To="c"/>
+        <Character From="ч" To="c"/>
+        <Character From="ш" To="s"/>
+        <Character From="щ" To="s"/>
+        <Character From="э" To="e"/>
+        <Character From="ю" To="ju"/>
+        <Character From="я" To="ja"/>
+
+        <Character From="А" To="a"/>
+        <Character From="Б" To="b"/>
+        <Character From="В" To="v"/>
+        <Character From="Г" To="g"/>
+        <Character From="Д" To="d"/>
+        <Character From="Е" To="e"/>
+        <Character From="Ж" To="z"/>
+        <Character From="З" To="z"/>
+        <Character From="И" To="i"/>
+        <Character From="Й" To="j"/>
+        <Character From="К" To="k"/>
+        <Character From="Л" To="l"/>
+        <Character From="М" To="m"/>
+        <Character From="Н" To="n"/>
+        <Character From="О" To="o"/>
+        <Character From="П" To="p"/>
+        <Character From="Р" To="r"/>
+        <Character From="С" To="s"/>
+        <Character From="Т" To="r"/>
+        <Character From="У" To="u"/>
+        <Character From="Ф" To="f"/>
+        <Character From="Х" To="z"/>
+        <Character From="Ц" To="c"/>
+        <Character From="Ч" To="c"/>
+        <Character From="Ш" To="s"/>
+        <Character From="Щ" To="s"/>
+        <Character From="Э" To="e"/>
+        <Character From="Ю" To="ju"/>
+        <Character From="Я" To="ja"/>
+        <!-- cyrillic (russian) transliterations, not supported by glibc :: end -->
+
+        <!-- polisch diactric Characteracters :: begin -->
+        <Character From="Ą" To="A"/>
+        <Character From="Ć" To="C"/>
+        <Character From="Ę" To="E"/>
+        <Character From="Ł" To="L"/>
+        <Character From="Ń" To="N"/>
+        <Character From="Ó" To="O"/>
+        <Character From="Ś" To="S"/>
+        <Character From="Ź" To="Z"/>
+        <Character From="Ż" To="Z"/>
+
+        <Character From="ą" To="a"/>
+        <Character From="ć" To="c"/>
+        <Character From="ę" To="e"/>
+        <Character From="ł" To="l"/>
+        <Character From="ń" To="n"/>
+        <Character From="ó" To="o"/>
+        <Character From="ś" To="s"/>
+        <Character From="ź" To="z"/>
+        <Character From="ż" To="z"/>
+        <!-- polisch diactric characters :: end -->
+    </Transliterations>
+
+    <Parameters>
+        <TransformationConfiguration>
+            <Name>cHash</Name>
+            <Type>Hidden</Type>
+        </TransformationConfiguration>
+        <TransformationConfiguration>
+            <Name>no_cache</Name>
+            <Type>Hidden</Type>
+        </TransformationConfiguration>
+        <TransformationConfiguration>
+            <Name>L</Name>
+            <Type>ValueMap</Type>
+            <Mappings>
+                <Mapping Value="0">
+                    <Replacement></Replacement>
+                </Mapping>
+                <Mapping Value="1">
+                    <Replacement>en</Replacement>
+                </Mapping>
+            </Mappings>
+        </TransformationConfiguration>
+        <TransformationConfiguration>
+            <Name>id</Name>
+            <Type>PagePath</Type>
+            <Fields>nav_title//title</Fields>
+        </TransformationConfiguration>
+    </Parameters>
+</nawork_uri>

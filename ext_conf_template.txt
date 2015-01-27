@@ -1,15 +1,5 @@
-
-# cat=basic//01; type=string; label=XML path: Path to the CoolUriConf.xml file
-XMLPATH = typo3conf/ext/nawork_uri/lib/default_UriConf.xml
-
-# cat=basic//02; type=int; label=URL storage page: The page where to store urls, default is "0", but if editors should work with the urls you need to set it to a specific sysfolder
-storagePage = 0
-
-# cat=basic//023; type=boolean; label=Multi domain site: Check if your site has multidomains
-MULTIDOMAIN = 1
-
-# cat=basic//04; type=string; label = The L parameter. Empty if no Languages are present. !!! not implemented yet !!!
-# LANGPARAM = L
-
-# cat=basic//05; type=string; label=Default locale: The default locale that should be used for transliteration if no locale is set in the config
+# cat=basic; type=string; label=Default locale: The default locale that should be used for transliteration if no locale is set in the config
 default_locale = en_US
+
+# cat=security; type=boolean; label=SSL No Verify Peer: Do not verify the peer's ssl certificate. This should not be enabled in production environments.
+noSslVerify = 0

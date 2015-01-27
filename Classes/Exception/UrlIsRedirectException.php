@@ -1,16 +1,13 @@
 <?php
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+namespace Nawork\NaworkUri\Exception;
 
 /**
  * Description of Tx_NaworkUri_Exception_UrlIsRedirectException
  *
  * @author thorben
  */
-class Tx_NaworkUri_Exception_UrlIsRedirectException extends Exception {
+class UrlIsRedirectException extends \Exception {
 
 	protected $url;
 

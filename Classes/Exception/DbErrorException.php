@@ -1,16 +1,13 @@
 <?php
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+namespace Nawork\NaworkUri\Exception;
 
 /**
  * Description of DbErTx_NaworkUri_Exception_DbErrorExceptionorException
  *
  * @author thorben
  */
-class Tx_NaworkUri_Exception_DbErrorException extends Exception {
+class DbErrorException extends \Exception {
 	private $sqlError;
 
 	function __construct($sqlError) {

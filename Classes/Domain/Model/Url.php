@@ -49,7 +49,8 @@ class Url extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * URL type
 	 * 0: normal
 	 * 1: old
-	 * 2: redirect
+	 * 2: redirect to url
+	 * 3: redirect to page
 	 *
 	 * @var int
 	 */
@@ -67,6 +68,13 @@ class Url extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 
 	public function getDomain() {
 		return $this->domain;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getPageUid() {
+		return $this->pageUid;
 	}
 
 	public function getPath() {

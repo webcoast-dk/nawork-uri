@@ -1,3 +1,4 @@
+{namespace u=Nawork\NaworkUri\ViewHelpers}
 <f:if condition="{f:count(subject: '{urls}')} > 0">
 	<f:then>
 		<f:for each="{urls}" as="url">
@@ -30,7 +31,12 @@
 					</f:if>
 				</td>
 				<td class="path">{url.path}</td>
-				<td class="redirect_path">{url.redirectPath}</td>
+				<td class="redirect_path">
+					<f:if condition="{url.type} == 2">
+						<f:then>{url.redirectPath}</f:then>
+						<f:else><u:redirectTarget url="{url}" /></f:else>
+					</f:if>
+				</td>
 				<td class="domain">{url.domain.domainName}</td>
 			</tr>
 		</f:for>

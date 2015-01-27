@@ -131,24 +131,9 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 						$newUrl = $this->redirectUrl['redirect_path'];
 						break;
 					case 3:
-						$newUrlParameters = array('id' => $this->redirectUrl['page_uid'], 'L' => $this->redirectUrl['sys_language_uid']);
+						$newUrlParameters = array_merge(\Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($this->redirectUrl['params']), array('id' => $this->redirectUrl['page_uid'], 'L' => $this->redirectUrl['sys_language_uid']));
 						// try to find a new url or create one, if it does not exist
 						$newUrl = $translator->params2uri(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($newUrlParameters, FALSE), FALSE, TRUE);
-						if (!empty($this->redirectUrl['params'])) {
-							$newUrlParts = parse_url($newUrl);
-							$additionalParameters = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($this->redirectUrl['params']);
-							// unset id and L parameters
-							unset($additionalParameters['id']);
-							unset($additionalParameters['L']);
-							$urlParameters = array();
-							if(!empty($additionalParameters)) {
-								if(!empty($newUrlParts['query'])) {
-									$urlParameters = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($newUrlParts['query']);
-								}
-								ArrayUtility::mergeRecursiveWithOverrule($urlParameters, $additionalParameters);
-							}
-							$newUrl = $newUrlParts['path'] . (!empty($urlParameters) ? '?' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($urlParameters) : '');
-						}
 						break;
 
 				}

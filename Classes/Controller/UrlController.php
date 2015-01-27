@@ -65,7 +65,12 @@ class UrlController extends AbstractController {
 		if (!$this->pageId > 0) {
 			$this->forward('noPageId');
 		}
-		$this->view->assign('domains', $this->domainRepository->findAll());
+		$pageRoots = $this->determineRootPages($this->pageId);
+		$pageIds = array();
+		foreach($pageRoots as $page) {
+			$pageIds[] = $page['uid'];
+		}
+		$this->view->assign('domains', $this->domainRepository->findByRootPage($pageIds));
 		$this->view->assign('languages', $this->languageRepository->findAll());
 		$this->view->assign('userSettings', json_encode($this->userSettings));
 		$this->view->assign('id', $this->pageId);
@@ -93,11 +98,28 @@ class UrlController extends AbstractController {
 		$this->view->assign('currentPageRoot', $pageId);
 	}
 
-	private function determineRootPages() {
-		// get page roots
-		$pageRoots = $this->databaseConnection->exec_SELECTgetRows('uid, title', 'pages', 'is_siteroot=1');
-		if(!is_array($pageRoots) || empty($pageRoots)) {
-			$pageRoots = $this->databaseConnection->exec_SELECTgetRows('uid, title', 'pages', 'pid=0', '', 'sorting ASC', 1);
+	private function determineRootPages($pid = NULL) {
+		$pageRoots = array();
+		if($pid > 0) {
+			do {
+				$page = $this->databaseConnection->exec_SELECTgetSingleRow('*', 'pages', 'uid=' . (int) $pid);
+				$pid = $page['pid'];
+			} while($page['pid'] != 0);
+			$pageRoots[] = $page;
+		} else {
+			// get page roots
+			$pageRoots = $this->databaseConnection->exec_SELECTgetRows('uid, title', 'pages', 'is_siteroot=1');
+
+		}
+		if (!is_array($pageRoots) || empty($pageRoots)) {
+			$pageRoots = $this->databaseConnection->exec_SELECTgetRows(
+				'uid, title',
+				'pages',
+				'pid=0',
+				'',
+				'sorting ASC',
+				1
+			);
 		}
 		return $pageRoots;
 	}

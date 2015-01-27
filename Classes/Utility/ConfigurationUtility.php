@@ -180,7 +180,7 @@ class ConfigurationUtility {
 		/* @var $extensionConfiguration \Nawork\NaworkUri\Configuration\ExtensionConfiguration */
 		$extensionConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\ExtensionConfiguration');
 		$file = $extensionConfiguration->getConfigurationCacheDirectory() . $domain;
-		if (!file_exists($file)) {
+		if (!file_exists($file) || !is_file($file)) {
 			throw new \Exception('The configuration file "' . $file . '" does not exist', 1394131984);
 		}
 		return unserialize(file_get_contents($file));

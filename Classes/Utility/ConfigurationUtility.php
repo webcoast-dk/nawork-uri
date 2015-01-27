@@ -15,6 +15,11 @@ class ConfigurationUtility {
 	 */
 	protected static $configuration;
 
+	/**
+	 * @var \Nawork\NaworkUri\Configuration\Configuration[]
+	 */
+	protected static $configurations = array();
+
 	protected static $inheritanceLock = array();
 
 	public static function getConfigurationFileForCurrentDomain() {
@@ -96,11 +101,16 @@ class ConfigurationUtility {
 	/**
 	 * The public method that is to be used to get the configuration object
 	 *
+	 * @params string $domain
+	 *
 	 * @return \Nawork\NaworkUri\Configuration\Configuration
 	 */
-	public static function getConfiguration() {
-		if (!self::$configuration instanceof \Nawork\NaworkUri\Configuration\Configuration) {
-			self::$configuration = self::getConfigurationObject();
+	public static function getConfiguration($domain = NULL) {
+		if ($domain !== NULL || !self::$configuration instanceof \Nawork\NaworkUri\Configuration\Configuration) {
+			self::$configuration = self::getConfigurationObject($domain);
+			if($domain !== NULL) {
+				self::$configurations[$domain] = self::$configuration;
+			}
 		}
 		return self::$configuration;
 	}
@@ -112,26 +122,36 @@ class ConfigurationUtility {
 	 * 2. determined master domain
 	 * 3. default configuration
 	 *
+	 * @params string $domain
+	 *
 	 * @return \Nawork\NaworkUri\Configuration\Configuration
 	 *
 	 * @throws \Nawork\NaworkUri\Exception\InheritanceException
 	 */
-	private static function getConfigurationObject() {
+	private static function getConfigurationObject($domain = NULL) {
 		try {
-			return self::getConfigurationObjectForDomain(\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY'));
-		} catch (\Exception $ex) {
+			return self::getConfigurationObjectForDomain($domain);
+		} catch(\Exception $ex) {
 			// inheritance exceptions must bubble up
 			if ($ex instanceof \Nawork\NaworkUri\Exception\InheritanceException) {
 				throw $ex;
 			}
 			try {
-				return self::getConfigurationObjectForDomain(GeneralUtility::getCurrentDomainName());
+				return self::getConfigurationObjectForDomain(\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY'));
 			} catch (\Exception $ex) {
 				// inheritance exceptions must bubble up
 				if ($ex instanceof \Nawork\NaworkUri\Exception\InheritanceException) {
 					throw $ex;
 				}
-				return self::getConfigurationObjectForDomain('default');
+				try {
+					return self::getConfigurationObjectForDomain(GeneralUtility::getCurrentDomainName());
+				} catch (\Exception $ex) {
+					// inheritance exceptions must bubble up
+					if ($ex instanceof \Nawork\NaworkUri\Exception\InheritanceException) {
+						throw $ex;
+					}
+					return self::getConfigurationObjectForDomain('default');
+				}
 			}
 		}
 	}
@@ -147,6 +167,9 @@ class ConfigurationUtility {
 	 * @throws \Exception
 	 */
 	private static function getConfigurationObjectForDomain($domain) {
+		if(array_key_exists($domain, self::$configurations)) {
+			return self::$configurations[$domain];
+		}
 		try {
 			return self::readCompiledConfigurationFile($domain);
 		} catch (\Exception $e) {

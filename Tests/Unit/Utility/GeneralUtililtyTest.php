@@ -150,8 +150,6 @@ class GeneralUtilityTest extends \Nawork\NaworkUri\Tests\TestBase {
 	public function getCurrentDomain($domainToSet, $domainUidToRetreive) {
 		$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
 		$extConf['MULTIDOMAIN'] = 1;
-		$configReader = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfigurationReader();
-		$configReader->setExtConfig($extConf);
 		$_SERVER['HTTP_HOST'] = $domainToSet;
 		$domainUid = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
 

@@ -71,7 +71,6 @@ class TestBase extends \Tx_Phpunit_TestCase {
 		$this->setupNews();
 		$this->setupDomain();
 
-		$this->configReader = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfigurationReader();
 		$this->transformer = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', true, 'test.local');
 		$this->cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Cache\UrlCache');
 	}

@@ -6,11 +6,6 @@ use Nawork\NaworkUri\Exception\InvalidConfigurationException;
 
 class ConfigurationUtility {
 	/**
-	 * @var \Nawork\NaworkUri\Configuration\ConfigurationReader
-	 */
-	private static $configurationReader;
-
-	/**
 	 * @var \Nawork\NaworkUri\Configuration\Configuration
 	 */
 	protected static $configuration;
@@ -68,17 +63,6 @@ class ConfigurationUtility {
 		}
 
 		return $file;
-	}
-
-	/**
-	 * @return \Nawork\NaworkUri\Configuration\ConfigurationReader
-	 */
-	public static function getConfigurationReader() {
-		if (!self::$configurationReader instanceof \Nawork\NaworkUri\Configuration\ConfigurationReader) {
-			self::$configurationReader = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\ConfigurationReader', self::getConfigurationFileForCurrentDomain());
-		}
-
-		return self::$configurationReader;
 	}
 
 	/**

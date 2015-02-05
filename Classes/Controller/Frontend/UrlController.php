@@ -137,7 +137,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 						break;
 
 				}
-				if($newUrl != NULL) {
+				if($newUrl !== NULL) {
 					$newUrl = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($newUrl, TRUE);
 					// switch for determining the status code
 					switch((int)$this->redirectUrl['type']) {

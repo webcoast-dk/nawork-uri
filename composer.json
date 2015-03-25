@@ -1,0 +1,13 @@
+{
+	"name": "nawork/nawork-uri",
+	"description": "Create nice looking URLs like RealURL or CoolURI. It follows the concept of cooluri creating and caching the urls. Requirements: PHP 5+ with SimpleXML, cURL! MySQL 4.1+.",
+	"type": "typo3-cms-extension",
+	"version": "2.3.0-dev",
+	"authors": [
+		{
+			"name": "Thorben Kapp",
+			"email": "thorben@work.de"
+		}
+	],
+	"minimum-stability": "dev"
+}

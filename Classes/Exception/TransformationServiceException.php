@@ -32,7 +32,7 @@ class TransformationServiceException extends \Exception {
 	public function __construct($parameter, $transformationType, $message, $exception = NULL) {
 		$this->parameter = $parameter;
 		$this->transformationType = $transformationType;
-		$this->message;
+		$this->message = $message;
 		$this->exception = $exception;
 	}
 

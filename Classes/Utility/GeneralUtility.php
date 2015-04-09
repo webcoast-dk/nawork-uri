@@ -204,6 +204,7 @@ class GeneralUtility {
 		$uri = preg_replace('/\-+/', '-', $uri);
 		$uri = preg_replace('/^[\/]+/u', '', $uri);
 		$uri = preg_replace('/\-$/', '', $uri);
+		$uri = preg_replace('/\/$/', '', $uri);
 
 		return $uri;
 	}

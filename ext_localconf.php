@@ -9,13 +9,11 @@ $TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_fe.php']['configArrayPostProc'
 $TYPO3_CONF_VARS['SC_OPTIONS']['tce']['formevals']['tx_naworkuri_path'] = 'EXT:nawork_uri/Classes/Validation/class.tx_naworkuri_path.php';
 
 // register transformation services
-\Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('Hidden', 'Nawork\\NaworkUri\\Transformation\\Hidden\\TransformationService');
-\Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('Plain', 'Nawork\\NaworkUri\\Transformation\\Plain\\TransformationService');
-\Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('ValueMap', 'Nawork\\NaworkUri\\Transformation\\ValueMap\\TransformationService');
-\Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('PagePath', 'Nawork\\NaworkUri\\Transformation\\PagePath\\TransformationService');
-\Nawork\NaworkUri\Utility\GeneralUtility::registerTransformationService('Database', 'Nawork\\NaworkUri\\Transformation\\Database\\TransformationService');
+\Nawork\NaworkUri\Utility\TransformationUtility::registerTransformationService('Hidden', 'Nawork\\NaworkUri\\Transformation\\Hidden\\TransformationService');
+\Nawork\NaworkUri\Utility\TransformationUtility::registerTransformationService('Plain', 'Nawork\\NaworkUri\\Transformation\\Plain\\TransformationService');
+\Nawork\NaworkUri\Utility\TransformationUtility::registerTransformationService('ValueMap', 'Nawork\\NaworkUri\\Transformation\\ValueMap\\TransformationService');
+\Nawork\NaworkUri\Utility\TransformationUtility::registerTransformationService('PagePath', 'Nawork\\NaworkUri\\Transformation\\PagePath\\TransformationService');
+\Nawork\NaworkUri\Utility\TransformationUtility::registerTransformationService('Database', 'Nawork\\NaworkUri\\Transformation\\Database\\TransformationService');
 
 // register default configuration, but do not override if default is already set
-\Nawork\NaworkUri\Utility\GeneralUtility::registerConfiguration('default', 'EXT:nawork_uri/Configuration/Url/DefaultConfiguration.xml', FALSE);
-
-?>
+\Nawork\NaworkUri\Utility\ConfigurationUtility::registerConfiguration('default', 'EXT:nawork_uri/Configuration/Url/DefaultConfiguration.xml', FALSE);

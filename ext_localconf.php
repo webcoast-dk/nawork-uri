@@ -16,4 +16,10 @@ $TYPO3_CONF_VARS['SC_OPTIONS']['tce']['formevals']['tx_naworkuri_path'] = 'EXT:n
 \Nawork\NaworkUri\Utility\TransformationUtility::registerTransformationService('Database', 'Nawork\\NaworkUri\\Transformation\\Database\\TransformationService');
 
 // register default configuration, but do not override if default is already set
-\Nawork\NaworkUri\Utility\ConfigurationUtility::registerConfiguration('default', 'EXT:nawork_uri/Configuration/Url/DefaultConfiguration.xml', FALSE);
+if (class_exists('Nawork\\NaworkUri\\Utility\\ConfigurationUtility')) { // check this to avoid php error when activating the extension
+	\Nawork\NaworkUri\Utility\ConfigurationUtility::registerConfiguration(
+		'default',
+		'EXT:nawork_uri/Configuration/Url/DefaultConfiguration.xml',
+		FALSE
+	);
+}

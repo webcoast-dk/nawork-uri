@@ -19,7 +19,10 @@ class DomainRepository extends AbstractRepository {
 		if(!is_array($pageIds)) {
 			$pageIds = array($pageIds);
 		}
-		$query->getQuerySettings()->setRespectStoragePage(FALSE)->setIgnoreEnableFields(TRUE)->setEnableFieldsToBeIgnored(array('hidden'));
+		$querySettings = $query->getQuerySettings();
+		$querySettings->setRespectStoragePage(FALSE);
+		$querySettings->setIgnoreEnableFields(TRUE);
+		$querySettings->setEnableFieldsToBeIgnored(array('hidden'));
 		$pidConstraints = array();
 		foreach($pageIds as $pid) {
 			$pidConstraints[] = $query->equals('pid', $pid);

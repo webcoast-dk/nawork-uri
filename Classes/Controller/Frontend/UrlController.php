@@ -57,9 +57,9 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 			list($path, $params) = explode('?', $link['LD']['totalURL']);
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 			if(!empty($link['args']['targetDomain'])) {
-				$domain = tx_naworkuri_helper::getCurrentDomain($link['args']['targetDomain']);
+				$domain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain($link['args']['targetDomain']);
 			} else {
-				$domain = tx_naworkuri_helper::getCurrentDomain();
+				$domain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
 			}
 			/** @var \Nawork\NaworkUri\Utility\TransformationUtility $translator */
 			$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility');

@@ -221,13 +221,13 @@ class GeneralUtility {
 		return FALSE;
 	}
 
-	public static function getCurrentDomain() {
+	public static function getCurrentDomain($linkDomain = NULL) {
 		/* @var $tableConfiguration \Nawork\NaworkUri\Configuration\TableConfiguration */
 		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
 		/* @var $db \TYPO3\CMS\Core\Database\DatabaseConnection */
 		$db = $GLOBALS['TYPO3_DB'];
 		$domain = 0;
-		$domainName = \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_HOST');
+		$domainName = $linkDomain === NULL ? \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_HOST') : $linkDomain;
 		$domainRes = $db->exec_SELECTgetRows('uid,tx_naworkuri_masterDomain', $tableConfiguration->getDomainTable(), 'domainName LIKE \'' . $domainName . '\'', 'hidden=0');
 		if ($domainRes && count($domainRes)) {
 			$domain = $domainRes[0]['uid'];

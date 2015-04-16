@@ -114,6 +114,11 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 			$params = $orgParams;
 		}
 
+		/* if the id is not set, use the id from TSFE */
+		if(!isset($params['id'])) {
+			$params['id'] = $GLOBALS['TSFE']->id;
+		}
+
 		/* we must have an integer id so lets look it up */
 		$params['id'] = GeneralUtility::aliasToId($params['id']);
 

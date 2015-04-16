@@ -43,6 +43,13 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 	}
 
 	/**
+	 * @param string $domain
+	 */
+	public function setDomain($domain) {
+		$this->domain = $domain;
+	}
+
+	/**
 	 * Convert the uri path to the request parameters
 	 *
 	 * @param string $uri

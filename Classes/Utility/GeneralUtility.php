@@ -259,6 +259,10 @@ class GeneralUtility {
 	 * @return string The finalized url
 	 */
 	public static function finalizeUrl($url, $forRedirect = FALSE) {
+		// if the url already has a protocol, no more work needs to be done
+		if(preg_match('/^https?:\/\//', $url)) {
+			return $url;
+		}
 		$prefix = '';
 		if ($forRedirect) {
 			$prefix = '/';

@@ -157,6 +157,8 @@ class UrlController extends AbstractController {
 			foreach ($types as $t) {
 				$filter->addType($t);
 			}
+		} else {
+			$filter->setTypes(array('normal', 'locked', 'old'));
 		}
 
 		if ($scope != NULL) {

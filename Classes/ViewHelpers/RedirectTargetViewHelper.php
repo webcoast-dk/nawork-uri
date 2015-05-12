@@ -42,13 +42,17 @@ class RedirectTargetViewHelper extends AbstractViewHelper {
 			array('id' => $pageUid, 'L' => $language)
 		);
 		// try to find a new url or create one, if it does not exist
-		$newUrl = $translator->params2uri(
-			\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($newUrlParameters, FALSE),
-			FALSE,
-			TRUE
-		);
-		if (substr($newUrl, 0, 1) !== '/') {
-			$newUrl = '/' . $newUrl;
+		try {
+			$newUrl = $translator->params2uri(
+				\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($newUrlParameters, FALSE),
+				FALSE,
+				TRUE
+			);
+			if (substr($newUrl, 0, 1) !== '/') {
+				$newUrl = '/' . $newUrl;
+			}
+		} catch (\Exception $e) {
+			$newUrl = 'Exception: ' . $e->getMessage();
 		}
 
 		return $newUrl;

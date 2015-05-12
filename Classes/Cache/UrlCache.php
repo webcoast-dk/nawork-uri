@@ -46,6 +46,10 @@ class UrlCache {
 	 *
 	 * @param array  $params
 	 * @param string $domain
+	 * @param integer $language
+	 * @param boolean $ignoreTimeout
+	 *
+	 * @return boolean|array
 	 */
 	public function findCachedUrl($params, $domain, $language, $ignoreTimeout) {
 		$uid = (int) $params['id'];

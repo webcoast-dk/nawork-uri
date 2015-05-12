@@ -95,6 +95,8 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 	 * Encode Parameters as URI-Path
 	 *
 	 * @param str $param_str Parameter string
+	 * @param boolean $dontCreateNewUrls
+	 * @param boolean $ignoreTimeout
 	 * @return string $uri encoded uri
 	 */
 	public function params2uri($param_str, $dontCreateNewUrls = FALSE, $ignoreTimeout = FALSE) {

@@ -193,7 +193,9 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 			}
 			if ($excludeCacheHash) {
 				$unencodedParameters['cHash'] = $encodableParameters['cHash'];
+				// remove cHash from $pathElements and $encodedParameters
 				unset($pathElements['cHash']);
+				unset($encodedParameters['cHash']);
 			}
 		}
 

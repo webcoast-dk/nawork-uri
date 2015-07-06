@@ -144,7 +144,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 
 				}
 				if($newUrl !== NULL) {
-					$newUrl = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($newUrl, TRUE);
+					$newUrl = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($newUrl);
 					// switch for determining the status code
 					switch((int)$this->redirectUrl['type']) {
 						case 1:
@@ -215,7 +215,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 					try {
 						$uri = $translator->params2uri($params, $dontCreateNewUrls, $ignoreTimeout);
 						if (in_array($_SERVER['REQUEST_METHOD'], array('GET','HEAD')) && ($path == 'index.php' || $path == '') && $uri !== FALSE && $uri != $GLOBALS['TSFE']->siteScript) {
-							$uri = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($uri, TRUE); // TRUE is for redirect, this applies "/" by default and the baseURL if set
+							$uri = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($uri); // TRUE is for redirect, this applies "/" by default and the baseURL if set
 							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($uri, \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getRedirectStatus());
 							exit;
 						}

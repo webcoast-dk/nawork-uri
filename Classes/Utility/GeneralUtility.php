@@ -254,21 +254,23 @@ class GeneralUtility {
 	/**
 	 *
 	 * @param string  $url         The original url
-	 * @param boolean $forRedirect Should be for a redirect or not
 	 *
 	 * @return string The finalized url
 	 */
-	public static function finalizeUrl($url, $forRedirect = FALSE) {
+	public static function finalizeUrl($url) {
 		// if the url already has a protocol, no more work needs to be done
 		if(preg_match('/^https?:\/\//', $url)) {
 			return $url;
 		}
-		$prefix = '';
-		if ($forRedirect) {
-			$prefix = '/';
-			if (!empty($GLOBALS['TSFE']->config['config']['baseURL'])) $prefix = $GLOBALS['TSFE']->config['config']['baseURL'];
-		} else {
-			if (!empty($GLOBALS['TSFE']->config['config']['absRefPrefix'])) $prefix = $GLOBALS['TSFE']->config['config']['absRefPrefix'];
+
+		// cut of beginning "/"
+		if (substr($url, 0, 1) === '/') {
+			$url = substr($url, 1);
+		}
+
+		$prefix = '/';
+		if (!empty($GLOBALS['TSFE']->config['config']['absRefPrefix'])) {
+			$prefix = $GLOBALS['TSFE']->config['config']['absRefPrefix'];
 		}
 
 		return $prefix . $url;

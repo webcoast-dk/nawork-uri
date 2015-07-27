@@ -96,6 +96,8 @@ class ConfigurationUtility {
 				self::$configurations[$domain] = self::$configuration;
 			}
 		}
+		// reset inheritance lock after each configuration request
+		self::$inheritanceLock = array();
 		return self::$configuration;
 	}
 
@@ -159,8 +161,10 @@ class ConfigurationUtility {
 		} catch (\Exception $e) {
 			if (array_key_exists($domain, $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['Configurations'])) {
 				$configuration = self::buildConfigurationForDomain($domain);
-				self::storeCompiledConfigurationToFile($configuration,
-					\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY'));
+				self::storeCompiledConfigurationToFile(
+					$configuration,
+					$domain
+				);
 				return $configuration;
 			}
 			throw new \Exception('No configuration is registered for domain "' . $domain . '"', 1394135040);

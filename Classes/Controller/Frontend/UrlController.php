@@ -53,14 +53,16 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 	 */
 	function params2uri(&$link, $ref) {
 		global $TYPO3_CONF_VARS;
-		if (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getDisabled() && $link['LD']['url']) {
+		if(!empty($link['args']['targetDomain'])) {
+			$domain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain($link['args']['targetDomain']);
+			$domainName = $link['args']['targetDomain'];
+		} else {
+			$domain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
+			$domainName = NULL;
+		}
+		if (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration($domainName)->getGeneralConfiguration()->getDisabled() && $link['LD']['url']) {
 			list($path, $params) = explode('?', $link['LD']['totalURL']);
 			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
-			if(!empty($link['args']['targetDomain'])) {
-				$domain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain($link['args']['targetDomain']);
-			} else {
-				$domain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
-			}
 			/** @var \Nawork\NaworkUri\Utility\TransformationUtility $translator */
 			$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility');
 			try {

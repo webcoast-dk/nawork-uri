@@ -58,7 +58,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 			$domainName = $link['args']['targetDomain'];
 		} else {
 			$domain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
-			$domainName = NULL;
+			$domainName = GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
 		}
 		if (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration($domainName)->getGeneralConfiguration()->getDisabled() && $link['LD']['url']) {
 			list($path, $params) = explode('?', $link['LD']['totalURL']);

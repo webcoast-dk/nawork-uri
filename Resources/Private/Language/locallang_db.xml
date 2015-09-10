@@ -11,6 +11,7 @@
 
 			<label index="sys_domain.tx_naworkuri_masterDomain">Domain alias master record</label>
 
+            <label index="tx_naworkuri_uri.page_uid">Page</label>
 			<label index="tx_naworkuri_uri.type">Type</label>
 			<label index="tx_naworkuri_uri.type.0">Normal URL</label>
 			<label index="tx_naworkuri_uri.type.1">Old URL</label>
@@ -34,6 +35,7 @@
 
 			<label index="sys_domain.tx_naworkuri_masterDomain">Master Domain</label>
 
+            <label index="tx_naworkuri_uri.page_uid">Seite</label>
 			<label index="tx_naworkuri_uri.type">Typ</label>
 			<label index="tx_naworkuri_uri.type.0">Normale URL</label>
 			<label index="tx_naworkuri_uri.type.1">Alte URL</label>

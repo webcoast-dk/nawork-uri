@@ -1,6 +1,7 @@
 <?php
 
 namespace Nawork\NaworkUri\Utility;
+use TYPO3\CMS\Core\Utility\ArrayUtility;
 
 /**
  * Class for creating path uris
@@ -85,8 +86,13 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 			$getparams = Array();
 			parse_str($params, $getparams);
 			// merged result
-			$res = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($cachedparams, $getparams);
-			return $res;
+            if (class_exists('TYPO3\\CMS\\Core\\Utility\\ArrayUtility')) {
+                ArrayUtility::mergeRecursiveWithOverrule($cachedparams, $getparams);
+                return $cachedparams;
+            } else {
+                $res = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($cachedparams, $getparams);
+                return $res;
+            }
 		}
 		return false;
 	}

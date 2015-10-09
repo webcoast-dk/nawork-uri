@@ -95,11 +95,13 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
     ) {
         ExtensionManagementUtility::registerAjaxHandler(
             'tx_naworkuri::clearUrlCache',
-            '&Nawork\\NaworkUri\\Cache\\ClearCache->clearUrlCache'
+            '&Nawork\\NaworkUri\\Cache\\ClearCache->clearUrlCache',
+            FALSE
         );
         ExtensionManagementUtility::registerAjaxHandler(
             'tx_naworkuri::clearUrlConfigurationCache',
-            '&Nawork\\NaworkUri\\Cache\\ClearCache->clearConfigurationCache'
+            '&Nawork\\NaworkUri\\Cache\\ClearCache->clearConfigurationCache',
+            FALSE
         );
     }
     else {

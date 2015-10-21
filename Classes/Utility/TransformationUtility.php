@@ -100,7 +100,7 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 	/**
 	 * Encode Parameters as URI-Path
 	 *
-	 * @param str $param_str Parameter string
+	 * @param string $param_str Parameter string
 	 * @param boolean $dontCreateNewUrls
 	 * @param boolean $ignoreTimeout
 	 * @return string $uri encoded uri

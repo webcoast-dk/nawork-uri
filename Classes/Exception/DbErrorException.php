@@ -12,6 +12,7 @@ class DbErrorException extends \Exception {
 
 	function __construct($sqlError) {
 		$this->sqlError = $sqlError;
+		$this->message = $sqlError;
 	}
 
 	public function getSqlError() {
@@ -21,5 +22,3 @@ class DbErrorException extends \Exception {
 
 
 }
-
-?>

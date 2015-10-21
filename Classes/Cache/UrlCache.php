@@ -2,6 +2,8 @@
 
 namespace Nawork\NaworkUri\Cache;
 
+use Nawork\NaworkUri\Exception\DbErrorException;
+
 class UrlCache {
 
 	const URI_TYPE_NORMAL = 0;
@@ -216,9 +218,13 @@ class UrlCache {
 	 * @param string  $domain
 	 * @param array   $parameters
 	 * @param string  $path
+	 *
+	 * @throws DbErrorException
 	 */
 	public function createUrl($page, $language, $domain, $parameters, $path, $originalPath) {
 		$parameters = \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parameters, FALSE);
+		/* disable debug output from the database layer */
+		$this->db->debugOutput = FALSE;
 		$result = $this->db->exec_INSERTquery($this->tableConfiguration->getUrlTable(), array('page_uid' => intval($page), 'tstamp' => time(), 'crdate' => time(), 'sys_language_uid' => intval($language), 'domain' => $domain, 'path' => $path, 'hash_path' => md5($path), 'params' => $parameters, 'hash_params' => md5($parameters), 'original_path' => $originalPath), array('page_uid', 'tstamp', 'crdate', 'sys_language_uid'));
 
 		if (!$result) {

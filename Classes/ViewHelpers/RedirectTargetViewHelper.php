@@ -54,7 +54,10 @@ class RedirectTargetViewHelper extends AbstractViewHelper {
 				$newUrl = '/' . $newUrl;
 			}
 		} catch (\Exception $e) {
-			$newUrl = 'Exception: ' . $e->getMessage();
+			/**
+			 * @todo Log this some where
+			 */
+			$newUrl = '';
 		}
 
 		return $newUrl;

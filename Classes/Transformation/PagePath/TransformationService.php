@@ -91,7 +91,7 @@ class TransformationService extends \Nawork\NaworkUri\Transformation\AbstractTra
 			array_keys($GLOBALS['TYPO3_DB']->admin_get_fields($configuration->getTranslationTable())));
 		$translatedRecord = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow(implode(',', $overlayFields),
 			$configuration->getTranslationTable(),
-			'pid=' . (int)$pageUid . ' AND sys_language_uid=' . (int)$language);
+			'pid=' . (int)$pageUid . ' AND sys_language_uid=' . (int)$language . ' AND deleted=0 AND hidden=0');
 		if (!is_array($translatedRecord)) {
 			$translatedRecord = array();
 		}

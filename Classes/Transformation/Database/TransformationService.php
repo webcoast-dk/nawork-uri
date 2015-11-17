@@ -43,7 +43,8 @@ class TransformationService extends \Nawork\NaworkUri\Transformation\AbstractTra
 						' AND ' .
 						$GLOBALS['TCA'][$configuration->getTable()]['ctrl']['transOrigPointerField'] .
 						'=' .
-						(int)$record['uid']);
+                        (int)$record['uid'] . $GLOBALS['TSFE']->sys_page->enableFields($configuration->getTable())
+                    );
 					if (is_array($translatedFields)) {
 						\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($record, $translatedFields);
 					}

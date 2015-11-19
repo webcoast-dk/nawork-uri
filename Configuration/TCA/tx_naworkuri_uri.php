@@ -69,7 +69,10 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 			'config' => Array(
 				'type' => 'select',
 				'foreign_table' => 'sys_domain',
-				'foreign_table_where' => 'AND tx_naworkuri_masterDomain=0',
+				'foreign_table_where' => 'AND tx_naworkuri_masterDomain=0 AND deleted=0',
+                'items' => array(
+                    array('', 0)
+                )
 			)
 		),
 		'path' => Array(

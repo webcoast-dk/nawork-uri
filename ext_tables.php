@@ -1,8 +1,5 @@
 <?php
 
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use TYPO3\CMS\Core\Utility\VersionNumberUtility;
-
 if (!defined('TYPO3_MODE'))
 	die('Access denied.');
 
@@ -89,16 +86,16 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
     /* register the ajax ids for the clear cache options (urls and url configuration) */
     if (class_exists(
             'TYPO3\\CMS\\Core\\Utility\\VersionNumberUtility'
-        ) && TYPO3\CMS\Core\Utility\VersionNumberUtility::convertVersionNumberToInteger(
-            TYPO3\CMS\Core\Utility\VersionNumberUtility::getCurrentTypo3Version()
+        ) && \TYPO3\CMS\Core\Utility\VersionNumberUtility::convertVersionNumberToInteger(
+            \TYPO3\CMS\Core\Utility\VersionNumberUtility::getCurrentTypo3Version()
         ) > 6002000
     ) {
-        ExtensionManagementUtility::registerAjaxHandler(
+        \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::registerAjaxHandler(
             'tx_naworkuri::clearUrlCache',
             '&Nawork\\NaworkUri\\Cache\\ClearCache->clearUrlCache',
             FALSE
         );
-        ExtensionManagementUtility::registerAjaxHandler(
+        \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::registerAjaxHandler(
             'tx_naworkuri::clearUrlConfigurationCache',
             '&Nawork\\NaworkUri\\Cache\\ClearCache->clearConfigurationCache',
             FALSE

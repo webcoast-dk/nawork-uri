@@ -2,7 +2,6 @@
 
 namespace Nawork\NaworkUri\Controller\Frontend;
 
-use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\HttpUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
@@ -39,7 +38,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 						unset($uri_params['id']);
 						$params['pObj']->mergingWithGetVars($uri_params);
 					} else { // handle 404
-						$this->handlePagenotfound(array('currentUrl' => $ref->siteScript, 'reaseonText' => 'The requested path could not be found', 'pageAccessFailureReasons' => array()), $ref);
+						$this->handlePagenotfound(array('currentUrl' => $ref->siteScript, 'reasonText' => 'The requested path could not be found', 'pageAccessFailureReasons' => array()), $ref);
 					}
 				} catch (\Nawork\NaworkUri\Exception\UrlIsRedirectException $ex) {
 					$this->redirectUrl = $ex->getUrl();

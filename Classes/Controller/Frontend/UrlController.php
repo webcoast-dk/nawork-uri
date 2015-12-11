@@ -5,10 +5,14 @@ namespace Nawork\NaworkUri\Controller\Frontend;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\HttpUtility;
+use TYPO3\CMS\Core\Utility\MathUtility;
 
 class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 
 	protected $redirectUrl = NULL;
+
+    protected $pageNotAccessibleHandlingInProgress = FALSE;
+    protected $pageNotFoundHandlingInProgress = FALSE;
 
 	/**
 	 * decode uri and extract parameters
@@ -300,6 +304,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 	public function handlePagenotfound($params, $frontendController) {
 		if (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getDisabled()) {
 			$output = '';
+            $disableOutput = FALSE;
 			$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
 			/* the page is not accessible without being logged in, so handle this, if configured */
 			if (array_key_exists('pageAccessFailureReasons', $params) && is_array($params['pageAccessFailureReasons']) && array_key_exists('fe_group', $params['pageAccessFailureReasons']) && \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getPageNotAccessibleConfiguration() instanceof \Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration) {
@@ -311,7 +316,11 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 						$output = $pageNotAccessibleConfiguration->getValue();
 						break;
 					case \Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration::BEHAVIOR_PAGE:
-						if (\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
+						if (!$this->pageNotAccessibleHandlingInProgress && (MathUtility::canBeInterpretedAsInteger($pageNotAccessibleConfiguration->getValue()) || MathUtility::canBeInterpretedAsInteger(\Nawork\NaworkUri\Utility\GeneralUtility::aliasToId($pageNotAccessibleConfiguration->getValue())))) {
+                            $frontendController->id = $pageNotAccessibleConfiguration->getValue();
+                            $disableOutput = TRUE;
+                            $this->pageNotAccessibleHandlingInProgress = TRUE;
+                        } elseif (!$this->pageNotAccessibleHandlingInProgress && \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
 							$curl = curl_init();
 							$urlParts = parse_url($pageNotAccessibleConfiguration->getValue());
 							$urlParts['scheme'] = GeneralUtility::getIndpEnv('TYPO3_SSL') ? 'https' : 'http';
@@ -333,7 +342,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 							}
 							$output = $this->curl_exec_follow($curl);
 						} else {
-							$output = '404 not found! The 404 Page URL ' . $pageNotAccessibleConfiguration->getValue() . ' seems to cause a loop.';
+							$output = '404 not found! The 403 page url or id "' . $pageNotAccessibleConfiguration->getValue() . '"" seems to cause a loop.';
 						}
 						break;
 					case \Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration::BEHAVIOR_REDIRECT:
@@ -353,7 +362,11 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 						$output = $pageNotFoundConfiguration->getValue();
 						break;
 					case \Nawork\NaworkUri\Configuration\PageNotFoundConfiguration::BEHAVIOR_PAGE:
-						if (\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
+                        if (!$this->pageNotFoundHandlingInProgress && (MathUtility::canBeInterpretedAsInteger($pageNotFoundConfiguration->getValue()) || MathUtility::canBeInterpretedAsInteger(\Nawork\NaworkUri\Utility\GeneralUtility::aliasToId($pageNotFoundConfiguration->getValue())))) {
+                            $frontendController->id = $pageNotFoundConfiguration->getValue();
+                            $disableOutput = TRUE;
+                            $this->pageNotFoundHandlingInProgress = TRUE;
+                        } elseif (!$this->pageNotFoundHandlingInProgress && \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
 							$curl = curl_init();
 							$urlParts = parse_url($pageNotFoundConfiguration->getValue());
 							$urlParts['scheme'] = GeneralUtility::getIndpEnv('TYPO3_SSL') ? 'https' : 'http';
@@ -375,7 +388,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 							}
 							$output = $this->curl_exec_follow($curl);
 						} else {
-							$output = '404 not found! The 404 Page URL ' . $pageNotFoundConfiguration->getValue() . ' seems to cause a loop.';
+							$output = '404 not found! The 404 page url or id "' . $pageNotFoundConfiguration->getValue() . '"" seems to cause a loop.';
 						}
 						break;
 					case \Nawork\NaworkUri\Configuration\PageNotFoundConfiguration::BEHAVIOR_REDIRECT:
@@ -386,14 +399,16 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 					default:
 						$output = '';
 				}
-			} else {
-				$output = '<html><head><title>404 Not found</title></head><body><h1>Not found!</h1><p>The page you are trying to access is not available</p></body></html>';
 			}
-			echo $output;
-			exit(0);
+            if (!$disableOutput) {
+                // if $output is still empty or false, output a 404 message
+                if (empty($output)) {
+                    $output = '<html><head><title>404 Not found</title></head><body><h1>Not found!</h1><p>The page you are trying to access is not available</p></body></html>';
+                }
+                echo $output;
+                exit(0);
+            }
 		}
 	}
 
 }
-
-?>

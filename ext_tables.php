@@ -1,57 +1,13 @@
 <?php
 
-if (!defined('TYPO3_MODE'))
+if (!defined('TYPO3_MODE')) {
 	die('Access denied.');
+}
 
+$GLOBALS['TYPO3_CONF_VARS']['FE']['pageOverlayFields'] .= ',tx_naworkuri_pathsegment,tx_naworkuri_exclude';
 
-// add new fields to page and pages_language_overlay records
-$tempColumns = Array(
-	'tx_naworkuri_pathsegment' => array(
-		'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:pages.tx_naworkuri_pathsegment',
-		'config' => Array(
-			'type' => 'input',
-			'size' => '60',
-			'max' => '60',
-		),
-	),
-	'tx_naworkuri_exclude' => array(
-		'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:pages.tx_naworkuri_exclude',
-		'config' => Array(
-			'type' => 'check',
-			'default' => '0'
-		)
-	)
-);
-
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns('pages', $tempColumns, 1);
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('pages', 'tx_naworkuri_pathsegment,tx_naworkuri_exclude', '', 'after:title');
-
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns('pages_language_overlay', $tempColumns, 1);
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('pages_language_overlay', 'tx_naworkuri_pathsegment,tx_naworkuri_exclude', '', 'after:title');
-
-$tempColumns = array(
-	'tx_naworkuri_masterDomain' => array(
-		'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:sys_domain.tx_naworkuri_masterDomain',
-		'config' => array(
-			'type' => 'group',
-			'internal_type' => 'db',
-			'allowed' => 'sys_domain',
-			'size' => '1',
-			'minitems' => '0',
-			'maxitems' => '1',
-			'wizards' => array(
-				'suggest' => array(
-					'type' => 'suggest'
-				)
-			)
-		),
-	),
-);
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns('sys_domain', $tempColumns, 1);
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('sys_domain', 'tx_naworkuri_masterDomain');
-
-if (TYPO3_MODE == 'BE') {
-	$mainModuleName = 'naworkuri';
+if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
+    $mainModuleName = 'naworkuri';
 	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule($mainModuleName, '', '', \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('nawork_uri').'Configuration/Module/');
 
 	\TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule('Nawork.' . $_EXTKEY, $mainModuleName, 'uri', '', array(
@@ -72,11 +28,7 @@ if (TYPO3_MODE == 'BE') {
 	));
 
 	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTypoScriptSetup('<INCLUDE_TYPOSCRIPT: source="FILE:EXT:nawork_uri/Configuration/TypoScript/module.ts">');
-}
 
-$GLOBALS['TYPO3_CONF_VARS']['FE']['pageOverlayFields'] .= ',tx_naworkuri_pathsegment,tx_naworkuri_exclude';
-
-if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
 	// register hook for manipulating default type for new records
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tceforms.php']['getMainFieldsClass'][] = 'Nawork\\NaworkUri\\Hooks\\TceFormsMainFields';
 	// add a hook to create the path and parameter hashes automatically when creating or altering urls manually
@@ -110,4 +62,3 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = 'Nawork\\NaworkUri\\Command\\NaworkUriCommandController';
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = 'Nawork\\NaworkUri\\Command\\MigrationCommandController';
 }
-?>

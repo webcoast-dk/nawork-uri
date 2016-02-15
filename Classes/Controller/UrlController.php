@@ -237,10 +237,12 @@ class UrlController extends AbstractController {
 	 *
 	 * @param \Nawork\NaworkUri\Domain\Model\Url $url
 	 * @param boolean $includeAddOption
+     * @param string  $returnUrl
 	 */
-	public function contextMenuAction($url, $includeAddOption = FALSE) {
+	public function contextMenuAction($url, $includeAddOption = FALSE,  $returnUrl = '') {
 		$this->view->assign('url', $url);
 		$this->view->assign('includeAddOption', $includeAddOption);
+        $this->view->assign('returnUrl', $returnUrl);
 	}
 
 	/**

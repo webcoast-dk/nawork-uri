@@ -340,9 +340,9 @@ NaworkUri.UrlModule = new Class({
 		}
 		obj.requests.contextMenu = jQuery.ajax({
 			url: row.attr("data-contextmenuurl"),
-			dataType: "html",
+            dataType: "html",
 			success: function(response, status, request) {
-				if(jQuery.trim(response).length > 0) {
+                if(jQuery.trim(response).length > 0) {
 					obj.openContextMenu(response, ev);
 				}
 			}
@@ -350,12 +350,12 @@ NaworkUri.UrlModule = new Class({
 	},
 	
 	openContextMenu: function(response, ev) {
-		var obj = this;
+        var obj = this;
 		
 		if(jQuery("#tx_naworkuri_contextMenu").length > 0) {
 			jQuery("#tx_naworkuri_contextMenu").remove();
 		}
-		jQuery("#table_body").append(jQuery(response));
+		jQuery("#table_body").append(response);
 		var cm = jQuery("#tx_naworkuri_contextMenu");
 		cm.css({
 			display: "block",
@@ -387,10 +387,10 @@ NaworkUri.UrlModule = new Class({
 			obj.closeContextMenu();
 		});
 		cm.find(".unlock").click(function(ev) {
-			if(request != null && request.abort) {
-				request.abort();
+			if(obj.requests.ajax != null && obj.requests.ajax.abort) {
+				obj.requests.ajax.abort();
 			}
-			request = jQuery.ajax({
+			obj.requests.ajax = jQuery.ajax({
 				url: jQuery(this).attr("data-ajaxurl"),
 				dataType: "html",
 				success: function(response, status, request) {
@@ -402,7 +402,7 @@ NaworkUri.UrlModule = new Class({
 			obj.closeContextMenu();
 		});
 		cm.find(".edit").click(function(ev) {
-			window.location.href = "alt_doc.php?returnUrl=" + encodeURIComponent(window.location.href) + "&edit[tx_naworkuri_uri][" + jQuery(this).attr("data-uid") + "]=edit";
+			window.location.href = jQuery(this).attr("data-url");
 		});
 		cm.find(".delete").click(function(ev) {
 			if(window.confirm("Do you really want to delete the url \"" + jQuery(this).attr("data-path") + "\"?")) {

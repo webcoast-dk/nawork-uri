@@ -48,7 +48,8 @@ NaworkUri.RedirectModule = new Class({
 			dataType: "html",
 			data: {
 				tx_naworkuri_naworkuri_naworkuriredirect: {
-					includeAddOption: true
+					includeAddOption: true,
+                    returnUrl: window.location.pathname + window.location.search
 				}
 			},
 			success: function(response, status, request) {

@@ -1,4 +1,5 @@
 {namespace n=Tx_NaworkUri_ViewHelpers}
+{namespace nu=Nawork\NaworkUri\ViewHelpers}
 <f:layout name="Module" />
 
 <f:section name="moduleHeader">
@@ -48,7 +49,20 @@
 				<label for="path"><f:translate key="label_filter_path" default="Path:" /></label>
 				<input type="text" id="path" value="" placeholder="[Filter by path]" autocomplete="off"/>
 			</div>
-			<div class="add"><a href="javascript:;" onclick="window.location.href='alt_doc.php?returnUrl=' + encodeURIComponent(window.location.href) + '&edit[tx_naworkuri_uri][0]=new&edit[tx_naworkuri_uri][type]=3{f:if(condition: '{domains -> f:count()} > 0', then: '&edit[tx_naworkuri_uri][domain]={domains.0.uid}', else: '')}'; return false;" ><span class="icon"></span><label><f:translate key="label_contextmenu_add" default="Add" /></label></a></div>
+			<div class="add">
+				<f:if condition="{domains -> f:count()} > 0">
+					<f:then>
+						<nu:link.module module="record_edit" mode="new" table="tx_naworkuri_uri" pid="0" defaults="{type: 3, domain: '{domains.0.uid}'}">
+							<span class="icon"></span><label><f:translate key="label_contextmenu_add" default="Add" /></label>
+						</nu:link.module>
+					</f:then>
+					<f:else>
+						<nu:link.module module="record_edit" mode="new" table="tx_naworkuri_uri" pid="0" defaults="{type: 3}">
+							<span class="icon"></span><label><f:translate key="label_contextmenu_add" default="Add" /></label>
+						</nu:link.module>
+					</f:else>
+				</f:if>
+			</div>
 		</div>
 		<div id="table_outer">
 			<div id="table_head">

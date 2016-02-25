@@ -2,12 +2,12 @@
 <nawork_uri>
 	<General>
 		<Append>/</Append>
+        <RedirectStatus>301</RedirectStatus>
 	</General>
 
 	<castTypeToInt>1</castTypeToInt>
     <castLToInt>1</castLToInt>
     <redirectOnParameterDiff>1</redirectOnParameterDiff>
-    <redirectStatus>301</redirectStatus>
 
     <PageNotFound>
         <Status>HTTP/1.0 404 Not Found</Status>

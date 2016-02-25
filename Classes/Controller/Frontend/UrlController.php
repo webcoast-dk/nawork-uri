@@ -221,10 +221,15 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 						$uri = $translator->params2uri($params, $dontCreateNewUrls, $ignoreTimeout);
 						if (in_array($_SERVER['REQUEST_METHOD'], array('GET','HEAD')) && ($path == 'index.php' || $path == '') && $uri !== FALSE && $uri != $GLOBALS['TSFE']->siteScript) {
 							$uri = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($uri); // TRUE is for redirect, this applies "/" by default and the baseURL if set
-							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($uri, \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getRedirectStatus());
+                            $redirectStatus = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getRedirectStatus();
+                            // if the redirect status in the configuration is an integer, e.g. "301" try to get the correct value from the constant
+                            if (MathUtility::canBeInterpretedAsInteger($redirectStatus)) {
+                                $redirectStatus = constant('TYPO3\CMS\Core\Utility\HttpUtility::HTTP_STATUS_'.$redirectStatus);
+                            }
+							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($uri, $redirectStatus);
 							exit;
-						}
-					} catch (\Nawork\NaworkUri\Exception\UrlIsNotUniqueException $ex) {
+                        }
+                    } catch (\Nawork\NaworkUri\Exception\UrlIsNotUniqueException $ex) {
 						/* log unique failure to belog */
 						\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
 					} catch (\Nawork\NaworkUri\Exception\DbErrorException $ex) {

@@ -6,6 +6,7 @@ namespace Nawork\NaworkUri\ViewHelpers\Link;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
 
 class ModuleViewHelper extends AbstractTagBasedViewHelper
@@ -40,7 +41,15 @@ class ModuleViewHelper extends AbstractTagBasedViewHelper
                 )
             );
         }
-        $moduleUrl = BackendUtility::getModuleUrl($module, $parameters);
+        if (VersionNumberUtility::convertVersionNumberToInteger(VersionNumberUtility::getCurrentTypo3Version()) < 7000000) {
+            switch ($module) {
+                case 'record_edit':
+                    $moduleUrl = $GLOBALS['BACK_PATH'].'alt_doc.php?' . trim(GeneralUtility::implodeArrayForUrl('', $parameters, '', TRUE, TRUE), '&');
+                    break;
+            }
+        } else {
+            $moduleUrl = BackendUtility::getModuleUrl($module, $parameters);
+        }
 
         $this->tag->addAttribute('href', $moduleUrl, FALSE);
         $this->tag->setContent($this->renderChildren());

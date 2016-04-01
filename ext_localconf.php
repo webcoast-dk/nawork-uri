@@ -23,3 +23,11 @@ if (class_exists('Nawork\\NaworkUri\\Utility\\ConfigurationUtility')) { // check
 		FALSE
 	);
 }
+
+// configure caching framework
+if (!is_array($GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['naworkuri_configuration'])) {
+	$GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['naworkuri_configuration'] = array();
+}
+if (!is_array($GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['naworkuri_configuration']['backend'])) {
+	$GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['naworkuri_configuration']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\Typo3DatabaseBackend';
+}

@@ -2,7 +2,9 @@
 
 namespace Nawork\NaworkUri\Utility;
 
+use Nawork\NaworkUri\Configuration\Configuration;
 use Nawork\NaworkUri\Exception\InvalidConfigurationException;
+use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 
 class ConfigurationUtility {
 	/**
@@ -172,10 +174,10 @@ class ConfigurationUtility {
 	}
 
 	private static function storeCompiledConfigurationToFile($configuration, $domain) {
-		/* @var $extensionConfiguration \Nawork\NaworkUri\Configuration\ExtensionConfiguration */
-		$extensionConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\ExtensionConfiguration');
-		$file = $extensionConfiguration->getConfigurationCacheDirectory() . $domain;
-		file_put_contents($file, serialize($configuration));
+		$cacheIdentifier = md5($domain);
+		/** @var FrontendInterface $cache */
+		$cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Cache\\CacheManager')->getCache('naworkuri_configuration');
+		$cache->set($cacheIdentifier, $configuration);
 	}
 
 	/**
@@ -188,13 +190,12 @@ class ConfigurationUtility {
 	 * @throws \Exception
 	 */
 	private static function readCompiledConfigurationFile($domain) {
-		/* @var $extensionConfiguration \Nawork\NaworkUri\Configuration\ExtensionConfiguration */
-		$extensionConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\ExtensionConfiguration');
-		$file = $extensionConfiguration->getConfigurationCacheDirectory() . $domain;
-		if (!file_exists($file) || !is_file($file)) {
-			throw new \Exception('The configuration file "' . $file . '" does not exist', 1394131984);
+		$cacheIdentifier = md5($domain);
+		$object = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Cache\\CacheManager')->getCache('naworkuri_configuration')->get($cacheIdentifier);
+		if (!$object instanceof Configuration) {
+			throw new \Exception('No configuration for domain "'.$domain.'" could be retrieved from cache');
 		}
-		return unserialize(file_get_contents($file));
+		return $object;
 	}
 
 	/**

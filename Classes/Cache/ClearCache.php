@@ -1,6 +1,7 @@
 <?php
 
 namespace Nawork\NaworkUri\Cache;
+use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 
 /**
  * Description of ClearCache
@@ -32,13 +33,9 @@ class ClearCache {
 	 */
 	public function clearConfigurationCache(&$params, &$requestHandler) {
 		if ($GLOBALS['BE_USER']->isAdmin() || $GLOBALS['BE_USER']->getTSConfigValue('options.clearCacheCmd.urlConfiguration')) {
-			/* @var $extensionConfiguration \Nawork\NaworkUri\Configuration\ExtensionConfiguration */
-			$extensionConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\ExtensionConfiguration');
-			foreach (\TYPO3\CMS\Core\Utility\GeneralUtility::getFilesInDir($extensionConfiguration->getConfigurationCacheDirectory()) as $file) {
-				unlink($extensionConfiguration->getConfigurationCacheDirectory() . $file);
-			}
+			/** @var FrontendInterface $cache */
+			$cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Cache\\CacheManager')->getCache('naworkuri_configuration');
+			$cache->flush();
 		}
 	}
 }
-
-?>

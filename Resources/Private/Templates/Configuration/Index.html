@@ -1,0 +1,19 @@
+{namespace n=Tx_NaworkUri_ViewHelpers}
+{namespace nu=Nawork\NaworkUri\ViewHelpers}
+<f:layout name="Module" />
+
+<f:section name="moduleHeader">
+
+</f:section>
+
+<f:section name="Main">
+	<label for="tx_naworkuri_module_configuration_configurationName">
+		<f:translate id="mod.configuration.configurationName" />
+	</label>
+	<select id="tx_naworkuri_module_configuration_configurationName" onchange="if (this.options[this.selectedIndex].value != '') { location.href=this.options[this.selectedIndex].value; }">
+		<option value=""></option>
+		<f:for each="{registeredConfigurations}" as="configurationName">
+			<option value="{f:uri.action(action: 'show', arguments: '{name: configurationName}')}">{configurationName}</option>
+		</f:for>
+	</select>
+</f:section>

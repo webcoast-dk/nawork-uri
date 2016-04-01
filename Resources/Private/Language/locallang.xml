@@ -8,10 +8,14 @@
 		<languageKey index="default" type="array">
 			<label index="label.clearUrlCache">Clear URL cache</label>
 			<label index="label.clearUrlConfigurationCache">Clear URL configuration cache</label>
+			<label index="mod.configuration.configurationName">Configuration</label>
+			<label index="mod.configuration.back">Back</label>
 		</languageKey>
 		<languageKey index="de" type="array">
 			<label index="label.clearUrlCache">URL Cache leeren</label>
 			<label index="label.clearUrlConfigurationCache">URL-Konfigurations-Cache leeren</label>
+			<label index="mod.configuration.configurationName">Konfiguration</label>
+			<label index="mod.configuration.back">Zurück</label>
 		</languageKey>
 	</data>
 </T3locallang>

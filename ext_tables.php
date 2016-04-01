@@ -27,6 +27,17 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
 		'labels' => 'LLL:EXT:' . $_EXTKEY . '/Resources/Private/Language/locallang_mod_redirect.xml'
 	));
 
+	$extensionConfiguration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
+	if ($extensionConfiguration['configurationModuleEnable']) {
+		\TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule('Nawork.' . $_EXTKEY, $mainModuleName, 'configuration', '', array(
+				'Configuration' => 'index,show'
+		), array(
+				'access' => 'user,group',
+				'icon' => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/module.png',
+				'labels' => 'LLL:EXT:' . $_EXTKEY . '/Resources/Private/Language/locallang_mod_configuration.xml'
+		));
+	}
+
 	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTypoScriptSetup('<INCLUDE_TYPOSCRIPT: source="FILE:EXT:nawork_uri/Configuration/TypoScript/module.ts">');
 
 	// register hook for manipulating default type for new records

@@ -1,0 +1,15 @@
+{namespace n=Tx_NaworkUri_ViewHelpers}
+{namespace nu=Nawork\NaworkUri\ViewHelpers}
+<f:layout name="Module" />
+
+<f:section name="moduleHeader">
+	<f:link.action action="index">
+		<f:translate id="mod.configuration.back" />
+	</f:link.action>
+</f:section>
+
+<f:section name="Main">
+	<p>
+		<nu:printr>{configuration}</nu:printr>
+	</p>
+</f:section>

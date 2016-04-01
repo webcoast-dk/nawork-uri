@@ -3,3 +3,6 @@ default_locale = en_US
 
 # cat=security; type=boolean; label=SSL No Verify Peer: Do not verify the peer's ssl certificate. This should not be enabled in production environments.
 noSslVerify = 0
+
+# cat=modules; type=boolean; label=Enable configuration module
+configurationModuleEnable = 0

@@ -2,6 +2,7 @@
 
 namespace Nawork\NaworkUri\Controller\Frontend;
 
+use Nawork\NaworkUri\Hooks\UrlControllerHookInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\HttpUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
@@ -56,6 +57,16 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 	 */
 	function params2uri(&$link, $ref) {
 		global $TYPO3_CONF_VARS;
+		// if available, call hook for pre processing link data
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_naworkuri']['Nawork\\NaworkUri\\Controller\\Frontend\\UrlController'])) {
+			foreach($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_naworkuri']['Nawork\\NaworkUri\\Controller\\Frontend\\UrlController'] as $hookObjectClassName) {
+				$hookObject = GeneralUtility::getUserObj($hookObjectClassName);
+				if (!$hookObject instanceof UrlControllerHookInterface) {
+					throw new \RuntimeException('$hookObj of type ' . get_class($hookObject) . ' must implement Nawork\\NaworkUri\\Hooks\\UrlControllerHookInterface');
+				}
+				$hookObject->params2uri_linkDataPreProcess($link, $ref);
+			}
+		}
 		if(!empty($link['args']['targetDomain'])) {
 			$domain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain($link['args']['targetDomain']);
 			$domainName = $link['args']['targetDomain'];

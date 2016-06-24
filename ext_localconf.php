@@ -31,3 +31,6 @@ if (!is_array($GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations
 if (!is_array($GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['naworkuri_configuration']['backend'])) {
 	$GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['naworkuri_configuration']['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\Typo3DatabaseBackend';
 }
+
+// init hook object array
+$GLOBALS['TYPO3_CONF_VARS']['EXT']['tx_naworkuri']['Nawork\\NaworkUri\\Controller\\Frontend\\UrlController'] = array();

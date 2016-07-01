@@ -29,15 +29,15 @@ class TransformationService extends \Nawork\NaworkUri\Transformation\AbstractTra
 			array_shift($rootLine);
 			$transformedValue = array();
 			foreach ($rootLine as $pageRecord) {
-				if (!$pageRecord['tx_naworkuri_exclude']) {
-					if ($transformationUtility->getLanguage() > 0) {
-						$translatedFields = $this->getPageOverlay($pageRecord['uid'],
-							$configuration,
-							$transformationUtility->getLanguage());
-						if (count($translatedFields) > 0) {
-							\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($pageRecord, $translatedFields);
-						}
+				if ($transformationUtility->getLanguage() > 0) {
+					$translatedFields = $this->getPageOverlay($pageRecord['uid'],
+						$configuration,
+						$transformationUtility->getLanguage());
+					if (count($translatedFields) > 0) {
+						\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($pageRecord, $translatedFields);
 					}
+				}
+				if (!$pageRecord['tx_naworkuri_exclude']) {
 					$fields = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode('//', $configuration->getFields(), TRUE);
 					array_unshift($fields, 'tx_naworkuri_pathsegment');
 					foreach ($fields as $field) {

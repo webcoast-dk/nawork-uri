@@ -333,10 +333,10 @@ class GeneralUtility {
 		return $alias;
 	}
 
-	public static function log($msg, $severity = self::LOG_SEVERITY_INFO) {
+	public static function log($msg, $severity = \TYPO3\CMS\Core\Utility\GeneralUtility::SYSLOG_SEVERITY_INFO, $data = array()) {
 		$db = $GLOBALS['TYPO3_DB'];
 		/* @var $db \TYPO3\CMS\Core\Database\DatabaseConnection */
-		$db->exec_INSERTquery('sys_log', array('details' => $msg, 'error' => $severity, 'tstamp' => time()), array('error', 'tstamp'));
+		$db->exec_INSERTquery('sys_log', array('type' => 5, 'IP' => \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('REMOTE_ADDR'), 'log_data' => serialize($data), 'details' => $msg, 'error' => $severity, 'tstamp' => time()), array('error', 'tstamp'));
 	}
 
 	/**

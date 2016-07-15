@@ -195,7 +195,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 					}
 					\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($uri, $redirectStatus);
 				}
-			} elseif (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getDisabled() && empty($_GET['ADMCMD_prev']) && $GLOBALS['TSFE']->siteScript) {
+			} elseif (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getDisabled() && count(GeneralUtility::_GP('TSFE_ADMIN_PANEL')) == 0 && $GLOBALS['TSFE']->siteScript) {
 				list($path, $params) = explode('?', $GLOBALS['TSFE']->siteScript);
 				$params = rawurldecode(html_entity_decode($params)); // decode the query string because it is expected by the further processing functions
 				$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);

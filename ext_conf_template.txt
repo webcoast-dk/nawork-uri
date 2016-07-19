@@ -6,3 +6,12 @@ noSslVerify = 0
 
 # cat=modules; type=boolean; label=Enable configuration module
 configurationModuleEnable = 0
+
+# cat=debug; type=boolean; label=Enable debug mode (!!! This could cause performance issues)
+debugEnable = 0
+
+# cat=debug; type=string; label=What to debug
+debugEnableTags =
+
+# cat=debug; type=string; label=Where to write the log
+debugLogFile =

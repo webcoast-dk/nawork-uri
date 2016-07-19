@@ -29,6 +29,11 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 	private $language = 0;
 
 	/**
+	 * @var int
+	 */
+	protected $domain = 0;
+
+	/**
 	 * Constructor
 	 *
 	 * @param \Nawork\NaworkUri\Configuration\ConfigurationReader $config
@@ -164,6 +169,7 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 		/* find cached urls with the given parameters from the current domain */
 		list($encodableParameters, $unencodableParameters) = GeneralUtility::filterConfiguredParameters($params);
 		$cachedUri = $this->cache->findCachedUrl($encodableParameters, $this->domain, $this->language, $ignoreTimeout);
+		DebugUtility::debug('After finding cached url', array('cachedUri' => $cachedUri, 'encodableParameters' => $encodableParameters, 'this->domain' => $this->domain, 'this->language' => $this->language), __CLASS__);
 		if ($cachedUri !== FALSE) {
 			/* compute the unencoded parameters */
 			if (count($unencodableParameters) > 0) {
@@ -221,7 +227,9 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 				$result_path = $result_path . $append;
 			}
 		}
+		DebugUtility::debug('Before writing url', array('result_path' => $result_path, 'pathElements' => $pathElements, 'this->domain' => $this->domain, 'this->language' => $this->language), __CLASS__);
 		$uri = $this->cache->writeUrl($encodedParameters, $this->domain, $this->language, $result_path);
+		DebugUtility::debug('After writing url', array('uri' => $uri, 'this->domain' => $this->domain, 'this->language' => $this->language), __CLASS__);
 
 		// read not encoded parameters
 		$i = 0;

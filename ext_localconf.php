@@ -23,3 +23,6 @@ if (class_exists('Nawork\\NaworkUri\\Utility\\ConfigurationUtility')) { // check
 		FALSE
 	);
 }
+
+// add nawork-uri fields to pageOverlayFields
+$GLOBALS['TYPO3_CONF_VARS']['FE']['pageOverlayFields'] .= ',tx_naworkuri_pathsegment,tx_naworkuri_exclude';

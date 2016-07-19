@@ -4,8 +4,6 @@ if (!defined('TYPO3_MODE')) {
 	die('Access denied.');
 }
 
-$GLOBALS['TYPO3_CONF_VARS']['FE']['pageOverlayFields'] .= ',tx_naworkuri_pathsegment,tx_naworkuri_exclude';
-
 if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
     $mainModuleName = 'naworkuri';
 	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule($mainModuleName, '', '', \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('nawork_uri').'Configuration/Module/');

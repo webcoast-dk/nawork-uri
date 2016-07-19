@@ -34,7 +34,7 @@ class DebugUtility
                 unset($temporaryServer['SERVER_PORT']);
                 unset($temporaryServer['DOCUMENT_ROOT']);
                 unset($temporaryServer['CONTEXT_PREFIX']);
-                unset($temporaryServer['CONTEXT_DOCUMENT_ROOT"']);
+                unset($temporaryServer['CONTEXT_DOCUMENT_ROOT']);
                 unset($temporaryServer['SERVER_ADMIN']);
                 unset($temporaryServer['REMOTE_PORT']);
                 unset($temporaryServer['GATEWAY_INTERFACE']);

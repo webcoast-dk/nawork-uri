@@ -3,7 +3,6 @@
 if (!defined('TYPO3_MODE'))
 	die('Access denied.');
 
-
 // add new fields to page and pages_language_overlay records
 $tempColumns = Array(
 	'tx_naworkuri_pathsegment' => array(
@@ -73,8 +72,6 @@ if (TYPO3_MODE == 'BE') {
 
 	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTypoScriptSetup('<INCLUDE_TYPOSCRIPT: source="FILE:EXT:nawork_uri/Configuration/TypoScript/module.ts">');
 }
-
-$GLOBALS['TYPO3_CONF_VARS']['FE']['pageOverlayFields'] .= ',tx_naworkuri_pathsegment,tx_naworkuri_exclude';
 
 if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
 	// register hook for manipulating default type for new records

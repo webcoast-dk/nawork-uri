@@ -34,3 +34,6 @@ if (!is_array($GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations
 
 // init hook object array
 $GLOBALS['TYPO3_CONF_VARS']['EXT']['tx_naworkuri']['Nawork\\NaworkUri\\Controller\\Frontend\\UrlController'] = array();
+
+// add nawork-uri fields to pageOverlayFields
+$GLOBALS['TYPO3_CONF_VARS']['FE']['pageOverlayFields'] .= ',tx_naworkuri_pathsegment,tx_naworkuri_exclude';

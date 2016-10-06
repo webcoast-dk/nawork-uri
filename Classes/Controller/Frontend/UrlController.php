@@ -86,7 +86,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 				}
 			} catch (\Nawork\NaworkUri\Exception\UrlIsNotUniqueException $ex) {
 				/* log unique failure to belog */
-				\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
+				\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "' . $ex->getPath() . '"" is not unique with parameters ' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()) . ' Referrer: ' . GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'), \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
 			} catch (\Nawork\NaworkUri\Exception\DbErrorException $ex) {
 				/* log db errors to belog */
 				\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
@@ -228,7 +228,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
                         }
                     } catch (\Nawork\NaworkUri\Exception\UrlIsNotUniqueException $ex) {
 						/* log unique failure to belog */
-						\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "' . $ex->getPath() . ' is not unique with parameters ' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
+						\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "' . $ex->getPath() . '"" is not unique with parameters ' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()) . ' Referrer: ' . GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'), \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);
 					} catch (\Nawork\NaworkUri\Exception\DbErrorException $ex) {
 						/* log db errors to belog */
 						\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "' . $ex->getSqlError() . '"', \Nawork\NaworkUri\Utility\GeneralUtility::LOG_SEVERITY_ERROR);

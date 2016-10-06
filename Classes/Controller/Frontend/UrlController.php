@@ -100,7 +100,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 				}
 			} catch (\Nawork\NaworkUri\Exception\UrlIsNotUniqueException $ex) {
 				/* log unique failure to belog */
-				\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "%s" is not unique with parameters %s', GeneralUtility::SYSLOG_SEVERITY_ERROR, array($ex->getPath(), \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters())));
+				\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "%s" is not unique with parameters %s. Referrer: %s', GeneralUtility::SYSLOG_SEVERITY_ERROR, array($ex->getPath(), \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL')));
 			} catch (\Nawork\NaworkUri\Exception\DbErrorException $ex) {
 				/* log db errors to belog */
 				\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "%s"', GeneralUtility::SYSLOG_SEVERITY_ERROR, array($ex->getSqlError()));
@@ -242,7 +242,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
                         }
                     } catch (\Nawork\NaworkUri\Exception\UrlIsNotUniqueException $ex) {
 						/* log unique failure to belog */
-						\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "%s" is not unique with parameters %s', GeneralUtility::SYSLOG_SEVERITY_ERROR, array($ex->getPath(), \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters())));
+						\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "%s" is not unique with parameters %s. Referrer: %s', GeneralUtility::SYSLOG_SEVERITY_ERROR, array($ex->getPath(), \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL')));
 					} catch (\Nawork\NaworkUri\Exception\DbErrorException $ex) {
 						/* log db errors to belog */
 						\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "%s"', GeneralUtility::SYSLOG_SEVERITY_ERROR, array($ex->getSqlError()));

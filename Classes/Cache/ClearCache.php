@@ -1,7 +1,9 @@
 <?php
 
 namespace Nawork\NaworkUri\Cache;
+use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Description of ClearCache
@@ -26,15 +28,12 @@ class ClearCache {
 	}
 
 	/**
-	 * Removes the generated configuration files, this is needed after the configuration has been changed
-	 *
-	 * @param mixed $params
-	 * @param \TYPO3\CMS\Core\Http\AjaxRequestHandler $requestHandler
+	 * Clears the configuration cache, this is needed after the configuration has been changed
 	 */
-	public function clearConfigurationCache(&$params, &$requestHandler) {
+	public function clearConfigurationCache() {
 		if ($GLOBALS['BE_USER']->isAdmin() || $GLOBALS['BE_USER']->getTSConfigValue('options.clearCacheCmd.urlConfiguration')) {
 			/** @var FrontendInterface $cache */
-			$cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Cache\\CacheManager')->getCache('naworkuri_configuration');
+			$cache = GeneralUtility::makeInstance(CacheManager::class)->getCache('naworkuri_configuration');
 			$cache->flush();
 		}
 	}

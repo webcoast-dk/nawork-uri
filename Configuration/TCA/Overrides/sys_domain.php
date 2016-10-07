@@ -1,5 +1,7 @@
 <?php
 
+use Nawork\NaworkUri\Backend\ItemsProcFunc;
+
 if (!defined('TYPO3_MODE')) {
     die('Access denied.');
 }
@@ -32,7 +34,7 @@ if (!defined('TYPO3_MODE')) {
                 'items' => [
                     ['', '']
                 ],
-                'itemsProcFunc' => 'Nawork\\NaworkUri\\Backend\\ItemsProcFunc->sysDomainAlterConfigurationItems'
+                'itemsProcFunc' => ItemsProcFunc::class . '->sysDomainAlterConfigurationItems'
             ]
         ]
     )

@@ -3,7 +3,9 @@
 namespace Nawork\NaworkUri\Transformation\ValueMap;
 
 
-class TransformationConfiguration extends \Nawork\NaworkUri\Transformation\AbstractTransformationConfiguration {
+use Nawork\NaworkUri\Transformation\AbstractTransformationConfiguration;
+
+class TransformationConfiguration extends AbstractTransformationConfiguration {
 	protected $type = 'ValueMap';
 
 	/**
@@ -37,4 +39,3 @@ class TransformationConfiguration extends \Nawork\NaworkUri\Transformation\Abstr
 		throw new \Exception('No mapping found for value "'.$value.'"', 1394822329);
 	}
 }
- 

@@ -31,5 +31,3 @@ class DomainRepository extends AbstractRepository {
 	}
 
 }
-
-?>

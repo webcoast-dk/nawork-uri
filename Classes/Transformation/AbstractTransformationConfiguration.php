@@ -44,4 +44,3 @@ class AbstractTransformationConfiguration {
 		$this->name = $name;
 	}
 }
- 

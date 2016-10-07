@@ -88,7 +88,7 @@ class PathTestResult {
 	}
 
 	/**
-	 * @param boolean $redirectSuccess
+	 * @param boolean $success
 	 */
 	public function setSuccess($success) {
 		$this->success = $success;

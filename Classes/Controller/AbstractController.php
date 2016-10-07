@@ -1,13 +1,18 @@
 <?php
 
 namespace Nawork\NaworkUri\Controller;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
+use TYPO3\CMS\Extbase\Mvc\RequestInterface;
+use TYPO3\CMS\Extbase\Mvc\ResponseInterface;
 
 /**
  * Description of AbstractController
  *
  * @author thorben
  */
-abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController {
+abstract class AbstractController extends ActionController {
 
 	protected $extensionName = 'NaworkUri';
 
@@ -35,21 +40,21 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 	 * @throws \TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException if the controller doesn't support the current request type
 	 * @return void
 	 */
-	public function processRequest(\TYPO3\CMS\Extbase\Mvc\RequestInterface $request, \TYPO3\CMS\Extbase\Mvc\ResponseInterface $response) {
+	public function processRequest(RequestInterface $request, ResponseInterface $response) {
 
-		if (intval(\TYPO3\CMS\Core\Utility\GeneralUtility::_GP('ajax')) < 1) {
+		if (intval(GeneralUtility::_GP('ajax')) < 1) {
 			$this->pageRenderer = $this->template->getPageRenderer();
-			$this->pageRenderer->addCssFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/CSS/module.css');
-			$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Contrib/jQuery/jquery-1.9.0.min.js');
-			$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Contrib/mootools/mootoolsCore-1.4.5.js');
-			$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Contrib/moo4q/Class.Mutators.jQuery.js');
+			$this->pageRenderer->addCssFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/CSS/module.css');
+			$this->pageRenderer->addJsFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Contrib/jQuery/jquery-1.9.0.min.js');
+			$this->pageRenderer->addJsFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Contrib/mootools/mootoolsCore-1.4.5.js');
+			$this->pageRenderer->addJsFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Contrib/moo4q/Class.Mutators.jQuery.js');
 			$this->pageRenderer->addInlineLanguageLabelFile('EXT:nawork_uri/Resources/Private/Language/locallang_mod_url.xml', '', '', 2);
 
 			$GLOBALS['SOBE'] = new \stdClass();
 			$GLOBALS['SOBE']->doc = $this->template;
 
 			parent::processRequest($request, $response);
-			$pageHeader = $this->template->startpage(
+			$pageHeader = $this->template->startPage(
 				$GLOBALS['LANG']->sL('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_mod_url.xml:header_module')
 			);
 			$pageEnd = $this->template->endPage();
@@ -112,11 +117,10 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 	}
 
 	protected function setUserSettings($key, $value) {
-		$keyParts = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode('.', $key, TRUE);
+		$keyParts = GeneralUtility::trimExplode('.', $key, TRUE);
 		$tmp = array(
 			$this->userSettings
 		);
-		$settingsKeyNotFound = FALSE;
 		foreach ($keyParts as $index => $p) {
 			if (!array_key_exists($p, $tmp[$index])) {
 				$tmp[$index][$p] = ($index < count($keyParts) - 1) ? array() : $value;
@@ -133,5 +137,3 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 	}
 
 }
-
-?>

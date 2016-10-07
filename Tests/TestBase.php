@@ -24,6 +24,10 @@ namespace Nawork\NaworkUri\Tests;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  * ************************************************************* */
+use Nawork\NaworkUri\Cache\UrlCache;
+use Nawork\NaworkUri\Configuration\TableConfiguration;
+use Nawork\NaworkUri\Utility\TransformationUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Description of class
@@ -63,7 +67,7 @@ class TestBase extends \Tx_Phpunit_TestCase {
 
 	public function setUp() {
 		$this->db = $GLOBALS['TYPO3_DB'];
-		$this->tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
+		$this->tableConfiguration = GeneralUtility::makeInstance(TableConfiguration::class);
 		\Nawork\NaworkUri\Utility\GeneralUtility::registerConfiguration('default', 'EXT:nawork_uri/Configuration/Url/TestConfiguration.xml');
 
 		$this->setupUriTable();
@@ -71,8 +75,8 @@ class TestBase extends \Tx_Phpunit_TestCase {
 		$this->setupNews();
 		$this->setupDomain();
 
-		$this->transformer = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', true, 'test.local');
-		$this->cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Cache\UrlCache');
+		$this->transformer = GeneralUtility::makeInstance(TransformationUtility::class);
+		$this->cache = GeneralUtility::makeInstance(UrlCache::class);
 	}
 
 	public function tearDown() {

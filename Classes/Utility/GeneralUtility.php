@@ -6,6 +6,9 @@ namespace Nawork\NaworkUri\Utility;
  * Helper functions
  */
 
+use Nawork\NaworkUri\Configuration\TableConfiguration;
+use TYPO3\CMS\Core\Utility\HttpUtility;
+
 class GeneralUtility {
 
 	const LOG_SEVERITY_INFO = 0;
@@ -92,7 +95,7 @@ class GeneralUtility {
 	}
 
 	private static function arrayKsortRecursive(&$array) {
-		uksort($array, array(self, 'compareArrayKeys'));
+		uksort($array, array(self::class, 'compareArrayKeys'));
 		foreach ($array as $key => $value) {
 			if (is_array($value) && !empty($value)) {
 				self::arrayKsortRecursive($value);
@@ -111,7 +114,7 @@ class GeneralUtility {
 	/**
 	 * Sanitize the Path
 	 *
-	 * @param string $string
+	 * @param string $uri
 	 *
 	 * @return string
 	 */
@@ -178,9 +181,9 @@ class GeneralUtility {
 	 * remove not allowed chars from uri
 	 * allowed chars A-Za-z0-9 - _ . ~ ! ( ) * + , : ; =
 	 *
-	 * @param unknown_type $uri
+	 * @param string $uri
 	 *
-	 * @return unknown
+	 * @return string
 	 */
 	function uri_limit_allowed_chars($uri) {
 		return preg_replace('/[^A-Za-z0-9\/\-\_\.\~\!\(\)\*\:\;\=]+/u', '', $uri);
@@ -223,7 +226,7 @@ class GeneralUtility {
 
 	public static function getCurrentDomain($linkDomain = NULL) {
 		/* @var $tableConfiguration \Nawork\NaworkUri\Configuration\TableConfiguration */
-		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
+		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(TableConfiguration::class);
 		/* @var $db \TYPO3\CMS\Core\Database\DatabaseConnection */
 		$db = $GLOBALS['TYPO3_DB'];
 		$domain = 0;
@@ -278,7 +281,7 @@ class GeneralUtility {
 
 	public static function sendRedirect($url, $status) {
 		header('X-Redirect-By: nawork_uri');
-		\TYPO3\CMS\Core\Utility\HttpUtility::redirect($url, $status);
+		HttpUtility::redirect($url, $status);
 	}
 
 	public static function getLocale() {
@@ -324,7 +327,7 @@ class GeneralUtility {
 		$db = $GLOBALS['TYPO3_DB'];
 		/* @var $db \TYPO3\CMS\Core\Database\DatabaseConnection */
 		/* @var $tableConfiguration \Nawork\NaworkUri\Configuration\TableConfiguration */
-		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
+		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(TableConfiguration::class);
 		$result = $db->exec_SELECTgetRows('uid', $tableConfiguration->getPageTable(), 'alias=' . $db->fullQuoteStr($alias, $tableConfiguration->getPageTable()) . ' AND deleted=0');
 		if (is_array($result) && count($result) > 0) {
 			return $result[0]['uid'];
@@ -340,27 +343,6 @@ class GeneralUtility {
 	}
 
 	/**
-	 * Register transformation services.
-	 *
-	 * @param string $type           The name of the transformation type as used in the configuration, e.g. "ValueMap"
-	 * @param string $classReference The class reference to the transformation service, e.g. "EXT:myext/Classes/Service/MyTransformationService.php:My\MyExt\Service\MyTransformationService
-	 */
-	public static function registerTransformationService($type, $classReference) {
-		TransformationUtility::registerTransformationService($type, $classReference);
-	}
-
-	/**
-	 * Register configuration file for the specified domain
-	 *
-	 * @param string  $domain           The domain (host name) of the master domain record
-	 * @param string  $file             The path to the configuration file, can be "EXT:..."
-	 * @param boolean $overridePrevious If set to FALSE a domain is not overridden
-	 */
-	public static function registerConfiguration($domain, $file, $overridePrevious = TRUE) {
-		ConfigurationUtility::registerConfiguration($domain, $file, $overridePrevious);
-	}
-
-	/**
 	 * Uses host name to determine current domain record. Respects master domain
 	 * and does a recursive lookup.
 	 *
@@ -368,7 +350,7 @@ class GeneralUtility {
 	 */
 	public static function findCurrentDomain() {
 		/* @var $tableConfiguration \Nawork\NaworkUri\Configuration\TableConfiguration */
-		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
+		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(TableConfiguration::class);
 		$host = \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
 		$domainRecord = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('*',
 			$tableConfiguration->getDomainTable(),
@@ -392,7 +374,7 @@ class GeneralUtility {
 
 	public static function getCurrentDomainName() {
 		/* @var $tableConfiguration \Nawork\NaworkUri\Configuration\TableConfiguration */
-		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
+		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(TableConfiguration::class);
 		$domainUid = self::findCurrentDomain();
 		if ($domainUid > 0) {
 			$domainRecord = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('domainName',
@@ -406,5 +388,3 @@ class GeneralUtility {
 	}
 
 }
-
-?>

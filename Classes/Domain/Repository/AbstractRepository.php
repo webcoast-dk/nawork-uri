@@ -1,13 +1,14 @@
 <?php
 
 namespace Nawork\NaworkUri\Domain\Repository;
+use TYPO3\CMS\Extbase\Persistence\Repository;
 
 /**
  * Description of UrlRepository
  *
  * @author thorben
  */
-class AbstractRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
+class AbstractRepository extends Repository {
 
 	public function createQuery() {
 		$query = parent::createQuery();
@@ -16,5 +17,3 @@ class AbstractRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
 	}
 
 }
-
-?>

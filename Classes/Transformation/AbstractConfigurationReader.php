@@ -3,7 +3,9 @@
 namespace Nawork\NaworkUri\Transformation;
 
 
-abstract class AbstractConfigurationReader implements \TYPO3\CMS\Core\SingletonInterface{
+use TYPO3\CMS\Core\SingletonInterface;
+
+abstract class AbstractConfigurationReader implements SingletonInterface {
 	/**
 	 * Add additional configuration, read from the given xml to the transformation configuration object.
 	 * The configuration object should must be treated as reference, so nothing is returned here.
@@ -13,4 +15,3 @@ abstract class AbstractConfigurationReader implements \TYPO3\CMS\Core\SingletonI
 	 */
 	abstract public function buildConfiguration($xml, &$transformationConfiguration);
 }
- 

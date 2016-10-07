@@ -3,7 +3,12 @@
 namespace Nawork\NaworkUri\Command;
 
 
-class MigrationCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\CommandController {
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\MathUtility;
+use TYPO3\CMS\Extbase\Mvc\Controller\CommandController;
+use TYPO3\CMS\Frontend\Page\CacheHashCalculator;
+
+class MigrationCommandController extends CommandController {
 	/**
 	 * @var \TYPO3\CMS\Core\Database\DatabaseConnection
 	 */
@@ -92,9 +97,7 @@ class MigrationCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\Comma
 			'params LIKE "%cHash%"'
 		);
 		/** @var \TYPO3\CMS\Frontend\Page\CacheHashCalculator $cacheHashCalculator */
-		$cacheHashCalculator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
-			'TYPO3\\CMS\\Frontend\\Page\\CacheHashCalculator'
-		);
+		$cacheHashCalculator = GeneralUtility::makeInstance(CacheHashCalculator::class);
 		$urlsFound = count($urls);
 		$counter = 0;
 		$lastPercentageUpdate = 0;
@@ -195,7 +198,7 @@ class MigrationCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\Comma
 	 */
 	protected final function getDomainRecordRecursive($domainNameOrUid) {
 		$domainRecord = NULL;
-		if (\TYPO3\CMS\Core\Utility\MathUtility::canBeInterpretedAsInteger($domainNameOrUid)) {
+		if (MathUtility::canBeInterpretedAsInteger($domainNameOrUid)) {
 			// go the recursive way with the master record
 			$domainRecord = $this->databaseConnection->exec_SELECTgetSingleRow(
 				'uid,domainName,tx_naworkuri_masterDomain',

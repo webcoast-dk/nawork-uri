@@ -8,7 +8,5 @@ namespace Nawork\NaworkUri\Exception;
  * @author Thorben Kapp <thorben@work.de>
  */
 class InvalidTransformationServiceException extends \Exception {
-	
-}
 
-?>
+}

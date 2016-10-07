@@ -50,4 +50,3 @@ class TransformationServiceException extends \Exception {
 		return $this->transformationType;
 	}
 }
- 

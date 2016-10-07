@@ -1,7 +1,12 @@
 <?php
 
 namespace Nawork\NaworkUri\Controller;
+use Nawork\NaworkUri\Domain\Model\Domain;
+use Nawork\NaworkUri\Domain\Model\Filter;
+use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Database\DatabaseConnection;
+use TYPO3\CMS\Core\Page\PageRenderer;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -47,18 +52,18 @@ class UrlController extends AbstractController {
 
 	public function initializeAction() {
 		parent::initializeAction();
-		$this->pageId = intval(\TYPO3\CMS\Core\Utility\GeneralUtility::_GP('id'));
-		if ($this->pageRenderer instanceof \TYPO3\CMS\Core\Page\PageRenderer) {
+		$this->pageId = intval(GeneralUtility::_GP('id'));
+		if ($this->pageRenderer instanceof PageRenderer) {
 			$this->pageRenderer->addInlineLanguageLabelFile('EXT:nawork_uri/Resources/Private/Language/locallang_mod_url.xml', '', '', 2);
 			$this->pageRenderer->addInlineLanguageLabel('header_module', 'foo');
-			$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/jquery.urlModule.js');
-			$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/urlModule.js');
+			$this->pageRenderer->addJsFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/jquery.urlModule.js');
+			$this->pageRenderer->addJsFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/urlModule.js');
 		}
 		$this->databaseConnection = $GLOBALS['TYPO3_DB'];
 	}
 
 	public function initializeIndexRedirectsAction() {
-		$this->pageRenderer->addJsFile(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/redirectModule.js');
+		$this->pageRenderer->addJsFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/redirectModule.js');
 	}
 
 	public function indexUrlsAction() {
@@ -125,12 +130,12 @@ class UrlController extends AbstractController {
 	}
 
 	public function noPageIdAction() {
-		
+
 	}
 
 	/**
 	 *
-	 * @param \Nawork\NaworkUri\Domain\Model\Domain $domain
+	 * @param Domain $domain
 	 * @param int $language
 	 * @param array $types
 	 * @param string $scope
@@ -141,11 +146,11 @@ class UrlController extends AbstractController {
 	 * @return string
 	 */
 	public function ajaxLoadUrlsAction($domain = NULL, $language = NULL, $types = array(), $scope = NULL, $path = NULL, $offset = NULL, $limit = NULL) {
-		/* @var $filter \Nawork\NaworkUri\Domain\Model\Filter */
-		$filter = $this->objectManager->get('Nawork\\NaworkUri\\Domain\\Model\\Filter');
+		/* @var $filter Filter */
+		$filter = $this->objectManager->get(Filter::class);
 		$filter->setPageId($this->pageId);
 
-		if ($domain instanceof \Nawork\NaworkUri\Domain\Model\Domain) {
+		if ($domain instanceof Domain) {
 			$filter->setDomains(array($domain));
 		}
 
@@ -179,7 +184,7 @@ class UrlController extends AbstractController {
 		}
 
 		$this->view->assign('urls', $this->urlRepository->findUrlsByFilter($filter));
-		$tsConfig = \TYPO3\CMS\Backend\Utility\BackendUtility::getPagesTSconfig($this->pageId);
+		$tsConfig = BackendUtility::getPagesTSconfig($this->pageId);
 		if(is_array($tsConfig) && !empty($tsConfig['mod.']['SHARED.']['defaultLanguageLabel'])) {
 			$this->view->assign('defaultLanguage', array('label' => $tsConfig['mod.']['SHARED.']['defaultLanguageLabel'], 'flag' => $tsConfig['mod.']['SHARED.']['defaultLanguageFlag']));
 		}
@@ -191,7 +196,7 @@ class UrlController extends AbstractController {
 
 	/**
 	 *
-	 * @param \Nawork\NaworkUri\Domain\Model\Domain $domain
+	 * @param Domain $domain
 	 * @param string $path
 	 * @param int $offset
 	 * @param int $limit
@@ -200,10 +205,10 @@ class UrlController extends AbstractController {
 	 */
 	public function ajaxLoadRedirectsAction($domain = NULL, $path = NULL, $offset = NULL, $limit = NULL) {
 		$pageRoot = $this->userSettings['pageRoot'];
-		/* @var $filter \Nawork\NaworkUri\Domain\Model\Filter */
-		$filter = $this->objectManager->get('Nawork\\NaworkUri\\Domain\\Model\\Filter');
+		/* @var $filter Filter */
+		$filter = $this->objectManager->get(Filter::class);
 
-		if ($domain instanceof \Nawork\NaworkUri\Domain\Model\Domain) {
+		if ($domain instanceof Domain) {
 			$filter->setDomains(array($domain));
 		} elseif($domain === NULL) {
 			$filter->setDomains($this->domainRepository->findByRootPage($pageRoot));
@@ -223,7 +228,7 @@ class UrlController extends AbstractController {
 		}
 
 		$this->view->assign('urls', $this->urlRepository->findRedirectsByFilter($filter));
-		$tsConfig = \TYPO3\CMS\Backend\Utility\BackendUtility::getPagesTSconfig($pageRoot);
+		$tsConfig = BackendUtility::getPagesTSconfig($pageRoot);
 		if(is_array($tsConfig) && !empty($tsConfig['mod.']['SHARED.']['defaultLanguageLabel'])) {
 			$this->view->assign('defaultLanguage', array('label' => $tsConfig['mod.']['SHARED.']['defaultLanguageLabel'], 'flag' => $tsConfig['mod.']['SHARED.']['defaultLanguageFlag']));
 		}
@@ -269,5 +274,3 @@ class UrlController extends AbstractController {
 	}
 
 }
-
-?>

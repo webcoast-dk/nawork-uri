@@ -3,7 +3,7 @@
 namespace Nawork\NaworkUri\Exception;
 
 /**
- * Description of Tx_NaworkUri_Exception_UrlIsNotUniqueException
+ * Description of UrlIsNotUniqueException
  *
  * @author thorben
  */
@@ -13,6 +13,14 @@ class UrlIsNotUniqueException extends \Exception {
 	private $parameters;
 	private $language;
 
+    /**
+     * UrlIsNotUniqueException constructor.
+     *
+     * @param string $path
+     * @param int    $domain
+     * @param array  $parameters
+     * @param int    $language
+     */
 	function __construct($path, $domain, $parameters, $language) {
 		$this->path = $path;
 		$this->domain = $domain;
@@ -37,5 +45,3 @@ class UrlIsNotUniqueException extends \Exception {
 	}
 
 }
-
-?>

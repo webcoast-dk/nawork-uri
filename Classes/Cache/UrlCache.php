@@ -2,7 +2,11 @@
 
 namespace Nawork\NaworkUri\Cache;
 
+use Nawork\NaworkUri\Configuration\TableConfiguration;
 use Nawork\NaworkUri\Exception\DbErrorException;
+use Nawork\NaworkUri\Exception\UrlIsNotUniqueException;
+use Nawork\NaworkUri\Utility\ConfigurationUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class UrlCache {
 
@@ -31,7 +35,7 @@ class UrlCache {
 	public function __construct() {
 		$this->db = $GLOBALS['TYPO3_DB'];
 		$this->db->store_lastBuiltQuery = 1;
-		$this->tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
+		$this->tableConfiguration = GeneralUtility::makeInstance(TableConfiguration::class);
 	}
 
 	/**
@@ -90,10 +94,13 @@ class UrlCache {
 	 * Find an existing url based on the page's id, language, parameters and domain.
 	 * This is used to get an url that's cache time has expired but is a normal url.
 	 *
-	 * @param integer $id
-	 * @param integer $language
-	 * @param array   $params
-	 * @param string  $domain
+	 * @param integer    $page
+	 * @param integer    $language
+	 * @param array      $params
+	 * @param string     $path
+	 * @param int|string $domain
+	 *
+	 * @return array|boolean
 	 */
 	public function findExistantUrl($page, $language, $params, $path, $domain) {
 		$domainCondition = ' AND domain=' . (int) $domain;
@@ -112,7 +119,7 @@ class UrlCache {
 	 * @param string $domain
 	 * @param string $path
 	 *
-	 * @return type
+	 * @return array|boolean
 	 */
 	public function findOldUrl($domain, $path) {
 		$domainCondition = ' AND domain=' . (int) $domain;
@@ -137,6 +144,7 @@ class UrlCache {
 	 * @param string  $path
 	 *
 	 * @return string
+	 * @throws UrlIsNotUniqueException
 	 */
 	public function writeUrl($parameters, $domain, $language, $path) {
 		$orginalParameters = $parameters;
@@ -164,7 +172,7 @@ class UrlCache {
 		$this->makeOldUrl($domain, $pageUid, $language, $parameters);
 		$uniquePath = $this->unique($pageUid, $language, $path, $parameters, $domain); // make the url unique
 		if ($uniquePath === FALSE) {
-			throw new \Nawork\NaworkUri\Exception\UrlIsNotUniqueException($path, $domain, $orginalParameters, $language);
+			throw new UrlIsNotUniqueException($path, $domain, $orginalParameters, $language);
 		}
 		/* try to find an existing url that was too old to be retreived from cache */
 		$existingUrl = $this->findExistantUrl($pageUid, $language, $parameters, $uniquePath, $domain);
@@ -193,7 +201,7 @@ class UrlCache {
 	 * @param string $path   URI Path
 	 * @param string $domain Current Domain
 	 *
-	 * @return array cache result
+	 * @return array|boolean cache result
 	 */
 	public function read_path($path, $domain) {
 		$hash_path = md5($path);
@@ -218,6 +226,7 @@ class UrlCache {
 	 * @param string  $domain
 	 * @param array   $parameters
 	 * @param string  $path
+	 * @param string  $originalPath
 	 *
 	 * @throws DbErrorException
 	 */
@@ -228,7 +237,7 @@ class UrlCache {
 		$result = $this->db->exec_INSERTquery($this->tableConfiguration->getUrlTable(), array('page_uid' => intval($page), 'tstamp' => time(), 'crdate' => time(), 'sys_language_uid' => intval($language), 'domain' => $domain, 'path' => $path, 'hash_path' => md5($path), 'params' => $parameters, 'hash_params' => md5($parameters), 'original_path' => $originalPath), array('page_uid', 'tstamp', 'crdate', 'sys_language_uid'));
 
 		if (!$result) {
-			throw new \Nawork\NaworkUri\Exception\DbErrorException($this->db->sql_error());
+			throw new DbErrorException($this->db->sql_error());
 		}
 	}
 
@@ -240,7 +249,6 @@ class UrlCache {
 	 * Update an url record based on the uid and domain with the new page, language, parameters and type
 	 *
 	 * @param int    $uid
-	 * @param string $domain
 	 * @param int    $page
 	 * @param int    $language
 	 * @param array  $parameters
@@ -254,9 +262,11 @@ class UrlCache {
 	/**
 	 * Creates old url for the given page,language and paramters, the should not but might be more than one
 	 *
-	 * @param int   $pageId
-	 * @param int   $language
-	 * @param array $parameters
+	 * @param int         $domain
+	 * @param int         $pageId
+	 * @param int         $language
+	 * @param array       $parameters
+	 * @param int|boolean $excludeUid
 	 */
 	private function makeOldUrl($domain, $pageId, $language, $parameters, $excludeUid = FALSE) {
 		$domainCondition = ' AND domain=' . (int) $domain;
@@ -266,7 +276,11 @@ class UrlCache {
 	/**
 	 * Make sure this URI is unique for the current domain
 	 *
-	 * @param string $uri URI
+	 * @param int    $pageUid
+	 * @param int    $language
+	 * @param string $path
+	 * @param array  $parameters
+	 * @param int    $domain
 	 *
 	 * @return string unique URI
 	 */
@@ -284,7 +298,7 @@ class UrlCache {
 			}
 			// make the uri unique
 			$appendIteration = 0;
-			$appendValue = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getAppend();
+			$appendValue = ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getAppend();
 			$baseUri = substr($path, -(strlen($appendValue))) == $appendValue ? substr($path, 0, -strlen($appendValue)) : $path;
 			do {
 				++$appendIteration;
@@ -307,5 +321,3 @@ class UrlCache {
 	}
 
 }
-
-?>

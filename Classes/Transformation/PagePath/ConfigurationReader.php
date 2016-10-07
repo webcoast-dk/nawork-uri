@@ -1,15 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: thorben
- * Date: 10/9/14
- * Time: 3:04 PM
- */
 
 namespace Nawork\NaworkUri\Transformation\PagePath;
 
 
-class ConfigurationReader extends \Nawork\NaworkUri\Transformation\AbstractConfigurationReader {
+use Nawork\NaworkUri\Transformation\AbstractConfigurationReader;
+
+class ConfigurationReader extends AbstractConfigurationReader {
 
 	/**
 	 * Add additional configuration, read from the given xml to the transformation configuration object.
@@ -44,4 +40,3 @@ class ConfigurationReader extends \Nawork\NaworkUri\Transformation\AbstractConfi
 		}
 	}
 }
- 

@@ -2,6 +2,8 @@
 
 namespace Nawork\NaworkUri\Service;
 
+use Nawork\NaworkUri\Domain\Model\PathTestResult;
+
 class PathMonitorService {
 
 	protected $domain;
@@ -63,7 +65,7 @@ class PathMonitorService {
 		$url = 'http://' . $this->domain . $path;
 
 		// create result object
-		$pathTestResult = new \Nawork\NaworkUri\Domain\Model\PathTestResult();
+		$pathTestResult = new PathTestResult();
 		$pathTestResult->addInfo('expect'. $path . ' status:' . $expectedStatus . ' redirect:' . $expectedRedirect . ' https:' . $expectedHttps);
 		$pathTestResult->setUrl($url);
 
@@ -144,7 +146,9 @@ class PathMonitorService {
 	}
 
 	/**
-	 * @param $url
+	 * @param string $url
+     *
+     * @return array
 	 */
 	protected function executeCurlRequest($url) {
 		curl_setopt($this->cUrl, CURLOPT_URL, $url);
@@ -157,7 +161,7 @@ class PathMonitorService {
 		$httpStatusCode = curl_getinfo($this->cUrl, CURLINFO_HTTP_CODE);
 
 		// extract response headers
-		list($header, $body) = explode("\n\n", $response, 2);
+		list($header, ) = explode("\n\n", $response, 2);
 		$responseHeaders = array();
 		$headerLines = explode("\n", $header);
 		foreach($headerLines as $headerLine) {
@@ -166,8 +170,8 @@ class PathMonitorService {
 				$responseHeaders[$header] = trim($value);
 			}
 		}
-		$hhtpLocation = $responseHeaders['Location'];
+		$httpLocation = $responseHeaders['Location'];
 
-		return array($httpSuccess, $httpStatusCode, $hhtpLocation);
+		return array($httpSuccess, $httpStatusCode, $httpLocation);
 	}
 }

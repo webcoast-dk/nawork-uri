@@ -4,6 +4,8 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Description of class
@@ -40,9 +42,9 @@ class tx_naworkuri_path {
 	}
 
 	public function checkPathUnique($path = NULL, $json = TRUE) {
-		require_once t3lib_extMgm::extPath('nawork_uri').'lib/class.tx_naworkuri_cache.php';
+		require_once ExtensionManagementUtility::extPath('nawork_uri').'lib/class.tx_naworkuri_cache.php';
 		if ($path === NULL || empty($path)) {
-			$path = t3lib_div::_GP('path');
+			$path = GeneralUtility::_GP('path');
 		}
 		$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
 		/* @var $configReader tx_naworkuri_configReader */
@@ -58,5 +60,3 @@ class tx_naworkuri_path {
 	}
 
 }
-
-?>

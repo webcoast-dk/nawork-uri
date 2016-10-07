@@ -1,13 +1,14 @@
 <?php
 
 namespace Nawork\NaworkUri\Domain\Model;
+use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 
 /**
  * Description of Url
  *
  * @author thorben
  */
-class Language extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
+class Language extends AbstractEntity {
 
 	/**
 	 *
@@ -32,5 +33,3 @@ class Language extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	}
 
 }
-
-?>

@@ -1,6 +1,7 @@
 <?php
 
 namespace Nawork\NaworkUri\Cache;
+use Nawork\NaworkUri\Exception\TransformationValueNotFoundException;
 
 /**
  * Description of TransformationCache
@@ -15,7 +16,7 @@ class TransformationCache {
 		if (array_key_exists($parameter, self::$parameters) && array_key_exists($language, self::$parameters[$parameter]) && array_key_exists($value, self::$parameters[$parameter][$language])) {
 			return self::$parameters[$parameter][$language][$value];
 		}
-		throw new \Nawork\NaworkUri\Exception\TransformationValueNotFoundException($parameter, $value, $language);
+		throw new TransformationValueNotFoundException($parameter, $value, $language);
 	}
 
 	public static function setTransformation($parameter, $value, $transformation, $language) {
@@ -27,7 +28,4 @@ class TransformationCache {
 		}
 		self::$parameters[$parameter][$language][$value] = $transformation;
 	}
-
 }
-
-?>

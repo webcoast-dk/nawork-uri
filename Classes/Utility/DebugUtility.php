@@ -3,6 +3,8 @@
 namespace Nawork\NaworkUri\Utility;
 
 
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 class DebugUtility
 {
     public static function debug($title, $data, $tag, $additionalEnvironment = null)
@@ -11,7 +13,7 @@ class DebugUtility
         if ($extensionConfiguration['debugEnable']) {
             if (empty($extensionConfiguration['debugEnableTags']) || $extensionConfiguration['debugEnableTags'] === '*' || in_array(
                     $tag,
-                    \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $extensionConfiguration['debugEnableTags'])
+                    GeneralUtility::trimExplode(',', $extensionConfiguration['debugEnableTags'])
                 )
             ) {
                 $logFile = $extensionConfiguration['debugLogFile'];

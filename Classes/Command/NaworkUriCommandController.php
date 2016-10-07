@@ -2,6 +2,8 @@
 
 namespace Nawork\NaworkUri\Command;
 
+use Nawork\NaworkUri\Service\PathMonitorService;
+
 class NaworkUriCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\CommandController {
 
 	/**
@@ -17,14 +19,14 @@ class NaworkUriCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\Comma
 	 * @param NULL|string $password http-basic password (leave empty if no http-auth is needed)
 	 * @param bool $sslNoVerify don not veryfy ssl-peer
 	 * @param NULL|string $pathes csv file to get the pathes (the first line is ignored, structure: path, __notes__, __notes___ , expected http-status, expected redirect target)
-	 * @param NULL|string $errors during execution
+	 * @param NULL|boolean $errors during execution
  	 * @param NULL|string $output output the result as csv to the given file
 	 * @param bool $verbose show more informations during run
 	 * @param int $sleep sleep the given number of seconds after each test to protect the tested server
 	 */
 	public function monitorPathesCommand($domain = NULL, $user = NULL, $password = NULL, $sslNoVerify = FALSE, $pathes = NULL, $errors = FALSE, $output = NULL , $verbose = FALSE, $sleep = 0) {
 
-		$urlMonitor = new \Nawork\NaworkUri\Service\PathMonitorService($domain, $user, $password, $sslNoVerify);
+		$urlMonitor = new PathMonitorService($domain, $user, $password, $sslNoVerify);
 
 		$pathesTotal = 0;
 		$pathesOk = 0;

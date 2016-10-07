@@ -1,13 +1,14 @@
 <?php
 
 namespace Nawork\NaworkUri\Configuration;
+use TYPO3\CMS\Core\SingletonInterface;
 
 /**
  * Description of TableConfiguration
  *
  * @author Thorben Kapp <thorben@work.de>
  */
-final class TableConfiguration implements \TYPO3\CMS\Core\SingletonInterface {
+final class TableConfiguration implements SingletonInterface {
 
 	protected $urlTable = 'tx_naworkuri_uri';
 	protected $pageTable = 'pages';
@@ -44,5 +45,3 @@ final class TableConfiguration implements \TYPO3\CMS\Core\SingletonInterface {
 	}
 
 }
-
-?>

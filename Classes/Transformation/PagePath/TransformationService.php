@@ -1,13 +1,16 @@
 <?php
 
 namespace Nawork\NaworkUri\Transformation\PagePath;
+use Nawork\NaworkUri\Transformation\AbstractTransformationService;
+use TYPO3\CMS\Core\Utility\ArrayUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Description of PagePathTransformationService
  *
  * @author Thorben Kapp <thorben@work.de>
  */
-class TransformationService extends \Nawork\NaworkUri\Transformation\AbstractTransformationService {
+class TransformationService extends AbstractTransformationService {
 
 	/**
 	 * @param mixed                                                                 $value
@@ -34,11 +37,11 @@ class TransformationService extends \Nawork\NaworkUri\Transformation\AbstractTra
 						$configuration,
 						$transformationUtility->getLanguage());
 					if (count($translatedFields) > 0) {
-						\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($pageRecord, $translatedFields);
+						ArrayUtility::mergeRecursiveWithOverrule($pageRecord, $translatedFields);
 					}
 				}
 				if (!$pageRecord['tx_naworkuri_exclude']) {
-					$fields = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode('//', $configuration->getFields(), TRUE);
+					$fields = GeneralUtility::trimExplode('//', $configuration->getFields(), TRUE);
 					array_unshift($fields, 'tx_naworkuri_pathsegment');
 					foreach ($fields as $field) {
 						if (array_key_exists($field, $pageRecord) && !empty($pageRecord[$field])) {
@@ -80,9 +83,8 @@ class TransformationService extends \Nawork\NaworkUri\Transformation\AbstractTra
 	 */
 	private function getPageOverlay($pageUid, $configuration, $language) {
 		// get overlay fields from conf vars
-		$overlayFields = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',',
-			$GLOBALS['TYPO3_CONF_VARS']['FE']['pageOverlayFields']);
-		$fields = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode('//', $configuration->getFields(), TRUE);
+		$overlayFields = GeneralUtility::trimExplode(',', $GLOBALS['TYPO3_CONF_VARS']['FE']['pageOverlayFields']);
+		$fields = GeneralUtility::trimExplode('//', $configuration->getFields(), TRUE);
 		array_unshift($fields, 'tx_naworkuri_pathsegment');
 		// merge overlay fields with select fields from transformation configuration
 		$overlayFields = array_unique(array_merge($overlayFields, $fields));
@@ -99,5 +101,3 @@ class TransformationService extends \Nawork\NaworkUri\Transformation\AbstractTra
 	}
 
 }
-
-?>

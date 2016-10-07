@@ -3,7 +3,9 @@
 namespace Nawork\NaworkUri\Transformation\Database;
 
 
-class TransformationConfiguration extends \Nawork\NaworkUri\Transformation\AbstractTransformationConfiguration {
+use Nawork\NaworkUri\Transformation\AbstractTransformationConfiguration;
+
+class TransformationConfiguration extends AbstractTransformationConfiguration {
 	protected $type = 'Database';
 
 	protected $additionalProperties = array(

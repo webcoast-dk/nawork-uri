@@ -3,7 +3,9 @@
 namespace Nawork\NaworkUri\Transformation\Plain;
 
 
-class TransformationConfiguration extends \Nawork\NaworkUri\Transformation\AbstractTransformationConfiguration{
+use Nawork\NaworkUri\Transformation\AbstractTransformationConfiguration;
+
+class TransformationConfiguration extends AbstractTransformationConfiguration {
 	protected $type = 'Plain';
 	/**
 	 * @var string
@@ -54,4 +56,3 @@ class TransformationConfiguration extends \Nawork\NaworkUri\Transformation\Abstr
 		$this->math = $math;
 	}
 }
- 

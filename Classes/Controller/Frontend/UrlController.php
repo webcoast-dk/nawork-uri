@@ -63,11 +63,11 @@ class UrlController implements SingletonInterface {
 	 */
 	function params2uri(&$link, $ref) {
 		// if available, call hook for pre processing link data
-		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_naworkuri']['Nawork\\NaworkUri\\Controller\\Frontend\\UrlController'])) {
-			foreach($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_naworkuri']['Nawork\\NaworkUri\\Controller\\Frontend\\UrlController'] as $hookObjectClassName) {
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_naworkuri'][UrlController::class])) {
+			foreach($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_naworkuri'][UrlController::class] as $hookObjectClassName) {
 				$hookObject = GeneralUtility::getUserObj($hookObjectClassName);
 				if (!$hookObject instanceof UrlControllerHookInterface) {
-					throw new \RuntimeException('$hookObj of type ' . get_class($hookObject) . ' must implement Nawork\\NaworkUri\\Hooks\\UrlControllerHookInterface');
+					throw new \RuntimeException(vsprintf('$hookObj of type ' . get_class($hookObject) . ' must implement %s', [UrlControllerHookInterface::class]));
 				}
 				$hookObject->params2uri_linkDataPreProcess($link, $ref);
 			}

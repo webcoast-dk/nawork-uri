@@ -2,6 +2,11 @@
 
 namespace Nawork\NaworkUri\Utility;
 use Nawork\NaworkUri\Cache\UrlCache;
+use Nawork\NaworkUri\Exception\TransformationException;
+use Nawork\NaworkUri\Exception\TransformationServiceException;
+use Nawork\NaworkUri\Exception\UrlIsRedirectException;
+use Nawork\NaworkUri\Transformation\AbstractTransformationService;
+use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Page\CacheHashCalculator;
@@ -12,7 +17,7 @@ use TYPO3\CMS\Frontend\Page\CacheHashCalculator;
  * @author Martin Ficzel
  *
  */
-class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
+class TransformationUtility implements SingletonInterface {
 
 	/**
 	 *
@@ -58,12 +63,14 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 	 * Convert the uri path to the request parameters
 	 *
 	 * @param string $uri
-	 * @return array Parameters extracted from path and GET
+	 *
+	 * @return array|null Parameters extracted from path and GET
+	 * @throws UrlIsRedirectException
 	 */
 	public function uri2params($uri = '') {
 		// remove opening slash
 		if (empty($uri))
-			return;
+			return null;
 		$append = ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getAppend();
 		list($path, $params) = GeneralUtility::trimExplode('?', $uri);
 		// save the original path to check that if the "slashed" one does not return anything
@@ -79,7 +86,7 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 		}
 		if ($cache) {
 			if ($cache['type'] > 0) {
-				throw new \Nawork\NaworkUri\Exception\UrlIsRedirectException($cache);
+				throw new UrlIsRedirectException($cache);
 			}
 			// cachedparams
 			$cachedparams = Array();
@@ -93,7 +100,7 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 			ArrayUtility::mergeRecursiveWithOverrule($cachedparams, $getparams);
 			return $cachedparams;
 		}
-		return false;
+		return null;
 	}
 
 	/**
@@ -250,9 +257,9 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 						$transformationServiceClassName = self::getTransformationServiceClassName($transformationConfiguration->getType());
 						if (class_exists($transformationServiceClassName)) {
 							/* @var $transformationService \Nawork\NaworkUri\Transformation\AbstractTransformationService */
-							$transformationService = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance($transformationServiceClassName);
-							if (!$transformationService instanceof \Nawork\NaworkUri\Transformation\AbstractTransformationService) {
-								throw new \Nawork\NaworkUri\Exception\TransformationServiceException($transformationConfiguration->getName(), $transformationConfiguration->getType(), $transformationServiceClassName . ' must extend Kapp\\UrlRewrite\\Transformation\\AbstractTransformationService');
+							$transformationService = GeneralUtility::makeInstance($transformationServiceClassName);
+							if (!$transformationService instanceof AbstractTransformationService) {
+								throw new TransformationServiceException($transformationConfiguration->getName(), $transformationConfiguration->getType(), $transformationServiceClassName . ' must extend Kapp\\UrlRewrite\\Transformation\\AbstractTransformationService');
 							}
 							try {
 								$transformedValue = $transformationService->transform($transformationConfiguration,
@@ -262,14 +269,14 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 //								if (!empty($transformedValue)) {
 									$pathParts[$transformationConfiguration->getName()] = $transformedValue;
 //								}
-							} catch (\Nawork\NaworkUri\Exception\TransformationException $e) {
-								throw new \Nawork\NaworkUri\Exception\TransformationServiceException($transformationConfiguration->getName(), $transformationConfiguration->getType(), 'An exception was thrown while transforming the value. The message was: ' . $e->getMessage(), $e);
+							} catch (TransformationException $e) {
+								throw new TransformationServiceException($transformationConfiguration->getName(), $transformationConfiguration->getType(), 'An exception was thrown while transforming the value. The message was: ' . $e->getMessage(), $e);
 							}
 						} else {
-							throw new \Nawork\NaworkUri\Exception\TransformationServiceException($transformationConfiguration->getName(), $transformationConfiguration->getType(), 'The transformation service class "' . $transformationServiceClassName . '" was not found, please check, if it exists');
+							throw new TransformationServiceException($transformationConfiguration->getName(), $transformationConfiguration->getType(), 'The transformation service class "' . $transformationServiceClassName . '" was not found, please check, if it exists');
 						}
 					} else {
-						throw new \Nawork\NaworkUri\Exception\TransformationServiceException($transformationConfiguration->getName(), $transformationConfiguration->getType(), 'No transformation service for type "' . $transformationConfiguration->getType() . '" registered');
+						throw new TransformationServiceException($transformationConfiguration->getName(), $transformationConfiguration->getType(), 'No transformation service for type "' . $transformationConfiguration->getType() . '" registered');
 					}
 				} catch (\Exception $ex) {
 					/**
@@ -322,5 +329,3 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 	}
 
 }
-
-?>

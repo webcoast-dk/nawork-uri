@@ -1,13 +1,14 @@
 <?php
 
 namespace Nawork\NaworkUri\Hooks;
+use TYPO3\CMS\Backend\Toolbar\ClearCacheActionsHookInterface;
 
 /**
  * Description of ClearCache
  *
  * @author thorben
  */
-class ClearCache implements \TYPO3\CMS\Backend\Toolbar\ClearCacheActionsHookInterface {
+class ClearCache implements ClearCacheActionsHookInterface {
 
 	/**
 	 *

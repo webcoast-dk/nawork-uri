@@ -3,7 +3,9 @@
 namespace Nawork\NaworkUri\Transformation\PagePath;
 
 
-class TransformationConfiguration extends \Nawork\NaworkUri\Transformation\AbstractTransformationConfiguration {
+use Nawork\NaworkUri\Transformation\AbstractTransformationConfiguration;
+
+class TransformationConfiguration extends AbstractTransformationConfiguration {
 	protected $type = 'PagePath';
 
 	protected $additionalProperties = array(
@@ -79,4 +81,3 @@ class TransformationConfiguration extends \Nawork\NaworkUri\Transformation\Abstr
 		$this->excludeFromPathField = $excludeFromPathField;
 	}
 }
- 

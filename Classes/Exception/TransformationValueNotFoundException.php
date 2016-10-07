@@ -3,7 +3,7 @@
 namespace Nawork\NaworkUri\Exception;
 
 /**
- * Description of Tx_NaworkUri_Exception_TransformationValueNotFoundException
+ * Description of TransformationValueNotFoundException
  *
  * @author thorben
  */
@@ -14,5 +14,3 @@ class TransformationValueNotFoundException extends \Exception {
 	}
 
 }
-
-?>

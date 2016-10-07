@@ -3,7 +3,9 @@
 namespace Nawork\NaworkUri\Transformation\Hidden;
 
 
-class ConfigurationReader extends \Nawork\NaworkUri\Transformation\AbstractConfigurationReader {
+use Nawork\NaworkUri\Transformation\AbstractConfigurationReader;
+
+class ConfigurationReader extends AbstractConfigurationReader {
 	/**
 	 * Add additional configuration, read from the given xml to the transformation configuration object.
 	 * The configuration object should must be treated as reference, so nothing is returned here.
@@ -15,4 +17,3 @@ class ConfigurationReader extends \Nawork\NaworkUri\Transformation\AbstractConfi
 
 	}
 }
- 

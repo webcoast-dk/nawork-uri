@@ -9,7 +9,4 @@ namespace Nawork\NaworkUri\Domain\Repository;
  */
 class LanguageRepository extends AbstractRepository {
 
-	
 }
-
-?>

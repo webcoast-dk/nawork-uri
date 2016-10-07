@@ -1,38 +1,41 @@
 <?php
 
 namespace Nawork\NaworkUri\Domain\Repository;
+use Nawork\NaworkUri\Domain\Model\Filter;
+use TYPO3\CMS\Extbase\Persistence\QueryInterface;
+use TYPO3\CMS\Extbase\Persistence\Repository;
 
 /**
  * Description of UrlRepository
  *
  * @author thorben
  */
-class UrlRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
+class UrlRepository extends Repository {
 
-	public function findUrlsByFilter(\Nawork\NaworkUri\Domain\Model\Filter $filter) {
+	public function findUrlsByFilter(Filter $filter) {
 		$query = $this->buildUrlQueryByFilter($filter);
 		if ($filter->getLimit() > 0) {
 			$query->setOffset((int) $filter->getOffset());
 			$query->setLimit((int) $filter->getLimit());
 		}
-		return $query->setOrderings(array('path' => \TYPO3\CMS\Extbase\Persistence\QueryInterface::ORDER_ASCENDING))->execute();
+		return $query->setOrderings(array('path' => QueryInterface::ORDER_ASCENDING))->execute();
 	}
 
-	public function countUrlsByFilter(\Nawork\NaworkUri\Domain\Model\Filter $filter) {
+	public function countUrlsByFilter(Filter $filter) {
 		$query = $this->buildUrlQueryByFilter($filter);
 		return $query->count();
 	}
-	
-	public function findRedirectsByFilter(\Nawork\NaworkUri\Domain\Model\Filter $filter) {
+
+	public function findRedirectsByFilter(Filter $filter) {
 		$query = $this->buildRedirectQueryByFilter($filter);
 		if ($filter->getLimit() > 0) {
 			$query->setOffset((int) $filter->getOffset());
 			$query->setLimit((int) $filter->getLimit());
 		}
-		return $query->setOrderings(array('path' => \TYPO3\CMS\Extbase\Persistence\QueryInterface::ORDER_ASCENDING))->execute();
+		return $query->setOrderings(array('path' => QueryInterface::ORDER_ASCENDING))->execute();
 	}
-	
-	public function countRedirectsByFilter(\Nawork\NaworkUri\Domain\Model\Filter $filter) {
+
+	public function countRedirectsByFilter(Filter $filter) {
 		$query = $this->buildRedirectQueryByFilter($filter);
 		return $query->count();
 	}
@@ -55,7 +58,7 @@ class UrlRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
 	 * @param \Nawork\NaworkUri\Domain\Model\Filter $filter
 	 * @return \TYPO3\CMS\Extbase\Persistence\QueryInterface
 	 */
-	private function buildUrlQueryByFilter(\Nawork\NaworkUri\Domain\Model\Filter $filter) {
+	private function buildUrlQueryByFilter(Filter $filter) {
 		$query = $this->createQuery();
 		// ignore language, because all urls should be selected
 		$query->getQuerySettings()->setRespectSysLanguage(FALSE);
@@ -85,7 +88,7 @@ class UrlRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
 			}
 
 			if (in_array('locked', $filter->getTypes())) { // if we show locked, set locked=1 and type=0, because only type 0 urls can be locked
-				$typeConstraints[] = $query->logicalAnd($query->equals('locked', 1), $query->equals('type', 0));
+				$typeConstraints[] = $query->logicalAnd([$query->equals('locked', 1), $query->equals('type', 0)]);
 			}
 			if (count($typeConstraints) > 0) {
 				$constraints[] = $query->logicalOr($typeConstraints);
@@ -120,8 +123,8 @@ class UrlRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
 		}
 		return $query;
 	}
-	
-	private function buildRedirectQueryByFilter(\Nawork\NaworkUri\Domain\Model\Filter $filter) {
+
+	private function buildRedirectQueryByFilter(Filter $filter) {
 		$query = $this->createQuery();
 		// ignore language, because all urls should be selected
 		$query->getQuerySettings()->setRespectSysLanguage(FALSE);$constraints = array();
@@ -138,7 +141,7 @@ class UrlRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
 		if(!empty($path)) {
 			$constraints[] = $query->like('path', str_replace('*', '%', $path));
 		}
-		$constraints[] = $query->logicalOr($query->equals('type', 2), $query->equals('type', 3)); // we want only redirects in this result
+		$constraints[] = $query->logicalOr([$query->equals('type', 2), $query->equals('type', 3)]); // we want only redirects in this result
 		if (count($constraints) > 0) {
 			$query = $query->matching($query->logicalAnd($constraints));
 		}
@@ -146,5 +149,3 @@ class UrlRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
 	}
 
 }
-
-?>

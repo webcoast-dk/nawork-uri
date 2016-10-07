@@ -1,13 +1,15 @@
 <?php
 
 namespace Nawork\NaworkUri\Transformation\ValueMap;
+use Nawork\NaworkUri\Exception\TransformationException;
+use Nawork\NaworkUri\Transformation\AbstractTransformationService;
 
 /**
  * Description of ValueMap
  *
  * @author Thorben Kapp <thorben@work.de>
  */
-class TransformationService extends \Nawork\NaworkUri\Transformation\AbstractTransformationService {
+class TransformationService extends AbstractTransformationService {
 
 	/**
 	 * @param \Nawork\NaworkUri\Transformation\ValueMap\TransformationConfiguration $configuration
@@ -22,11 +24,9 @@ class TransformationService extends \Nawork\NaworkUri\Transformation\AbstractTra
 		try {
 			$value = $configuration->getMapping($transformationUtility->getLanguage(), $value);
 		} catch (\Exception $e) {
-			throw new \Nawork\NaworkUri\Exception\TransformationException($configuration->getName(), $configuration->getType(), $value, $e);
+			throw new TransformationException($configuration->getName(), $configuration->getType(), $value, $e);
 		}
 		return $value;
 	}
 
 }
-
-?>

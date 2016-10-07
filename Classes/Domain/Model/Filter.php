@@ -1,13 +1,14 @@
 <?php
 
 namespace Nawork\NaworkUri\Domain\Model;
+use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 
 /**
  * Description of Url
  *
  * @author thorben
  */
-class Filter extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
+class Filter extends AbstractEntity {
 
 	/**
 	 *
@@ -128,5 +129,3 @@ class Filter extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	}
 
 }
-
-?>

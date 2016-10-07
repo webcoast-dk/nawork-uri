@@ -3,6 +3,8 @@
 namespace Nawork\NaworkUri\Configuration;
 
 
+use TYPO3\CMS\Core\Utility\HttpUtility;
+
 class GeneralConfiguration {
 	/**
 	 * @var bool
@@ -21,7 +23,7 @@ class GeneralConfiguration {
 	/**
 	 * @var string
 	 */
-	protected $redirectStatus = \TYPO3\CMS\Core\Utility\HttpUtility::HTTP_STATUS_301;
+	protected $redirectStatus = HttpUtility::HTTP_STATUS_301;
 
 	/**
 	 * @return string

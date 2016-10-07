@@ -1,13 +1,15 @@
 <?php
 
 namespace Nawork\NaworkUri\Transformation\Database;
+use Nawork\NaworkUri\Transformation\AbstractTransformationService;
+use TYPO3\CMS\Core\Utility\ArrayUtility;
 
 /**
  * Description of DatabaseTransformationService
  *
  * @author Thorben Kapp <thorben@work.de>
  */
-class TransformationService extends \Nawork\NaworkUri\Transformation\AbstractTransformationService {
+class TransformationService extends AbstractTransformationService {
 
 	/**
 	 * 
@@ -46,7 +48,7 @@ class TransformationService extends \Nawork\NaworkUri\Transformation\AbstractTra
                         (int)$record['uid'] . $GLOBALS['TSFE']->sys_page->enableFields($configuration->getTable())
                     );
 					if (is_array($translatedFields)) {
-						\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($record, $translatedFields);
+						ArrayUtility::mergeRecursiveWithOverrule($record, $translatedFields);
 					}
 				}
 				$output = $configuration->getPattern($transformationUtility->getLanguage());
@@ -64,5 +66,3 @@ class TransformationService extends \Nawork\NaworkUri\Transformation\AbstractTra
 	}
 
 }
-
-?>

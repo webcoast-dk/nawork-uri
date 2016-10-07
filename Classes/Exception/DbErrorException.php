@@ -3,7 +3,7 @@
 namespace Nawork\NaworkUri\Exception;
 
 /**
- * Description of DbErTx_NaworkUri_Exception_DbErrorExceptionorException
+ * Description of DbErrorException
  *
  * @author thorben
  */
@@ -18,7 +18,4 @@ class DbErrorException extends \Exception {
 	public function getSqlError() {
 		return $this->sqlError;
 	}
-
-
-
 }

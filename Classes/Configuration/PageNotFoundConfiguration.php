@@ -3,6 +3,8 @@
 namespace Nawork\NaworkUri\Configuration;
 
 
+use TYPO3\CMS\Core\Utility\HttpUtility;
+
 class PageNotFoundConfiguration {
 	const BEHAVIOR_MESSAGE = 0;
 	const BEHAVIOR_PAGE = 1;
@@ -21,7 +23,7 @@ class PageNotFoundConfiguration {
 	 *
 	 * @var string
 	 */
-	protected $status = \TYPO3\CMS\Core\Utility\HttpUtility::HTTP_STATUS_404;
+	protected $status = HttpUtility::HTTP_STATUS_404;
 
 	/**
 	 * What to do on page not found: Depends on the behavior. This can be a

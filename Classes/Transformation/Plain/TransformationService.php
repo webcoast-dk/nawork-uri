@@ -1,13 +1,16 @@
 <?php
 
 namespace Nawork\NaworkUri\Transformation\Plain;
+use Nawork\NaworkUri\Transformation\AbstractTransformationService;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\MathUtility;
 
 /**
  * Description of PlainTransformationService
  *
  * @author Thorben Kapp <thorben@work.de>
  */
-class TransformationService extends \Nawork\NaworkUri\Transformation\AbstractTransformationService {
+class TransformationService extends AbstractTransformationService {
 
 	/**
 	 *
@@ -18,11 +21,11 @@ class TransformationService extends \Nawork\NaworkUri\Transformation\AbstractTra
 	 * @return string
 	 */
 	public function transform($configuration, $value, $transformationUtility) {
-		if (\TYPO3\CMS\Core\Utility\MathUtility::canBeInterpretedAsInteger($value) || strcmp($configuration->getMath(),
+		if (MathUtility::canBeInterpretedAsInteger($value) || strcmp($configuration->getMath(),
 				'')
 		) {
 			$value = (int)$value;
-			list($operator, $operand) = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(' ',
+			list($operator, $operand) = GeneralUtility::trimExplode(' ',
 				$configuration->getMath());
 			switch ($operator) {
 				case '+':
@@ -48,5 +51,3 @@ class TransformationService extends \Nawork\NaworkUri\Transformation\AbstractTra
 	}
 
 }
-
-?>

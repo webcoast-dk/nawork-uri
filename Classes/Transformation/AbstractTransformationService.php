@@ -1,13 +1,14 @@
 <?php
 
 namespace Nawork\NaworkUri\Transformation;
+use TYPO3\CMS\Core\SingletonInterface;
 
 /**
  * Description of TransformationServiceInterface
  *
  * @author Thorben Kapp <thorben@work.de>
  */
-abstract class AbstractTransformationService implements \TYPO3\CMS\Core\SingletonInterface {
+abstract class AbstractTransformationService implements SingletonInterface {
 
 	/**
 	 * @param \Nawork\NaworkUri\Transformation\AbstractTransformationConfiguration $configuration

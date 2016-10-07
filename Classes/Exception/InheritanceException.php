@@ -8,4 +8,3 @@ class InheritanceException extends \Exception{
 		$this->message = 'Extending configuration "'.$type.'" from domain "'.$domain.'" caused an inheritance loop';
 	}
 }
- 

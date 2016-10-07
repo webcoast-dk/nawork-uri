@@ -23,6 +23,18 @@ if (!defined('TYPO3_MODE')) {
                 )
             ),
         ),
+        'tx_naworkuri_use_configuration' => [
+            'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:sys_domain.tx_naworkuri_use_configuration',
+            'config' => [
+                'type' => 'select',
+                'renderType' => 'selectSingle',
+                'size' => 1,
+                'items' => [
+                    ['', '']
+                ],
+                'itemsProcFunc' => 'Nawork\\NaworkUri\\Backend\\ItemsProcFunc->sysDomainAlterConfigurationItems'
+            ]
+        ]
     )
 );
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('sys_domain', 'tx_naworkuri_masterDomain');
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes('sys_domain', '--div--;LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:sys_domain.tabs.nawork_uri, tx_naworkuri_masterDomain, tx_naworkuri_use_configuration');

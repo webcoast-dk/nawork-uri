@@ -1,7 +1,10 @@
 <?php
 
 namespace Nawork\NaworkUri\Utility;
+use Nawork\NaworkUri\Cache\UrlCache;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Frontend\Page\CacheHashCalculator;
 
 /**
  * Class for creating path uris
@@ -34,17 +37,13 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 	protected $domain = 0;
 
 	/**
-	 * Constructor
 	 *
-	 * @param \Nawork\NaworkUri\Configuration\ConfigurationReader $config
-	 * @param boolean $multidomain
-	 * @param string $domain
 	 */
 	public function __construct() {
 		$this->db = $GLOBALS['TYPO3_DB'];
 		// get the domain
-		$this->domain = GeneralUtility::findCurrentDomain();
-		$this->cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Cache\UrlCache');
+		$this->domain = \Nawork\NaworkUri\Utility\GeneralUtility::findCurrentDomain();
+		$this->cache = GeneralUtility::makeInstance(UrlCache::class);
 		$this->cache->setTimeout(30);
 	}
 
@@ -66,7 +65,7 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 		if (empty($uri))
 			return;
 		$append = ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getAppend();
-		list($path, $params) = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode('?', $uri);
+		list($path, $params) = GeneralUtility::trimExplode('?', $uri);
 		// save the original path to check that if the "slashed" one does not return anything
 		$path = urldecode($path);
 		// look into the db
@@ -91,13 +90,8 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 			$getparams = Array();
 			parse_str($params, $getparams);
 			// merged result
-            if (class_exists('TYPO3\\CMS\\Core\\Utility\\ArrayUtility')) {
-                ArrayUtility::mergeRecursiveWithOverrule($cachedparams, $getparams);
-                return $cachedparams;
-            } else {
-                $res = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($cachedparams, $getparams);
-                return $res;
-            }
+			ArrayUtility::mergeRecursiveWithOverrule($cachedparams, $getparams);
+			return $cachedparams;
 		}
 		return false;
 	}
@@ -114,12 +108,12 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 		global $TYPO3_CONF_VARS;
 
 		list($parameters, $anchor) = explode('#', $param_str, 2);
-		$params = GeneralUtility::explode_parameters($parameters);
+		$params = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($parameters);
 		$orgParams = $params;
 		/* add hook for processing the parameter set */
 		if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['parameterSet-preProcess'])) {
 			foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['parameterSet-preProcess'] as $funcRef) {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($funcRef, $params, $this);
+				GeneralUtility::callUserFunction($funcRef, $params, $this);
 			}
 		}
 		/* if something destroys the params reset them */
@@ -133,7 +127,7 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 		}
 
 		/* we must have an integer id so lets look it up */
-		$params['id'] = GeneralUtility::aliasToId($params['id']);
+		$params['id'] = \Nawork\NaworkUri\Utility\GeneralUtility::aliasToId($params['id']);
 
 		/* check if type should be casted to int to avoid strange behavior when creating links */
 //		if ($this->config->getCastTypeToInt()) {
@@ -160,20 +154,20 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 			$cHashParams = $params;
 			unset($cHashParams['cHash']);
 			ksort($cHashParams);
-			/* @var $cHashCaluclator \TYPO3\CMS\Frontend\Page\CacheHashCalculator */
-			$cHashCaluclator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\CMS\Frontend\Page\CacheHashCalculator');
-			$params['cHash'] = $cHashCaluclator->calculateCacheHash($cHashCaluclator->getRelevantParameters(GeneralUtility::implode_parameters($params, FALSE)));
+			/* @var $cHashCalculator \TYPO3\CMS\Frontend\Page\CacheHashCalculator */
+			$cHashCalculator = GeneralUtility::makeInstance(CacheHashCalculator::class);
+			$params['cHash'] = $cHashCalculator->calculateCacheHash($cHashCalculator->getRelevantParameters(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($params, FALSE)));
 		}
 
 		$this->language = $params['L'];
 		/* find cached urls with the given parameters from the current domain */
-		list($encodableParameters, $unencodableParameters) = GeneralUtility::filterConfiguredParameters($params);
+		list($encodableParameters, $unencodableParameters) = \Nawork\NaworkUri\Utility\GeneralUtility::filterConfiguredParameters($params);
 		$cachedUri = $this->cache->findCachedUrl($encodableParameters, $this->domain, $this->language, $ignoreTimeout);
 		DebugUtility::debug('After finding cached url', array('cachedUri' => $cachedUri, 'encodableParameters' => $encodableParameters, 'this->domain' => $this->domain, 'this->language' => $this->language), __CLASS__);
 		if ($cachedUri !== FALSE) {
 			/* compute the unencoded parameters */
 			if (count($unencodableParameters) > 0) {
-				$cachedUri .= '?' . GeneralUtility::implode_parameters($unencodableParameters);
+				$cachedUri .= '?' . \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($unencodableParameters);
 			}
 			/* append the anchor if not empty */
 			if ($anchor) {
@@ -218,7 +212,7 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 			$encoded_uri = '';
 		}
 
-		$result_path = GeneralUtility::sanitize_uri($encoded_uri);
+		$result_path = \Nawork\NaworkUri\Utility\GeneralUtility::sanitize_uri($encoded_uri);
 
 		// append
 		if ($result_path) {

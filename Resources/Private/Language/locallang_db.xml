@@ -9,7 +9,9 @@
 			<label index="pages.tx_naworkuri_pathsegment">Speaking URL path segment</label>
 			<label index="pages.tx_naworkuri_exclude">Exclude this page from URI path</label>
 
+			<label index="sys_domain.tabs.nawork_uri">n@work URI</label>
 			<label index="sys_domain.tx_naworkuri_masterDomain">Domain alias master record</label>
+			<label index="sys_domain.tx_naworkuri_use_configuration">Used configuration for this domain</label>
 
             <label index="tx_naworkuri_uri.page_uid">Page</label>
 			<label index="tx_naworkuri_uri.type">Type</label>
@@ -33,7 +35,9 @@
 			<label index="pages.tx_naworkuri_pathsegment">Pfadsegment für sprechende URL</label>
 			<label index="pages.tx_naworkuri_exclude">Diese Seite aus dem Pfad ausschließen</label>
 
+			<label index="sys_domain.tabs.nawork_uri">n@work URI</label>
 			<label index="sys_domain.tx_naworkuri_masterDomain">Master Domain</label>
+			<label index="sys_domain.tx_naworkuri_use_configuration">Benutzte Konfiguration für diese Domain</label>
 
             <label index="tx_naworkuri_uri.page_uid">Seite</label>
 			<label index="tx_naworkuri_uri.type">Typ</label>

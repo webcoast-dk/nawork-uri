@@ -2,12 +2,21 @@
 
 namespace Nawork\NaworkUri\Controller\Frontend;
 
+use Nawork\NaworkUri\Configuration\Configuration;
+use Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration;
+use Nawork\NaworkUri\Configuration\PageNotFoundConfiguration;
+use Nawork\NaworkUri\Exception\DbErrorException;
+use Nawork\NaworkUri\Exception\UrlIsNotUniqueException;
+use Nawork\NaworkUri\Exception\UrlIsRedirectException;
 use Nawork\NaworkUri\Hooks\UrlControllerHookInterface;
+use Nawork\NaworkUri\Utility\ConfigurationUtility;
+use Nawork\NaworkUri\Utility\TransformationUtility;
+use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\HttpUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
 
-class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
+class UrlController implements SingletonInterface {
 
 	protected $redirectUrl = NULL;
 
@@ -15,33 +24,30 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
     protected $pageNotFoundHandlingInProgress = FALSE;
 
 	/**
-	 * decode uri and extract parameters
-	 *
-	 * @param unknown_type                                               $params
-	 * @param \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController $ref
-	 */
-	function uri2params($params, $ref) {
-		global $TYPO3_CONF_VARS;
+     * decode uri and extract parameters
+     *
+     * @param array                                                       $incomingParameters
+     * @param \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController $ref
+     */
+    function uri2params($incomingParameters, $ref) {
+        $configuration = ConfigurationUtility::getConfiguration();
 
-		if (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getDisabled()) {
-
-			if ($params['pObj']->siteScript && substr($params['pObj']->siteScript, 0, 9) != 'index.php' && substr($params['pObj']->siteScript, 0, 1) != '?') {
-				$uri = $params['pObj']->siteScript;
-				list($uri, $parameters) = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode('?', $uri);
-				// translate uri
-				$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
+		if ($configuration instanceof Configuration) {
+			if ($incomingParameters['pObj']->siteScript && substr($incomingParameters['pObj']->siteScript, 0, 9) != 'index.php' && substr($incomingParameters['pObj']->siteScript, 0, 1) != '?') {
+				$uri = $incomingParameters['pObj']->siteScript;
+				list($uri, ) = GeneralUtility::trimExplode('?', $uri);
 				/* @var $translator \Nawork\NaworkUri\Utility\TransformationUtility */
-				$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility', $configReader, $extConf['MULTIDOMAIN']);
+				$translator = GeneralUtility::makeInstance(TransformationUtility::class);
 				try {
 					$uri_params = $translator->uri2params($uri);
 					if (is_array($uri_params)) { // uri found
-						$params['pObj']->id = $uri_params['id'];
+						$incomingParameters['pObj']->id = $uri_params['id'];
 						unset($uri_params['id']);
-						$params['pObj']->mergingWithGetVars($uri_params);
+						$incomingParameters['pObj']->mergingWithGetVars($uri_params);
 					} else { // handle 404
-						$this->handlePagenotfound(array('currentUrl' => $ref->siteScript, 'reasonText' => 'The requested path could not be found', 'pageAccessFailureReasons' => array()), $ref);
+						$this->handlePageNotFound(array('currentUrl' => $ref->siteScript, 'reasonText' => 'The requested path could not be found', 'pageAccessFailureReasons' => array()), $ref);
 					}
-				} catch (\Nawork\NaworkUri\Exception\UrlIsRedirectException $ex) {
+				} catch (UrlIsRedirectException $ex) {
 					$this->redirectUrl = $ex->getUrl();
 				}
 			}
@@ -56,7 +62,6 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @param \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController $ref
 	 */
 	function params2uri(&$link, $ref) {
-		global $TYPO3_CONF_VARS;
 		// if available, call hook for pre processing link data
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_naworkuri']['Nawork\\NaworkUri\\Controller\\Frontend\\UrlController'])) {
 			foreach($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_naworkuri']['Nawork\\NaworkUri\\Controller\\Frontend\\UrlController'] as $hookObjectClassName) {
@@ -74,20 +79,20 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 			$domain = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
 			$domainName = GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
 		}
-		if (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration($domainName)->getGeneralConfiguration()->getDisabled() && $link['LD']['url']) {
-			list($path, $params) = explode('?', $link['LD']['totalURL']);
-			$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
+	    $configuration = ConfigurationUtility::getConfiguration($domainName);
+		if ($configuration instanceof Configuration && $link['LD']['url']) {
+			list(, $params) = explode('?', $link['LD']['totalURL']);
 			/** @var \Nawork\NaworkUri\Utility\TransformationUtility $translator */
-			$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility');
+			$translator = GeneralUtility::makeInstance(TransformationUtility::class);
 			try {
 				$translator->setDomain($domain);
 				$url = $translator->params2uri($params);
 				$link['LD']['totalURL'] = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($url);
 				/* add hook for post processing the url */
-				if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'])) {
+				if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_naworkuri']['url-postProcess'])) {
 					$hookParams = array('url' => $url, 'params' => \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params), 'LD' => $link['LD']);
-					foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['tx_naworkuri']['url-postProcess'] as $funcRef) {
-						\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($funcRef, $hookParams, $this);
+					foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_naworkuri']['url-postProcess'] as $funcRef) {
+						GeneralUtility::callUserFunction($funcRef, $hookParams, $this);
 					}
 					if ($hookParams['url'] !== FALSE) { // if the url is not false set it
 						$link['LD']['totalURL'] = $hookParams['url'];
@@ -98,10 +103,10 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 						$link['LD']['totalURL'] = $GLOBALS['TSFE']->config['config']['absRefPrefix'] . $link['LD']['totalURL'];
 					}
 				}
-			} catch (\Nawork\NaworkUri\Exception\UrlIsNotUniqueException $ex) {
+			} catch (UrlIsNotUniqueException $ex) {
 				/* log unique failure to belog */
 				\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "%s" is not unique with parameters %s. Referrer: %s', GeneralUtility::SYSLOG_SEVERITY_ERROR, array($ex->getPath(), \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL')));
-			} catch (\Nawork\NaworkUri\Exception\DbErrorException $ex) {
+			} catch (DbErrorException $ex) {
 				/* log db errors to belog */
 				\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "%s"', GeneralUtility::SYSLOG_SEVERITY_ERROR, array($ex->getSqlError()));
 			}
@@ -118,13 +123,10 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 	 *
 	 * Whatever redirect is sent, the state of enable and redirect option of nawork_uri in config are checked. Additionally
 	 * it is checked that the page is not called as preview from admin panel and there is a sitescript at all.
-	 *
-	 * @param array                                                       $incomingParameters
-	 * @param \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController $ref
 	 */
-	function redirect2uri($incomingParameters, $ref) {
-		global $TYPO3_CONF_VARS;
-		if (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getDisabled()) {
+	function redirect2uri() {
+		$configuration = ConfigurationUtility::getConfiguration();
+		if ($configuration instanceof Configuration) {
 			/*
 			 * if we set a redirectUrl above because an old url was called we should
 			 * redirect it here because at this point we have the full tsfe to get
@@ -132,9 +134,8 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 			 */
 			if ($this->redirectUrl != NULL) {
 				// translate uri
-				$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
 				/* @var $translator \Nawork\NaworkUri\Utility\TransformationUtility */
-				$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility');
+				$translator = GeneralUtility::makeInstance(TransformationUtility::class);
 				$newUrl = NULL;
 				$redirectStatus = HttpUtility::HTTP_STATUS_301;
 				// switch for determining the url
@@ -183,7 +184,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 							}
 					}
 					/* parse the current request url and prepend the scheme and host to the url */
-					$requestUrl = parse_url(\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
+					$requestUrl = parse_url(GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
 					$newUrl = parse_url($newUrl);
 					if (empty($newUrl['scheme'])) {
 						$newUrl['scheme'] = $requestUrl['scheme'];
@@ -209,12 +210,10 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 					}
 					\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($uri, $redirectStatus);
 				}
-			} elseif (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getDisabled() && count(GeneralUtility::_GP('TSFE_ADMIN_PANEL')) == 0 && $GLOBALS['TSFE']->siteScript) {
+			} elseif ($configuration instanceof Configuration && count(GeneralUtility::_GP('TSFE_ADMIN_PANEL')) == 0 && $GLOBALS['TSFE']->siteScript) {
 				list($path, $params) = explode('?', $GLOBALS['TSFE']->siteScript);
 				$params = rawurldecode(html_entity_decode($params)); // decode the query string because it is expected by the further processing functions
-				$extConf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['nawork_uri']);
-				$translator = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\NaworkUri\Utility\TransformationUtility');
-				$tempParams = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params);
+				$translator = GeneralUtility::makeInstance(TransformationUtility::class);
 
 				/* if the page is called via parameterized form look for a path to redirect to */
 				if ((substr($GLOBALS['TSFE']->siteScript, 0, 9) == 'index.php' || substr($GLOBALS['TSFE']->siteScript, 0, 1) == '?')) {
@@ -232,18 +231,18 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 						$uri = $translator->params2uri($params, $dontCreateNewUrls, $ignoreTimeout);
 						if (in_array($_SERVER['REQUEST_METHOD'], array('GET','HEAD')) && ($path == 'index.php' || $path == '') && $uri !== FALSE && $uri != $GLOBALS['TSFE']->siteScript) {
 							$uri = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($uri); // TRUE is for redirect, this applies "/" by default and the baseURL if set
-                            $redirectStatus = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getRedirectStatus();
+                            $redirectStatus = $configuration->getGeneralConfiguration()->getRedirectStatus();
                             // if the redirect status in the configuration is an integer, e.g. "301" try to get the correct value from the constant
                             if (MathUtility::canBeInterpretedAsInteger($redirectStatus)) {
-                                $redirectStatus = constant('TYPO3\CMS\Core\Utility\HttpUtility::HTTP_STATUS_'.$redirectStatus);
+                                $redirectStatus = constant(HttpUtility::class .'::HTTP_STATUS_'.$redirectStatus);
                             }
 							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($uri, $redirectStatus);
 							exit;
                         }
-                    } catch (\Nawork\NaworkUri\Exception\UrlIsNotUniqueException $ex) {
+                    } catch (UrlIsNotUniqueException $ex) {
 						/* log unique failure to belog */
 						\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "%s" is not unique with parameters %s. Referrer: %s', GeneralUtility::SYSLOG_SEVERITY_ERROR, array($ex->getPath(), \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL')));
-					} catch (\Nawork\NaworkUri\Exception\DbErrorException $ex) {
+					} catch (DbErrorException $ex) {
 						/* log db errors to belog */
 						\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "%s"', GeneralUtility::SYSLOG_SEVERITY_ERROR, array($ex->getSqlError()));
 					}
@@ -316,26 +315,27 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 	 *
 	 * @todo Handle not found and not accessible differently
 	 */
-	public function handlePagenotfound($params, $frontendController) {
-		if (!\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getDisabled()) {
+	public function handlePageNotFound($params, $frontendController) {
+	    $configuration = ConfigurationUtility::getConfiguration();
+		if ($configuration instanceof Configuration) {
 			$output = '';
             $disableOutput = FALSE;
 			$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
 			/* the page is not accessible without being logged in, so handle this, if configured */
-			if (array_key_exists('pageAccessFailureReasons', $params) && is_array($params['pageAccessFailureReasons']) && array_key_exists('fe_group', $params['pageAccessFailureReasons']) && \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getPageNotAccessibleConfiguration() instanceof \Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration) {
-				$pageNotAccessibleConfiguration = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getPageNotAccessibleConfiguration();
+			if (array_key_exists('pageAccessFailureReasons', $params) && is_array($params['pageAccessFailureReasons']) && array_key_exists('fe_group', $params['pageAccessFailureReasons']) && $configuration->getPageNotAccessibleConfiguration() instanceof PageNotAccessibleConfiguration) {
+				$pageNotAccessibleConfiguration = $configuration->getPageNotAccessibleConfiguration();
 				header($pageNotAccessibleConfiguration->getStatus());
 				header('Content-type: text/html; charset=utf8');
 				switch ($pageNotAccessibleConfiguration->getBehavior()) {
-					case \Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration::BEHAVIOR_MESSAGE:
+					case PageNotAccessibleConfiguration::BEHAVIOR_MESSAGE:
 						$output = $pageNotAccessibleConfiguration->getValue();
 						break;
-					case \Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration::BEHAVIOR_PAGE:
+					case PageNotAccessibleConfiguration::BEHAVIOR_PAGE:
 						if (!$this->pageNotAccessibleHandlingInProgress && (MathUtility::canBeInterpretedAsInteger($pageNotAccessibleConfiguration->getValue()) || MathUtility::canBeInterpretedAsInteger(\Nawork\NaworkUri\Utility\GeneralUtility::aliasToId($pageNotAccessibleConfiguration->getValue())))) {
                             $frontendController->id = $pageNotAccessibleConfiguration->getValue();
                             $disableOutput = TRUE;
                             $this->pageNotAccessibleHandlingInProgress = TRUE;
-                        } elseif (!$this->pageNotAccessibleHandlingInProgress && \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
+                        } elseif (!$this->pageNotAccessibleHandlingInProgress && GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
 							$curl = curl_init();
 							$urlParts = parse_url($pageNotAccessibleConfiguration->getValue());
 							$urlParts['scheme'] = GeneralUtility::getIndpEnv('TYPO3_SSL') ? 'https' : 'http';
@@ -348,7 +348,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 							curl_setopt($curl, CURLOPT_USERAGENT, 'nawork_uri');
 							curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
 							curl_setopt($curl, CURLOPT_MAXREDIRS, 1);
-							curl_setopt($curl, CURLOPT_REFERER, \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
+							curl_setopt($curl, CURLOPT_REFERER, GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
 							// disable check for valid peer certificate: this should not be used in
 							// production environments for security reasons
 							if ((bool) $extConf['noSslVerify']) {
@@ -360,28 +360,29 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 							$output = '404 not found! The 403 page url or id "' . $pageNotAccessibleConfiguration->getValue() . '"" seems to cause a loop.';
 						}
 						break;
-					case \Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration::BEHAVIOR_REDIRECT:
+					case PageNotAccessibleConfiguration::BEHAVIOR_REDIRECT:
 						$path = html_entity_decode($pageNotAccessibleConfiguration->getValue());
 						if (!($_SERVER['REQUEST_METHOD'] == 'POST' && preg_match('/index.php/', $_SERVER['SCRIPT_NAME']))) {
 							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($path, 301); // send headers and exits
 						}
+						break;
 					default:
 						$output = '<html><head><title>403 Forbidden</title></head><body><h1>403 Forbidden</h1><p>You don\'t have the permission to access this page</p></body></html>';
 				}
-			} elseif (\Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getPageNotFoundConfiguration() instanceof \Nawork\NaworkUri\Configuration\PageNotFoundConfiguration) {
-				$pageNotFoundConfiguration = \Nawork\NaworkUri\Utility\ConfigurationUtility::getConfiguration()->getPageNotFoundConfiguration();
+			} elseif ($configuration->getPageNotFoundConfiguration() instanceof PageNotFoundConfiguration) {
+				$pageNotFoundConfiguration = $configuration->getPageNotFoundConfiguration();
 				header('Content-Type: text/html; charset=utf-8');
 				header($pageNotFoundConfiguration->getStatus());
 				switch ($pageNotFoundConfiguration->getBehavior()) {
-					case \Nawork\NaworkUri\Configuration\PageNotFoundConfiguration::BEHAVIOR_MESSAGE:
+					case PageNotFoundConfiguration::BEHAVIOR_MESSAGE:
 						$output = $pageNotFoundConfiguration->getValue();
 						break;
-					case \Nawork\NaworkUri\Configuration\PageNotFoundConfiguration::BEHAVIOR_PAGE:
+					case PageNotFoundConfiguration::BEHAVIOR_PAGE:
                         if (!$this->pageNotFoundHandlingInProgress && (MathUtility::canBeInterpretedAsInteger($pageNotFoundConfiguration->getValue()) || MathUtility::canBeInterpretedAsInteger(\Nawork\NaworkUri\Utility\GeneralUtility::aliasToId($pageNotFoundConfiguration->getValue())))) {
                             $frontendController->id = $pageNotFoundConfiguration->getValue();
                             $disableOutput = TRUE;
                             $this->pageNotFoundHandlingInProgress = TRUE;
-                        } elseif (!$this->pageNotFoundHandlingInProgress && \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
+                        } elseif (!$this->pageNotFoundHandlingInProgress && GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
 							$curl = curl_init();
 							$urlParts = parse_url($pageNotFoundConfiguration->getValue());
 							$urlParts['scheme'] = GeneralUtility::getIndpEnv('TYPO3_SSL') ? 'https' : 'http';
@@ -394,7 +395,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 							curl_setopt($curl, CURLOPT_USERAGENT, 'nawork_uri');
 							curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
 							curl_setopt($curl, CURLOPT_MAXREDIRS, 1);
-							curl_setopt($curl, CURLOPT_REFERER, \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
+							curl_setopt($curl, CURLOPT_REFERER, GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
 							// disable check for valid peer certificate: this should not be used in
 							// production environments for security reasons
 							if ((bool) $extConf['noSslVerify']) {
@@ -406,11 +407,12 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 							$output = '404 not found! The 404 page url or id "' . $pageNotFoundConfiguration->getValue() . '"" seems to cause a loop.';
 						}
 						break;
-					case \Nawork\NaworkUri\Configuration\PageNotFoundConfiguration::BEHAVIOR_REDIRECT:
+					case PageNotFoundConfiguration::BEHAVIOR_REDIRECT:
 						$path = html_entity_decode($pageNotFoundConfiguration->getValue());
 						if (!($_SERVER['REQUEST_METHOD'] == 'POST' && preg_match('/index.php/', $_SERVER['SCRIPT_NAME']))) {
 							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($path, 301); // send headers and exits
 						}
+						break;
 					default:
 						$output = '';
 				}

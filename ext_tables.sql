@@ -21,7 +21,8 @@ CREATE TABLE pages_language_overlay (
 #
 
 CREATE TABLE sys_domain (
-	tx_naworkuri_masterDomain int(11) DEFAULT '0'
+	tx_naworkuri_masterDomain int(11) DEFAULT '0',
+	tx_naworkuri_use_configuration varchar(200) NOT NULL DEFAULT ''
 );
 
 #

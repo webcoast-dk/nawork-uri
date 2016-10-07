@@ -3,14 +3,17 @@
 namespace Nawork\NaworkUri\Utility;
 
 use Nawork\NaworkUri\Configuration\Configuration;
+use Nawork\NaworkUri\Configuration\TableConfiguration;
+use Nawork\NaworkUri\Exception\InheritanceException;
 use Nawork\NaworkUri\Exception\InvalidConfigurationException;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class ConfigurationUtility {
 	/**
 	 * @var \Nawork\NaworkUri\Configuration\Configuration
 	 */
-	protected static $configuration;
+	protected static $configuration = null;
 
 	/**
 	 * @var \Nawork\NaworkUri\Configuration\Configuration[]
@@ -21,17 +24,17 @@ class ConfigurationUtility {
 
 	public static function getConfigurationFileForCurrentDomain() {
 		/** @var \Nawork\NaworkUri\Configuration\TableConfiguration $tableConfiguration */
-		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
+		$tableConfiguration = GeneralUtility::makeInstance('Nawork\\NaworkUri\\Configuration\\TableConfiguration');
 		$file = NULL;
 		try {
 			// try to find the configuration for the current host name, e.g. for
 			// local development or testing environment: this ignores master domains
-			$file = self::findConfigurationByDomain(\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY'));
+			$file = self::findConfigurationByDomain(GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY'));
 		} catch (InvalidConfigurationException $ex) {
 			$domain = 'default';
 			// look, if there is a domain record matching the current hostname,
 			// this includes recursive look up of master domain records
-			$domainUid = GeneralUtility::getCurrentDomain();
+			$domainUid = \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomain();
 			if ($domainUid > 0) {
 				$domainRecord = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('domainName', $tableConfiguration->getDomainTable(), 'uid=' . intval($domainUid));
 				if (is_array($domainRecord)) {
@@ -84,17 +87,22 @@ class ConfigurationUtility {
 		}
 	}
 
+    public static function getAvailableConfigurations()
+    {
+        return array_keys($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['Configurations']);
+	}
+
 	/**
 	 * The public method that is to be used to get the configuration object
 	 *
-	 * @params string $domain
+	 * @param string|null $domain
 	 *
 	 * @return \Nawork\NaworkUri\Configuration\Configuration
 	 */
-	public static function getConfiguration($domain = NULL) {
-		if ($domain !== NULL || !self::$configuration instanceof \Nawork\NaworkUri\Configuration\Configuration) {
+	public static function getConfiguration($domain = null) {
+		if ($domain !== null || self::$configuration === null) {
 			self::$configuration = self::getConfigurationObject($domain);
-			if($domain !== NULL) {
+			if($domain !== null) {
 				self::$configurations[$domain] = self::$configuration;
 			}
 		}
@@ -110,9 +118,9 @@ class ConfigurationUtility {
 	 * 2. determined master domain
 	 * 3. default configuration
 	 *
-	 * @params string $domain
+	 * @param string|null $domain
 	 *
-	 * @return \Nawork\NaworkUri\Configuration\Configuration
+	 * @return \Nawork\NaworkUri\Configuration\Configuration|false
 	 *
 	 * @throws \Nawork\NaworkUri\Exception\InheritanceException
 	 */
@@ -121,24 +129,40 @@ class ConfigurationUtility {
 			return self::getConfigurationObjectForDomain($domain);
 		} catch(\Exception $ex) {
 			// inheritance exceptions must bubble up
-			if ($ex instanceof \Nawork\NaworkUri\Exception\InheritanceException) {
+			if ($ex instanceof InheritanceException) {
 				throw $ex;
 			}
 			try {
-				return self::getConfigurationObjectForDomain(\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY'));
-			} catch (\Exception $ex) {
+				return self::getConfigurationObjectForDomain(GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY'));
+			} catch (\RuntimeException $e) {
+			    if ($e->getCode() === 1475831209) {
+                    // no configuration for this domain, meaning nawork_uri is disabled
+                    return false;
+                }
+                // otherwise throw the exception again
+                throw $e;
+            } catch (\Exception $ex) {
 				// inheritance exceptions must bubble up
-				if ($ex instanceof \Nawork\NaworkUri\Exception\InheritanceException) {
+				if ($ex instanceof InheritanceException) {
 					throw $ex;
 				}
 				try {
-					return self::getConfigurationObjectForDomain(GeneralUtility::getCurrentDomainName());
+                    return self::getConfigurationObjectForDomain(
+                        \Nawork\NaworkUri\Utility\GeneralUtility::getCurrentDomainName()
+                    );
+                } catch (\RuntimeException $e) {
+                    if ($e->getCode() === 1475831209) {
+                        // no configuration for this domain, meaning nawork_uri is disabled
+                        return false;
+                    }
+                    // otherwise throw the exception again
+                    throw $e;
 				} catch (\Exception $ex) {
 					// inheritance exceptions must bubble up
-					if ($ex instanceof \Nawork\NaworkUri\Exception\InheritanceException) {
+					if ($ex instanceof InheritanceException) {
 						throw $ex;
 					}
-					return self::getConfigurationObjectForDomain('default');
+					return false;
 				}
 			}
 		}
@@ -155,26 +179,40 @@ class ConfigurationUtility {
 	 * @throws \Exception
 	 */
 	private static function getConfigurationObjectForDomain($domain) {
+	    /** @var TableConfiguration $tableConfiguration */
+	    $tableConfiguration = GeneralUtility::makeInstance(TableConfiguration::class);
+	    $domainRecord = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('tx_naworkuri_masterDomain, tx_naworkuri_use_configuration', $tableConfiguration->getDomainTable(), 'domainName=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($domain, $tableConfiguration->getDomainTable()));
+        if (is_array($domainRecord)) {
+            if (empty($domainRecord['tx_naworkuri_use_configuration']) && empty($domainRecord['tx_naworkuri_masterDomain'])) {
+                // if this domain has no configuration set, throw an exception, but not if it has a master domain set
+                throw new \RuntimeException('This domain has no configuration', 1475831209);
+            } else {
+                $identifier = $domainRecord['tx_naworkuri_use_configuration'];
+            }
+        } else {
+            $identifier = $domain;
+        }
+
 		if(array_key_exists($domain, self::$configurations)) {
 			return self::$configurations[$domain];
 		}
 		try {
-			return self::readCompiledConfigurationFile($domain);
+			return self::readCompiledConfigurationFile($identifier);
 		} catch (\Exception $e) {
-			if (array_key_exists($domain, $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['Configurations'])) {
-				$configuration = self::buildConfigurationForDomain($domain);
+			if (array_key_exists($identifier, $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['Configurations'])) {
+				$configuration = self::buildConfigurationForDomain($identifier);
 				self::storeCompiledConfigurationToFile(
 					$configuration,
-					$domain
+					$identifier
 				);
 				return $configuration;
 			}
-			throw new \Exception('No configuration is registered for domain "' . $domain . '"', 1394135040);
+			throw new \Exception('No configuration is registered with identifer "' . $identifier. '"', 1394135040);
 		}
 	}
 
-	private static function storeCompiledConfigurationToFile($configuration, $domain) {
-		$cacheIdentifier = md5($domain);
+	private static function storeCompiledConfigurationToFile($configuration, $identifier) {
+		$cacheIdentifier = md5($identifier);
 		/** @var FrontendInterface $cache */
 		$cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Cache\\CacheManager')->getCache('naworkuri_configuration');
 		$cache->set($cacheIdentifier, $configuration);
@@ -183,17 +221,17 @@ class ConfigurationUtility {
 	/**
 	 * Read and unserialize the configuration file, if it exists. Throw an exception if not.
 	 *
-	 * @param string $domain
+	 * @param string $identifier
 	 *
 	 * @return \Nawork\NaworkUri\Configuration\Configuration
 	 *
 	 * @throws \Exception
 	 */
-	private static function readCompiledConfigurationFile($domain) {
-		$cacheIdentifier = md5($domain);
+	private static function readCompiledConfigurationFile($identifier) {
+		$cacheIdentifier = md5($identifier);
 		$object = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Cache\\CacheManager')->getCache('naworkuri_configuration')->get($cacheIdentifier);
 		if (!$object instanceof Configuration) {
-			throw new \Exception('No configuration for domain "'.$domain.'" could be retrieved from cache');
+			throw new \Exception('No configuration with identifier "'.$identifier.'" could be retrieved from cache');
 		}
 		return $object;
 	}
@@ -202,17 +240,17 @@ class ConfigurationUtility {
 	 * Determine the xml configuration file from registered configurations and put it
 	 * into a SimpleXMLElement
 	 *
-	 * @param string $domain
+	 * @param string $identifier
 	 *
 	 * @return \SimpleXMLElement
 	 *
 	 * @throws \Exception
 	 */
-	private static function readXmlConfigurationFile($domain) {
-		if (!array_key_exists($domain, $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['Configurations'])) {
-			throw new \Exception('No configuration registered for domain "' . $domain . '"', 1394137785);
+	private static function readXmlConfigurationFile($identifier) {
+		if (!array_key_exists($identifier, $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['Configurations'])) {
+			throw new \Exception('No configuration registered with identifier "' . $identifier . '"', 1394137785);
 		}
-		$file = \TYPO3\CMS\Core\Utility\GeneralUtility::getFileAbsFileName($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['Configurations'][$domain]);
+		$file = GeneralUtility::getFileAbsFileName($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['Configurations'][$identifier]);
 		if (file_exists($file) && is_readable($file)) {
 			return new \SimpleXMLElement($file, 0, TRUE);
 		}
@@ -222,34 +260,34 @@ class ConfigurationUtility {
 	/**
 	 * Read xml configuration file and build a configuration object out of it
 	 *
-	 * @param string $domain
+	 * @param string $identifier
 	 *
 	 * @return \Nawork\NaworkUri\Configuration\Configuration
 	 *
 	 * @throws \Nawork\NaworkUri\Exception\InheritanceException
 	 */
-	private static function buildConfigurationForDomain($domain) {
-		$xml = self::readXmlConfigurationFile($domain);
+	private static function buildConfigurationForDomain($identifier) {
+		$xml = self::readXmlConfigurationFile($identifier);
 		$configuration = NULL;
 		if ($xml->attributes()->extends && strcmp('', (string)$xml->attributes()->extends)) {
 			$extendedDomainName = (string)$xml->attributes()->extends;
 			// the domain is already used for extending this type of configuration, throw an exception
 			if (self::$inheritanceLock[$extendedDomainName]) {
-				throw new \Nawork\NaworkUri\Exception\InheritanceException('UrlConfiguration', $extendedDomainName);
+				throw new InheritanceException('UrlConfiguration', $extendedDomainName);
 			}
 			try {
 				self::$inheritanceLock[$extendedDomainName] = TRUE;
 				$configuration = self::getConfigurationObjectForDomain((string)$xml->attributes()->extends);
 			} catch (\Exception $e) {
 				// inheritance exceptions must bubble up
-				if ($e instanceof \Nawork\NaworkUri\Exception\InheritanceException) {
+				if ($e instanceof InheritanceException) {
 					throw $e;
 				}
 				self::$inheritanceLock[$extendedDomainName] = FALSE;
 			}
 		}
 		if ($configuration === NULL) {
-			$configuration = new \Nawork\NaworkUri\Configuration\Configuration();
+			$configuration = new Configuration();
 		}
 
 		$configuration->setGeneralConfiguration(self::buildGeneralConfiguration($xml->General,

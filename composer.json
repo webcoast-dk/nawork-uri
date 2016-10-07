@@ -7,15 +7,15 @@
 		}
 	},
 	"type": "typo3-cms-extension",
-	"version": "2.7.3",
+	"version": "3.0.0-dev",
 	"authors": [
 		{
-			"name": "Thorben Kapp",
+			"name": "Thorben Nissen",
 			"email": "thorben@work.de"
 		}
 	],
 	"require": {
-		"typo3/cms": "^6.2.0 || ^7.6.0"
+		"typo3/cms": "^7.6.0"
 	},
 	"minimum-stability": "dev"
 }

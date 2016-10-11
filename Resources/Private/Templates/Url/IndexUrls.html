@@ -1,139 +1,70 @@
-<f:layout name="Module" />
+{namespace core=TYPO3\CMS\Core\ViewHelpers}
+<f:layout name="Default" />
 
-<f:section name="Main">
-	<section id="url_module">
-		<div id="filter">
-			<div class="filter_option">
-				<label for="domain"><f:translate key="label_filter_domain" default="Domain:" /></label>
-				<select id="domain">
-					<f:if condition="{domains -> f:count()} > 0">
-						<f:then>
-							<f:for each="{domains}" as="domain">
-								<option value="{domain.uid}">{domain.domainName}</option>
-							</f:for>
-						</f:then>
-						<f:else>
-							<option value="0"><f:translate key="label_filter_domain_all" default="All"/></option>
-						</f:else>
-					</f:if>
-				</select>
-			</div>
-			<div class="filter_option">
-				<label><f:translate key="label_filter_type" default="Type:" /></label>
-				<span id="type">
-					<f:form.checkbox id="type_normal" value="normal" /><label for="type_normal" class="checkbox"><f:translate key="label_filter_type_normal" default="Normal urls" /></label>
-					<f:form.checkbox id="type_old" value="old" /><label for="type_old" class="checkbox"><f:translate key="label_filter_type_old" default="Old urls" /></label>
-					<f:form.checkbox id="type_locked" value="locked" /><label for="type_locked" class="checkbox"><f:translate key="label_filter_type_locked" default="Locked urls" /></label>
-				</span>
-			</div>
-			<f:if condition="{f:count(subject: '{languages}')} > 0">
-				<div class="filter_option">
-					<label for="language"><f:translate key="label_filter_language" default="Language:" /></label>
-					<select id="language" >
-						<option value="-1"><f:translate key="label_filter_language_all" default="All" /></option>
-						<option value="0"><f:translate key="label_filter_language_default" default="Default" /></option>
-						<f:for each="{languages}" as="language">
-							<option value="{language.uid}">{language.title}</option>
-						</f:for>
-					</select>
-				</div>
-			</f:if>
-			<div class="filter_option">
-				<label for="label_filter_scope"><f:translate key="label_filter_scope" default="Scope:" /></label>
-				<select id="scope">
-					<option value="page"><f:translate key="label_filter_scope_page" default="This page" /></option>
-					<option value="subtree"><f:translate key="label_filter_scope_subtree" default="This with subpages" /></option>
-					<option value="global"><f:translate key="label_filter_scope_global" default="Global (whole site)" /></option>
-				</select>
-			</div>
-
-			<div class="filter_option">
-				<label for="path"><f:translate key="label_filter_path" default="Path:" /></label>
-				<input type="text" id="path" value="" placeholder="[Filter by path]" autocomplete="off"/>
-			</div>
-			<div class="add"><a href="javascript:;" onclick="window.location.href='alt_doc.php?returnUrl=' + encodeURIComponent(window.location.href) + '&edit[tx_naworkuri_uri][0]=new&edit[tx_naworkuri_uri][type]=0&edit[tx_naworkuri_uri][page_uid]={id}'; return false;" ><span class="icon"></span><label><f:translate key="label_contextmenu_add" default="Add" /></label></a></div>
-		</div>
-		<div id="table_outer">
-			<div id="table_head">
-				<table>
-					<thead>
-						<tr>
-							<th class="uid fixedwidth" data-cellClassName="uid"></th>
-							<th class="language fixedwidth">L</th>
-							<th class="path resizeable dynamic" data-cellClassName="path">Path</th>
-							<th class="parameters resizeable dynamic" data-cellClassName="parameters">Parameters</th>
-							<th class="domain minwidth" data-cellClassName="domain">Domain</th>
-							<th class="scrollbarFiller fixedwidth"></th>
-						</tr>
-					</thead>
-				</table>
-			</div>
-			<div id="table_body">
-				<table class="typo3-dblist">
-					<thead>
-						<tr>
-							<th class="uid fixedwidth"></th>
-							<th class="language fixedwidth"></th>
-							<th class="path"></th>
-							<th class="parameters"></th>
-							<th class="domain"></th>
-						</tr>
-					</thead>
-					<tbody>
-					</tbody>
-				</table>
-			</div>
-		</div>
-		<div id="pagination">
-			<a href="javascript:;" id="pagination_first" class="icon first"></a>
-			<a href="javascript:;" id="pagination_previous" class="icon previous"></a>
-			<a href="javascript:;" id="pagination_next" class="icon next"></a>
-			<a href="javascript:;" id="pagination_last" class="icon last"></a>
-			<label for="pagination_pageSize">
-				<f:translate key="label_pagination_pagesize" default="URLs per page:" />
-			</label>
-			<select id="pagination_pageSize" autocomplete="off">
-				<option value="10">10</option>
-				<option value="20">20</option>
-				<option value="30">30</option>
-				<option value="40">40</option>
-				<option value="50">50</option>
-				<option value="100">100</option>
-			</select>
-			<label>
-				<f:translate key="label_pagination_pages" default="Showing page" />
-			</label>
-			<span id="pagination_pagenumber">0</span>
-			<span><f:translate key="label_pagination_pages_of" default="of" /></span>
-			<span id="pagination_maxpages">0</span>
-			<label>
-				<f:translate key="label_pagination_urls" default="Showing urls"  />
-			</label>
-			<span id="pagination_urlcount_from">0</span>
-			<span><f:translate key="label_pagination_urls_to" default="to" /></span>
-			<span id="pagination_urlcount_to">0</span>
-			<span><f:translate key="label_pagination_urls_of" default="of" /></span>
-			<span id="pagination_urlcount_of">0</span>
-			<a href="javascript:;" id="pagination_reload" class="icon refresh"></a>
-		</div>
-	</section>
-	<script type="text/javascript">
-			<![CDATA[
-				jQuery(document).ready(function() {
-					if(NaworkUri && NaworkUri.UrlModule){
-						document.tx_naworkuri_urlModule = new NaworkUri.UrlModule("#url_module", {
-							urls: {
-								ajax: "]]>{f:uri.action(action: 'ajaxLoadUrls', additionalParams: '{ajax: 1}')}<![CDATA[",
-								settings: "]]>{f:uri.action(action: 'updateSettings', additionalParams: '{ajax: 1}')}<![CDATA[",
-							},
-							settings: ]]><f:format.raw>{userSettings}</f:format.raw><![CDATA[,
-							messages: {
-								error:"]]><f:translate key="message_error" default="An error occured while loading the urls, change the filter to try other settings" /><![CDATA[",
-								loading: "]]><f:translate key="message_loading" default="Loading urls... please wait..." /><![CDATA["
-							}
-						});
-					}
-				]]>
-			});
+<f:section name="content">
+	<script type="application/javascript">
+		<![CDATA[tx_naworkuri_labels = {
+			"numberOfRecords": "]]>{f:translate(id: 'label.numberOfRecords')}<![CDATA[",
+			"loadingMessage": "]]>{f:translate(id: 'label.loadingMessage')}<![CDATA["
+		};]]>
 	</script>
+	<div class="panel">
+		<div class="urlTable table" data-filter="{filter}" data-settings="{settings}" data-ajax-url="{ajaxUrl}">
+			<div class="urlTable__header">
+				<span class="urlTable__column urlTable__column--icon"></span>
+				<span class="urlTable__column urlTable__column--icon">L</span>
+				<span class="urlTable__column urlTable__column--text">Path</span>
+				<span class="urlTable__column urlTable__column--text">Parameters</span>
+			</div>
+			<div class="urlTable__body">
+				<div class="urlTable__body__inner">
+					<div class="urlTable__row">
+						<span class="urlTable__column urlTable__column--fullWidth">
+							<f:translate id="label.loadingMessage" />
+						</span>
+					</div>
+				</div>
+			</div>
+			<div class="urlTable__footer">
+				<nav class="pagination-wrap">
+					<ul class="pagination pagination-block">
+						<li class="disabled js-paginationFirst">
+							<span>
+								<core:icon identifier="actions-view-paging-first" />
+							</span>
+						</li>
+						<li class="disabled js-paginationPrevious">
+							<span>
+								<core:icon identifier="actions-view-paging-previous" />
+							</span>
+						</li>
+						<li>
+							<span class="numberOfRecords">Records 0 - 0</span>
+						</li>
+						<li>
+							<span>
+								Page
+								<input value="0" size="3" class="form-control input-sm paginator-input" id="jumpPage-bottom" type="text" /> of <span class="pagesMax">0</span>
+							</span>
+						</li>
+						<li class="disabled js-paginationNext">
+							<span>
+								<core:icon identifier="actions-view-paging-next" />
+							</span>
+						</li>
+						<li class="disabled js-paginationLast">
+							<span>
+								<core:icon identifier="actions-view-paging-last" />
+							</span>
+						</li>
+						<li>
+							<span class="js-reload">
+								<core:icon identifier="actions-refresh" />
+							</span>
+						</li>
+					</ul>
+				</nav>
+			</div>
+		</div>
+	</div>
 </f:section>

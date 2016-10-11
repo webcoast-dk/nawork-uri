@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2014-06-02T11:47:10Z" product-name="nawork_uri">
+		<header/>
+		<body>
+			<trans-unit id="menu.domain">
+				<source>Domain:</source>
+			</trans-unit>
+			<trans-unit id="menu.types">
+				<source>Types:</source>
+			</trans-unit>
+			<trans-unit id="menu.types.normal">
+				<source>Normal</source>
+			</trans-unit>
+			<trans-unit id="menu.types.old">
+				<source>Old</source>
+			</trans-unit>
+			<trans-unit id="menu.types.locked">
+				<source>Locked</source>
+			</trans-unit>
+			<trans-unit id="menu.language">
+				<source>Language:</source>
+			</trans-unit>
+			<trans-unit id="menu.language.all">
+				<source>All</source>
+			</trans-unit>
+			<trans-unit id="menu.language.default">
+				<source>Default</source>
+			</trans-unit>
+			<trans-unit id="menu.scope">
+				<source>Scope:</source>
+			</trans-unit>
+			<trans-unit id="menu.scope.page">
+				<source>This page</source>
+			</trans-unit>
+			<trans-unit id="menu.scope.subpages">
+				<source>This including sub pages</source>
+			</trans-unit>
+			<trans-unit id="menu.scope.global">
+				<source>Global (whole site)</source>
+			</trans-unit>
+
+			<trans-unit id="label.numberOfRecords">
+				<source>Records %d of %d</source>
+			</trans-unit>
+			<trans-unit id="label.page">
+				<source>Page</source>
+			</trans-unit>
+			<trans-unit id="label.loadingMessage">
+				<source>Loading urls, please wait...</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

@@ -1,7 +1,9 @@
 <?php
 
 namespace Nawork\NaworkUri\Domain\Repository;
+use Nawork\NaworkUri\Domain\Model\Domain;
 use Nawork\NaworkUri\Domain\Model\Filter;
+use Nawork\NaworkUri\Domain\Model\Language;
 use TYPO3\CMS\Extbase\Persistence\QueryInterface;
 use TYPO3\CMS\Extbase\Persistence\Repository;
 
@@ -14,10 +16,8 @@ class UrlRepository extends Repository {
 
 	public function findUrlsByFilter(Filter $filter) {
 		$query = $this->buildUrlQueryByFilter($filter);
-		if ($filter->getLimit() > 0) {
-			$query->setOffset((int) $filter->getOffset());
-			$query->setLimit((int) $filter->getLimit());
-		}
+        $query->setOffset((int) $filter->getOffset());
+        $query->setLimit(100);
 		return $query->setOrderings(array('path' => QueryInterface::ORDER_ASCENDING))->execute();
 	}
 
@@ -28,10 +28,8 @@ class UrlRepository extends Repository {
 
 	public function findRedirectsByFilter(Filter $filter) {
 		$query = $this->buildRedirectQueryByFilter($filter);
-		if ($filter->getLimit() > 0) {
-			$query->setOffset((int) $filter->getOffset());
-			$query->setLimit((int) $filter->getLimit());
-		}
+        $query->setOffset((int) $filter->getOffset());
+        $query->setLimit(100);
 		return $query->setOrderings(array('path' => QueryInterface::ORDER_ASCENDING))->execute();
 	}
 
@@ -65,16 +63,16 @@ class UrlRepository extends Repository {
 
 		$constraints = array();
 
-		$domainContraints = array();
-		foreach($filter->getDomains() as $domain) {
-			$domainContraints[] = $query->equals('domain', $domain);
-		}
-		if(count($domainContraints) > 0) {
-			$constraints[] = $query->logicalOr($domainContraints);
+		if ($filter->getDomain() instanceof Domain) {
+			$constraints[] = $query->equals('domain', $filter->getDomain());
 		}
 
-		if ($filter->getLanguage() > -1) {
-			$constraints[] = $query->equals('sysLanguageUid', $filter->getLanguage());
+		if (!$filter->getIgnoreLanguage()) {
+		    if (!$filter->getLanguage() instanceof Language) {
+			    $constraints[] = $query->equals('sysLanguageUid', 0);
+            } else {
+			    $constraints[] = $query->equals('sysLanguageUid', $filter->getLanguage());
+            }
 		}
 
 		if (count($filter->getTypes()) > 0) {

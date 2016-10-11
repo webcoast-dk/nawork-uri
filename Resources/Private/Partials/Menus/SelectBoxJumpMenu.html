@@ -1,0 +1,27 @@
+{menu.label}
+<f:if condition="{menu.renderAsCheckbox}">
+    <f:then>
+        <div class="form-control form-control__checkbox-container">
+            <f:for each="{menu.menuItems}" as="menuItem">
+                <label>
+                    <input type="checkbox" value="{menuItem.identifier}" {f:if(condition: '{menuItem.active}', then: 'checked="checked"')} {f:render(section: 'dataAttributes', arguments: {attributes: menuItem.dataAttributes})} />{menuItem.title}
+                </label>
+            </f:for>
+        </div>
+    </f:then>
+    <f:else>
+        <select class="form-control t3-js-jumpMenuBox" name="{menu.identifier}" onchange="if(this.options[this.selectedIndex].value){window.location.href=(this.options[this.selectedIndex].value);}">
+            <f:for each="{menu.menuItems}" as="menuItem">
+                <option value="{menuItem.href}" {f:if(condition: '{menuItem.active}', then: ' selected="selected"')} {f:render(section: 'dataAttributes', arguments: {attributes: menuItem.dataAttributes})}>{menuItem.title}</option>
+            </f:for>
+        </select>
+    </f:else>
+</f:if>
+
+<f:section name="dataAttributes">
+    <f:if condition="{attributes} -> f:count()">
+        <f:for each="{attributes}" as="value" key="name">
+            data-{name}="{value}"
+        </f:for>
+    </f:if>
+</f:section>

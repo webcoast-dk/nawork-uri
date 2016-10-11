@@ -26,10 +26,7 @@ class Language extends AbstractEntity {
 	}
 
 	public function getFlag() {
-		if(file_exists(PATH_site.'typo3/gfx/flags/'.$this->flag.'.gif')) {
-			return $this->flag;
-		}
-		return NULL;
+        return $this->flag;
 	}
 
 }

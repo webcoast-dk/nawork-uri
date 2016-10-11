@@ -1,11 +1,14 @@
 <?php
 
 namespace Nawork\NaworkUri\Controller;
+use TYPO3\CMS\Backend\View\BackendTemplateView;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Mvc\RequestInterface;
 use TYPO3\CMS\Extbase\Mvc\ResponseInterface;
+use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
+use TYPO3\CMS\Lang\LanguageService;
 
 /**
  * Description of AbstractController
@@ -13,6 +16,20 @@ use TYPO3\CMS\Extbase\Mvc\ResponseInterface;
  * @author thorben
  */
 abstract class AbstractController extends ActionController {
+
+    /**
+     * Backend Template Container
+     *
+     * @var string
+     */
+    protected $defaultViewObjectName = BackendTemplateView::class;
+
+    /**
+     * BackendTemplateContainer
+     *
+     * @var BackendTemplateView
+     */
+    protected $view;
 
 	protected $extensionName = 'NaworkUri';
 
@@ -32,6 +49,23 @@ abstract class AbstractController extends ActionController {
 	protected $userSettings = NULL;
 	protected $userSettingsUpdated = FALSE;
 
+    /**
+     * Set up the doc header properly here
+     *
+     * @param ViewInterface $view
+     * @return void
+     */
+    protected function initializeView(ViewInterface $view)
+    {
+        /** @var ViewInterface $view */
+        parent::initializeView($view);
+
+        if ($view instanceof BackendTemplateView) {
+            // add additional partial root path
+            $this->view->getModuleTemplate()->getView()->setPartialRootPaths(array_merge($this->view->getModuleTemplate()->getView()->getPartialRootPaths(), ['EXT:nawork_uri/Resources/Private/Partials']));
+        }
+    }
+
 	/**
 	 * Processes a general request. The result can be returned by altering the given response.
 	 *
@@ -42,26 +76,26 @@ abstract class AbstractController extends ActionController {
 	 */
 	public function processRequest(RequestInterface $request, ResponseInterface $response) {
 
-		if (intval(GeneralUtility::_GP('ajax')) < 1) {
-			$this->pageRenderer = $this->template->getPageRenderer();
-			$this->pageRenderer->addCssFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/CSS/module.css');
-			$this->pageRenderer->addJsFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Contrib/jQuery/jquery-1.9.0.min.js');
-			$this->pageRenderer->addJsFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Contrib/mootools/mootoolsCore-1.4.5.js');
-			$this->pageRenderer->addJsFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Contrib/moo4q/Class.Mutators.jQuery.js');
-			$this->pageRenderer->addInlineLanguageLabelFile('EXT:nawork_uri/Resources/Private/Language/locallang_mod_url.xml', '', '', 2);
-
-			$GLOBALS['SOBE'] = new \stdClass();
-			$GLOBALS['SOBE']->doc = $this->template;
-
+//		if (intval(GeneralUtility::_GP('ajax')) < 1) {
+//			$this->pageRenderer = $this->template->getPageRenderer();
+//			$this->pageRenderer->addCssFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/CSS/module.css');
+//			$this->pageRenderer->addJsFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Contrib/jQuery/jquery-1.9.0.min.js');
+//			$this->pageRenderer->addJsFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Contrib/mootools/mootoolsCore-1.4.5.js');
+//			$this->pageRenderer->addJsFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Contrib/moo4q/Class.Mutators.jQuery.js');
+//			$this->pageRenderer->addInlineLanguageLabelFile('EXT:nawork_uri/Resources/Private/Language/locallang_mod_url.xml', '', '', 2);
+//
+//			$GLOBALS['SOBE'] = new \stdClass();
+//			$GLOBALS['SOBE']->doc = $this->template;
+//
+//			parent::processRequest($request, $response);
+//			$pageHeader = $this->template->startPage(
+//				$GLOBALS['LANG']->sL('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_mod_url.xml:header_module')
+//			);
+//			$pageEnd = $this->template->endPage();
+//			$response->setContent($pageHeader . $response->getContent() . $pageEnd);
+//		} else {
 			parent::processRequest($request, $response);
-			$pageHeader = $this->template->startPage(
-				$GLOBALS['LANG']->sL('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_mod_url.xml:header_module')
-			);
-			$pageEnd = $this->template->endPage();
-			$response->setContent($pageHeader . $response->getContent() . $pageEnd);
-		} else {
-			parent::processRequest($request, $response);
-		}
+//		}
 	}
 
 	protected function initializeAction() {
@@ -136,4 +170,11 @@ abstract class AbstractController extends ActionController {
 		$this->userSettingsUpdated = TRUE;
 	}
 
+	/**
+     * @return LanguageService
+     */
+    protected function getLanguageService()
+    {
+        return $GLOBALS['LANG'];
+    }
 }

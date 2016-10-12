@@ -13,8 +13,20 @@
 			<div class="urlTable__header">
 				<span class="urlTable__column urlTable__column--icon"></span>
 				<span class="urlTable__column urlTable__column--icon">L</span>
-				<span class="urlTable__column urlTable__column--text">Path</span>
-				<span class="urlTable__column urlTable__column--text">Parameters</span>
+				<span class="urlTable__column urlTable__column--text">
+                    Path
+                    <span class="inputWrapper">
+                        <input type="text" class="urlTable__column__search js-pathInput" value="" />
+                    </span>
+                    <core:icon identifier="actions-search" alternativeMarkupIdentifier="inline" />
+                </span>
+				<span class="urlTable__column urlTable__column--text">
+                    Parameters
+                    <span class="inputWrapper">
+                        <input type="text" class="urlTable__column__search js-parametersInput" value="" />
+                    </span>
+                    <core:icon identifier="actions-search" alternativeMarkupIdentifier="inline" />
+                </span>
 			</div>
 			<div class="urlTable__body">
 				<div class="urlTable__body__inner">

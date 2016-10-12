@@ -40,7 +40,9 @@ Number.prototype.forceInRange = function(minimum, maximum) {
 
     UrlModule.prototype = {
         $element: null,
-        options: {},
+        options: {
+            inputChangeTimeout: 300
+        },
         filter: null,
         userSettings: null,
         ajaxUrl: null,
@@ -56,7 +58,7 @@ Number.prototype.forceInRange = function(minimum, maximum) {
         },
         state: {
             ajaxCall: null,
-            paginationChangeTimeout: null,
+            inputChangeTimeout: null,
             maxPages: 1
         },
 
@@ -79,66 +81,8 @@ Number.prototype.forceInRange = function(minimum, maximum) {
 
         initListener: function() {
             var _this = this;
-            // refresh/reload button
-            this.controls.$reload.click(function() {
-                _this.loadUrls();
-            });
 
-            // first button
-            this.controls.$first.click(function() {
-                if (!$(this).hasClass('disabled')) {
-                    _this.filter.offset = 0;
-                    _this.updatePagination(this.filter.offset);
-                    _this.loadUrls();
-                }
-            });
-
-            // previous button
-            this.controls.$previous.click(function() {
-                if (!$(this).hasClass('disabled')) {
-                    _this.filter.offset = Math.min(0, _this.filter.offset - 1);
-                    _this.updatePagination(this.filter.offset);
-                    _this.loadUrls();
-                }
-            });
-
-            // next button
-            this.controls.$previous.click(function() {
-                if (!$(this).hasClass('disabled')) {
-                    _this.filter.offset = Math.max(_this.state.maxPages - 1, _this.filter.offset + 1);
-                    _this.updatePagination(this.filter.offset);
-                    _this.loadUrls();
-                }
-            });
-
-            // last button
-            this.controls.$previous.click(function() {
-                if (!$(this).hasClass('disabled')) {
-                    _this.filter.offset = _this.state.maxPages - 1;
-                    _this.updatePagination(this.filter.offset);
-                    _this.loadUrls();
-                }
-            });
-
-            // pagination input
-            this.controls.$page.keyup(function() {
-                if (_this.state.paginationChangeTimeout !== null) {
-                    clearTimeout(_this.state.paginationChangeTimeout);
-                }
-                _this.state.paginationChangeTimeout = setTimeout(function() {
-                    var page = parseInt(_this.controls.$page.val());
-                    if (!isNaN(page)) {
-                        var pageForcedValue = page.forceInRange(1, _this.state.maxPages);
-                        if (pageForcedValue != _this.filter.offset + 1) {
-                            _this.filter.offset = pageForcedValue - 1;
-                        } else {
-                            _this.updatePagination(_this.filter.offset + 1);
-                        }
-                    }
-                }, 300);
-            });
-
-            // domain select
+             // domain select
             $('[name="DomainMenu"]').change(function() {
                 var domainValue = $(this.options[this.selectedIndex]).data('domain');
                 if (domainValue && !isNaN(domainValue) && domainValue !== _this.filter.domain) {
@@ -191,6 +135,111 @@ Number.prototype.forceInRange = function(minimum, maximum) {
                     _this.filter.scope = scopeValue;
                     _this.loadUrls();
                 }
+            });
+
+            // search buttons
+            this.$element.find('.t3js-icon').click(function() {
+                var $this = $(this);
+                $this.toggleClass('icon-state-active');
+                var $input = $this.siblings('.inputWrapper').find('.urlTable__column__search').toggleClass('isVisible');
+                if (!$input.hasClass('isVisible')) {
+                    $input.val('');
+                }
+            });
+
+            // path search field
+            this.$element.find('.js-pathInput').on('customChange', function() {
+                var $input = $(this);
+                if (_this.state.inputChangeTimeout !== null) {
+                    clearTimeout(_this.state.inputChangeTimeout);
+                }
+                setTimeout(function() {
+                    if ($input.val() !== _this.filter.path) {
+                        _this.filter.path = $input.val();
+                        _this.loadUrls();
+                    }
+                }, _this.options.inputChangeTimeout);
+            }).keyup(function() {
+                $(this).trigger('customChange');
+            }).change(function() {
+                $(this).trigger('customChange');
+            });
+
+            // parameter search field
+            this.$element.find('.js-parametersInput').on('customChange', function() {
+                var $input = $(this);
+                if (_this.state.inputChangeTimeout !== null) {
+                    clearTimeout(_this.state.inputChangeTimeout);
+                }
+                setTimeout(function() {
+                    if ($input.val() !== _this.filter.parameters) {
+                        _this.filter.parameters = $input.val();
+                        _this.loadUrls();
+                    }
+                }, _this.options.inputChangeTimeout);
+            }).keyup(function() {
+                $(this).trigger('customChange');
+            }).change(function() {
+                $(this).trigger('customChange');
+            });
+
+            // first button
+            this.controls.$first.click(function() {
+                if (!$(this).hasClass('disabled')) {
+                    _this.filter.offset = 0;
+                    _this.updatePagination(this.filter.offset);
+                    _this.loadUrls();
+                }
+            });
+
+            // previous button
+            this.controls.$previous.click(function() {
+                if (!$(this).hasClass('disabled')) {
+                    _this.filter.offset = Math.min(0, _this.filter.offset - 1);
+                    _this.updatePagination(this.filter.offset);
+                    _this.loadUrls();
+                }
+            });
+
+            // next button
+            this.controls.$previous.click(function() {
+                if (!$(this).hasClass('disabled')) {
+                    _this.filter.offset = Math.max(_this.state.maxPages - 1, _this.filter.offset + 1);
+                    _this.updatePagination(this.filter.offset);
+                    _this.loadUrls();
+                }
+            });
+
+            // last button
+            this.controls.$previous.click(function() {
+                if (!$(this).hasClass('disabled')) {
+                    _this.filter.offset = _this.state.maxPages - 1;
+                    _this.updatePagination(this.filter.offset);
+                    _this.loadUrls();
+                }
+            });
+
+            // pagination input
+            this.controls.$page.keyup(function() {
+                if (_this.state.inputChangeTimeout !== null) {
+                    clearTimeout(_this.state.inputChangeTimeout);
+                }
+                _this.state.inputChangeTimeout = setTimeout(function() {
+                    var page = parseInt(_this.controls.$page.val());
+                    if (!isNaN(page)) {
+                        var pageForcedValue = page.forceInRange(1, _this.state.maxPages);
+                        if (pageForcedValue != _this.filter.offset + 1) {
+                            _this.filter.offset = pageForcedValue - 1;
+                        } else {
+                            _this.updatePagination(_this.filter.offset + 1);
+                        }
+                    }
+                }, _this.options.inputChangeTimeout);
+            });
+
+            // refresh/reload button
+            this.controls.$reload.click(function() {
+                _this.loadUrls();
             });
         },
 

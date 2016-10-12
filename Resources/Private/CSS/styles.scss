@@ -63,6 +63,19 @@ html, body, .module-body, .panel, .table-fit { height: 100%; }
         padding: 6px;
         line-height: 1.5;
 
+        &__search {
+            background-color: transparent;
+            padding: 0;
+            border: solid #8b8b8b;
+            border-width: 0 0 1px 0;
+            min-width: 400px;
+            display: none;
+
+            &.isVisible {
+                display: inline;
+            }
+        }
+
         &--icon {
             width: 22px;
         }
@@ -72,11 +85,27 @@ html, body, .module-body, .panel, .table-fit { height: 100%; }
             white-space: nowrap;
             overflow-x: hidden;
             text-overflow: ellipsis;
+            display: flex;
+            justify-content: space-between;
+
+            .inputWrapper {
+                flex-grow: 1;
+                padding: 0 6px;
+                text-align: right;
+            }
         }
 
         &--fullWidth {
-            width: 100%;
             text-align: center;
+            width: 100%;
+        }
+
+        .icon {
+            cursor: pointer;
+
+            &.icon-state-active {
+                color: #8b8b8b;
+            }
         }
     }
 

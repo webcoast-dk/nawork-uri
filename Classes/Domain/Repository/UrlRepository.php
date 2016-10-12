@@ -115,6 +115,10 @@ class UrlRepository extends Repository {
 		if(!empty($path)) {
 			$constraints[] = $query->like('path', str_replace('*', '%', $path));
 		}
+		$parameters = $filter->getParameters();
+        if (!empty($parameters)) {
+            $constraints[] = $query->like('params', str_replace('*', '%', $parameters));
+        }
 		$constraints[] = $query->logicalOr([$query->logicalNot($query->equals('type', 2)), $query->logicalNot($query->equals('type', 3))]); // we do not want redirects in this result
 		if (count($constraints) > 0) {
 			$query = $query->matching($query->logicalAnd($constraints));

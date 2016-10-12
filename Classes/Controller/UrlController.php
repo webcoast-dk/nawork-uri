@@ -379,13 +379,13 @@ class UrlController extends AbstractController {
         $languageMenu->addMenuItem(
             $languageMenu->makeMenuItem()
                 ->setTitle(LocalizationUtility::translate('menu.language.all', 'NaworkUri'))
-                ->setActive($filter->getIgnoreLanguage() === true)
+                ->setActive($filter->getIgnoreLanguage() === 1)
                 ->setDataAttributes(['language' => -1])
         );
         $languageMenu->addMenuItem(
             $languageMenu->makeMenuItem()
                 ->setTitle(LocalizationUtility::translate('menu.language.default', 'NaworkUri'))
-                ->setActive($filter->getLanguage() === null)
+                ->setActive($filter->getLanguage() === null && $filter->getIgnoreLanguage() !== 1)
                 ->setDataAttributes(['language' => 0])
         );
         /** @var Language $language */

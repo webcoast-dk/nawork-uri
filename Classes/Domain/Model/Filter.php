@@ -60,7 +60,7 @@ class Filter extends AbstractEntity implements \JsonSerializable {
     /**
      * @var integer
      */
-    protected $ignoreLanguage = 0;
+    protected $ignoreLanguage = 1;
 
 	public function getPageId() {
 		return $this->pageId;

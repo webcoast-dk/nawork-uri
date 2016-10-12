@@ -93,7 +93,7 @@ class UrlRepository extends Repository {
 			}
 		}
 		switch ($filter->getScope()) {
-			case 'subtree':
+			case 'subpages':
 				$pidConstraints = array();
 				$pageIds = array($filter->getPageId());
 				$this->getPidsRecursive($filter->getPageId(), $pageIds);

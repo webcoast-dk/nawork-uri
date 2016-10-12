@@ -20,7 +20,7 @@ class ClearCache implements ClearCacheActionsHookInterface {
 			// Add new cache menu item
 			$cacheActions[] = array(
 				'id' => 'clearUrlCache',
-				'title' => $title = $GLOBALS['LANG']->sL('LLL:EXT:nawork_uri/Resources/Private/Language/locallang.xml:label.clearUrlCache'),
+				'title' => $title = $GLOBALS['LANG']->sL('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_backend.xlf:cache.clearUrlCache'),
 				'href' => $GLOBALS['BACK_PATH'] . 'ajax.php?ajaxID=tx_naworkuri::clearUrlCache',
 				'icon' => '<img' . \TYPO3\CMS\Backend\Utility\IconUtility::skinImg($GLOBALS['BACK_PATH'], '../typo3conf/ext/nawork_uri/Resources/Public/Icons/module.png', 'width="16" height="16"') . ' title="' . $title . '" alt="' . $title . '" />'
 			);
@@ -31,7 +31,7 @@ class ClearCache implements ClearCacheActionsHookInterface {
 			// Add new cache menu item
 			$cacheActions[] = array(
 				'id' => 'clearUrlConfigurationCache',
-				'title' => $title = $GLOBALS['LANG']->sL('LLL:EXT:nawork_uri/Resources/Private/Language/locallang.xml:label.clearUrlConfigurationCache'),
+				'title' => $title = $GLOBALS['LANG']->sL('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_backend.xlf:cache.clearConfigurationCache'),
 				'href' => $GLOBALS['BACK_PATH'] . 'ajax.php?ajaxID=tx_naworkuri::clearUrlConfigurationCache',
 				'icon' => '<img' . \TYPO3\CMS\Backend\Utility\IconUtility::skinImg($GLOBALS['BACK_PATH'], '../typo3conf/ext/nawork_uri/Resources/Public/Icons/module.png', 'width="16" height="16"') . ' title="' . $title . '" alt="' . $title . '" />'
 			);

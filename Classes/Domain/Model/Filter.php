@@ -58,9 +58,9 @@ class Filter extends AbstractEntity implements \JsonSerializable {
     protected $parameters = '';
 
     /**
-     * @var bool
+     * @var integer
      */
-    protected $ignoreLanguage = false;
+    protected $ignoreLanguage = 0;
 
 	public function getPageId() {
 		return $this->pageId;
@@ -172,7 +172,10 @@ class Filter extends AbstractEntity implements \JsonSerializable {
             'language' => $this->language instanceof Language ? $this->language->getUid() : null,
             'ignoreLanguage' => $this->ignoreLanguage,
             'types' => $this->types,
-            'scope' => $this->scope
+            'scope' => $this->scope,
+            'offset' => $this->offset,
+            'path' => $this->path,
+            'parameters' => $this->parameters
         ];
     }
 }

@@ -91,8 +91,10 @@ class UrlController extends AbstractController {
 //			$this->pageRenderer->addJsFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/urlModule.js');
 //		}
 
-        $this->arguments->getArgument('filter')->getPropertyMappingConfiguration()->allowAllProperties();
-        $this->arguments->getArgument('filter')->getPropertyMappingConfiguration()->setTypeConverterOption(PersistentObjectConverter::class, PersistentObjectConverter::CONFIGURATION_CREATION_ALLOWED, true);
+        if ($this->arguments->hasArgument('filter')) {
+            $this->arguments->getArgument('filter')->getPropertyMappingConfiguration()->allowAllProperties();
+            $this->arguments->getArgument('filter')->getPropertyMappingConfiguration()->setTypeConverterOption(PersistentObjectConverter::class, PersistentObjectConverter::CONFIGURATION_CREATION_ALLOWED, true);
+        }
 	}
 
     protected function initializeView(ViewInterface $view)
@@ -163,7 +165,10 @@ class UrlController extends AbstractController {
 		$this->view->assign('currentPageRoot', $pageId);
 	}
 
-	public function noPageIdAction() {
+    /**
+     * @param Filter $filter
+     */
+	public function noPageIdAction(Filter $filter) {
 
 	}
 
@@ -353,15 +358,13 @@ class UrlController extends AbstractController {
         $typesMenu = GeneralUtility::makeInstance(Menu::class);
         $typesMenu->setIdentifier('TypesMenu')->setLabel(LocalizationUtility::translate('menu.types', 'NaworkUri'))->setRenderAsCheckbox(true);
         $typesMenu->addMenuItem(
-            $typesMenu->makeMenuItem()->setHref($this->uriBuilder->uriFor(null, ['types' => 0]))->setTitle(LocalizationUtility::translate('menu.types.normal', 'NaworkUri'))->setDataAttributes(['type' => 0, 'locked' => 0])
+            $typesMenu->makeMenuItem()->setTitle(LocalizationUtility::translate('menu.types.normal', 'NaworkUri'))->setDataAttributes(['type' => 'normal'])
         );
         $typesMenu->addMenuItem(
-            $typesMenu->makeMenuItem()->setHref($this->uriBuilder->uriFor(null, ['types' => 1]))->setTitle(LocalizationUtility::translate('menu.types.old', 'NaworkUri'))->setDataAttributes(['type' => 1])
+            $typesMenu->makeMenuItem()->setTitle(LocalizationUtility::translate('menu.types.old', 'NaworkUri'))->setDataAttributes(['type' => 'old'])
         );
         $typesMenu->addMenuItem(
-            $typesMenu->makeMenuItem()->setHref(
-                $this->uriBuilder->uriFor(null, ['types' => 0, 'locked' => 1])
-            )->setTitle(LocalizationUtility::translate('menu.types.locked', 'NaworkUri'))->setDataAttributes(['type' => 0, 'locked' => 1])
+            $typesMenu->makeMenuItem()->setTitle(LocalizationUtility::translate('menu.types.locked', 'NaworkUri'))->setDataAttributes(['type' => 'locked'])
         );
         $this->view->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->addMenu($typesMenu);
     }
@@ -403,7 +406,7 @@ class UrlController extends AbstractController {
         /** @var Menu $scopeMenu */
         $scopeMenu = GeneralUtility::makeInstance(Menu::class);
         $scopeMenu->setIdentifier('ScopeMenu')
-            ->setLabel(LocalizationUtility::translate('menu.sceope', 'NaworkUri'));
+            ->setLabel(LocalizationUtility::translate('menu.scope', 'NaworkUri'));
         $scopeMenu->addMenuItem(
             $scopeMenu->makeMenuItem()->setTitle(LocalizationUtility::translate('menu.scope.page', 'NaworkUri'))->setDataAttributes(['scope' => 'page'])
         );

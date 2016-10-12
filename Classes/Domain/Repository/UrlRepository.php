@@ -78,7 +78,7 @@ class UrlRepository extends Repository {
 		if (count($filter->getTypes()) > 0) {
 			$typeConstraints = array();
 			if (in_array('normal', $filter->getTypes())) {
-				$typeConstraints[] = $query->equals('type', 0);
+				$typeConstraints[] = $query->logicalAnd([$query->equals('type', 0), $query->equals('locked', 0)]);
 			}
 
 			if (in_array('old', $filter->getTypes())) {
@@ -115,7 +115,7 @@ class UrlRepository extends Repository {
 		if(!empty($path)) {
 			$constraints[] = $query->like('path', str_replace('*', '%', $path));
 		}
-		$constraints[] = $query->logicalNot($query->equals('type', 2)); // we do not want redirects in this result
+		$constraints[] = $query->logicalOr([$query->logicalNot($query->equals('type', 2)), $query->logicalNot($query->equals('type', 3))]); // we do not want redirects in this result
 		if (count($constraints) > 0) {
 			$query = $query->matching($query->logicalAnd($constraints));
 		}

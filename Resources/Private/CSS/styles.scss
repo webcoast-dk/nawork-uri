@@ -68,7 +68,17 @@ html, body, .module-body, .panel, .table-fit { height: 100%; }
             padding: 0;
             border: solid #8b8b8b;
             border-width: 0 0 1px 0;
-            min-width: 400px;
+            flex-grow: 1;
+            display: none;
+            margin-bottom: -1px;
+            max-width: 350px;
+
+            &.isVisible {
+                display: inline;
+            }
+        }
+
+        &__icon {
             display: none;
 
             &.isVisible {
@@ -91,7 +101,9 @@ html, body, .module-body, .panel, .table-fit { height: 100%; }
             .inputWrapper {
                 flex-grow: 1;
                 padding: 0 6px;
-                text-align: right;
+
+                display: flex;
+                justify-content: flex-end;
             }
         }
 
@@ -102,6 +114,7 @@ html, body, .module-body, .panel, .table-fit { height: 100%; }
 
         .icon {
             cursor: pointer;
+            flex-shrink: 0;
 
             &.icon-state-active {
                 color: #8b8b8b;

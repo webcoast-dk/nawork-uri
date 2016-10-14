@@ -138,10 +138,11 @@ Number.prototype.forceInRange = function(minimum, maximum) {
             });
 
             // search buttons
-            this.$element.find('.t3js-icon').click(function() {
+            this.$element.find('.js-icon').click(function() {
                 var $this = $(this);
-                $this.toggleClass('icon-state-active');
-                var $input = $this.siblings('.inputWrapper').find('.urlTable__column__search').toggleClass('isVisible');
+                $this.toggleClass('isVisible');
+                $this.siblings('.js-icon').toggleClass('isVisible');
+                var $input = $this.siblings('.urlTable__column__search').toggleClass('isVisible');
                 if (!$input.hasClass('isVisible')) {
                     $input.val('');
                 }

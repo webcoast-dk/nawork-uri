@@ -29,6 +29,11 @@ html, body, .module-body, .panel, .table-fit { height: 100%; }
         border: 1px solid #cccccc;
         border-top-left-radius: 2px;
         border-top-right-radius: 2px;
+
+        .urlTable__column--text {
+            display: flex;
+            justify-content: space-between;
+        }
     }
 
     &__body {
@@ -54,8 +59,18 @@ html, body, .module-body, .panel, .table-fit { height: 100%; }
         flex-direction: row;
         border-top: 1px solid #cccccc;
 
-        &:hover { background-color: #ededed; }
         &:first-child { border-top: none; }
+
+        &.isSelected {
+            background-color: #ddd;
+            font-style: italic;
+            //color: #fafafa;
+
+            + .urlTable__row.isSelected {
+                //border-top-color: #333;
+            }
+        }
+        &:hover { background-color: #ededed; }
     }
 
 
@@ -87,16 +102,15 @@ html, body, .module-body, .panel, .table-fit { height: 100%; }
         }
 
         &--icon {
-            width: 22px;
+            flex: 0 0 22px;
+            padding-right: 0;
         }
 
         &--text {
-            width: 50%;
+            flex: 1 1 100%;
             white-space: nowrap;
             overflow-x: hidden;
             text-overflow: ellipsis;
-            display: flex;
-            justify-content: space-between;
 
             .inputWrapper {
                 flex-grow: 1;
@@ -115,6 +129,7 @@ html, body, .module-body, .panel, .table-fit { height: 100%; }
         .icon {
             cursor: pointer;
             flex-shrink: 0;
+            display: block;
 
             &.icon-state-active {
                 color: #8b8b8b;
@@ -125,5 +140,5 @@ html, body, .module-body, .panel, .table-fit { height: 100%; }
 }
 
 .pagination-wrap {
-    padding: 6px 6px 6px 18px;
+    padding: 6px;
 }

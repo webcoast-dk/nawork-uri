@@ -5,6 +5,7 @@ use Nawork\NaworkUri\Backend\Template\Components\Menu\Menu;
 use Nawork\NaworkUri\Domain\Model\Domain;
 use Nawork\NaworkUri\Domain\Model\Filter;
 use Nawork\NaworkUri\Domain\Model\Language;
+use Nawork\NaworkUri\Domain\Model\Url;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Backend\View\BackendTemplateView;
@@ -139,7 +140,8 @@ class UrlController extends AbstractController {
 		$this->view->assignMultiple([
 		    'filter' => json_encode($filter),
             'userSettings' => json_encode($this->userSettings),
-            'ajaxUrl' => $this->uriBuilder->reset()->uriFor('ajaxLoadUrls')
+            'ajaxUrl' => $this->uriBuilder->reset()->uriFor('ajaxLoadUrls'),
+            'labels' => $this->buildLabelsObject()
         ]);
 	}
 
@@ -231,10 +233,10 @@ class UrlController extends AbstractController {
             array(
                 'html' => $this->view->render(),
                 'count' => $count,
-                'start' => $filter->getOffset() * 100 + 1,
+                'start' => $count > 0 ? $filter->getOffset() * 100 + 1 : 0,
                 'end' => $filter->getOffset() * 100 + $count % 100,
-                'page' => $filter->getOffset() + 1,
-                'pagesMax' => (int)($count / 100 + 1)
+                'page' => $count > 0 ? $filter->getOffset() + 1 : 0,
+                'pagesMax' => $count > 0 ? (int)($count / 100 + 1): 0
             )
         );
 	}
@@ -295,27 +297,57 @@ class UrlController extends AbstractController {
         $this->view->assign('returnUrl', $returnUrl);
 	}
 
+    /**
+     * Set lock state on the given url
+     *
+     * @param Url $url
+     *
+     * @return string
+     */
+    public function lockAction(Url $url)
+    {
+        $url->setLocked(true);
+        $this->urlRepository->update($url);
+
+        return '';
+	}
+
 	/**
-	 * Toggle the lock state of an url
+	 * Unset lock state on the given url
 	 *
-	 * @param \Nawork\NaworkUri\Domain\Model\Url $url
+	 * @param Url $url
+     *
 	 * @return string
 	 */
-	public function lockToggleAction($url) {
-		$url->setLocked(!$url->getLocked());
+	public function unlockAction(Url $url) {
+		$url->setLocked(false);
 		$this->urlRepository->update($url);
+
 		return '';
 	}
 
 	/**
 	 * Delete a url
 	 *
-	 * @param \Nawork\NaworkUri\Domain\Model\Url $url
+	 * @param Url $url
 	 * @return string
 	 */
-	public function deleteAction($url) {
+	public function deleteAction(Url $url) {
 		$this->urlRepository->remove($url);
+
 		return '';
+	}
+
+    /**
+     * @param array $uids
+     *
+     * @return string
+     */
+    public function deleteSelectedAction(array $uids)
+    {
+        $this->urlRepository->deleteByUids($uids);
+
+        return '';
 	}
 
     private function addDomainMenu()
@@ -444,4 +476,24 @@ class UrlController extends AbstractController {
 		}
 		return $pageRoots;
 	}
+
+	private function buildLabelsObject()
+    {
+        return json_encode(
+            [
+                'numberOfRecords' => LocalizationUtility::translate('label.numberOfRecords', $this->extensionName),
+                'loadingMessage' => LocalizationUtility::translate('label.loadingMessage', $this->extensionName),
+                'title' => [
+                    'error' => LocalizationUtility::translate('label.title.error', $this->extensionName),
+                    'delete' => LocalizationUtility::translate('label.title.delete', $this->extensionName),
+                    'deleteSelected' => LocalizationUtility::translate('label.title.deleteSelected', $this->extensionName),
+                ],
+                'message' => [
+                    'error' => LocalizationUtility::translate('label.message.error', $this->extensionName),
+                    'delete' => LocalizationUtility::translate('label.message.delete', $this->extensionName),
+                    'deleteSelected' => LocalizationUtility::translate('label.message.deleteSelected', $this->extensionName),
+                ]
+            ]
+        );
+    }
 }

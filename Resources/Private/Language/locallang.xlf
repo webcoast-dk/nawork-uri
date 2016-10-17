@@ -49,6 +49,34 @@
 			<trans-unit id="label.loadingMessage">
 				<source>Loading urls, please wait...</source>
 			</trans-unit>
+			<trans-unit id="label.title.error">
+				<source>Error</source>
+			</trans-unit>
+			<trans-unit id="label.title.delete">
+				<source>Delete url?</source>
+			</trans-unit>
+			<trans-unit id="label.title.deleteSelected">
+				<source>Delete selected urls?</source>
+			</trans-unit>
+			<trans-unit id="label.message.error">
+				<source>An error occurred. The server message is "%s".</source>
+			</trans-unit>
+			<trans-unit id="label.message.delete">
+				<source>Do you really want to delete the url "%s"?</source>
+			</trans-unit>
+			<trans-unit id="label.message.deleteSelected">
+				<source><![CDATA[<p>]]>Do you want to delete the selected urls (%d)?<![CDATA[</p>]]></source>
+			</trans-unit>
+
+			<trans-unit id="clickMenu.lock">
+				<source>Lock</source>
+			</trans-unit>
+			<trans-unit id="clickMenu.unlock">
+				<source>Unlock</source>
+			</trans-unit>
+			<trans-unit id="clickMenu.deleteSelected">
+				<source>Delete selected</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>

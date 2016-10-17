@@ -25,6 +25,9 @@ html, body, .module-body, .panel, .table-fit {
     border: 1px solid #cccccc;
     border-top-left-radius: 2px;
     border-top-right-radius: 2px; }
+    .urlTable__header .urlTable__column--text {
+      display: flex;
+      justify-content: space-between; }
   .urlTable__body {
     flex-shrink: 1;
     flex-grow: 1;
@@ -43,10 +46,13 @@ html, body, .module-body, .panel, .table-fit {
     display: flex;
     flex-direction: row;
     border-top: 1px solid #cccccc; }
-    .urlTable__row:hover {
-      background-color: #ededed; }
     .urlTable__row:first-child {
       border-top: none; }
+    .urlTable__row.isSelected {
+      background-color: #ddd;
+      font-style: italic; }
+    .urlTable__row:hover {
+      background-color: #ededed; }
   .urlTable__column {
     padding: 6px;
     line-height: 1.5; }
@@ -66,14 +72,13 @@ html, body, .module-body, .panel, .table-fit {
       .urlTable__column__icon.isVisible {
         display: inline; }
     .urlTable__column--icon {
-      width: 22px; }
+      flex: 0 0 22px;
+      padding-right: 0; }
     .urlTable__column--text {
-      width: 50%;
+      flex: 1 1 100%;
       white-space: nowrap;
       overflow-x: hidden;
-      text-overflow: ellipsis;
-      display: flex;
-      justify-content: space-between; }
+      text-overflow: ellipsis; }
       .urlTable__column--text .inputWrapper {
         flex-grow: 1;
         padding: 0 6px;
@@ -84,9 +89,10 @@ html, body, .module-body, .panel, .table-fit {
       width: 100%; }
     .urlTable__column .icon {
       cursor: pointer;
-      flex-shrink: 0; }
+      flex-shrink: 0;
+      display: block; }
       .urlTable__column .icon.icon-state-active {
         color: #8b8b8b; }
 
 .pagination-wrap {
-  padding: 6px 6px 6px 18px; }
+  padding: 6px; }

@@ -3,13 +3,10 @@
 
 <f:section name="content">
 	<script type="application/javascript">
-		<![CDATA[tx_naworkuri_labels = {
-			"numberOfRecords": "]]>{f:translate(id: 'label.numberOfRecords')}<![CDATA[",
-			"loadingMessage": "]]>{f:translate(id: 'label.loadingMessage')}<![CDATA["
-		};]]>
+		var tx_naworkuri_labels = {labels -> f:format.raw()};
 	</script>
 	<div class="panel">
-		<div class="urlTable table" data-filter="{filter}" data-settings="{settings}" data-ajax-url="{ajaxUrl}">
+		<div class="urlTable table" data-filter="{filter}" data-settings="{settings}" data-ajax-url-load="{ajaxUrl}" data-ajax-url-lock="{f:uri.action(action: 'lock')}" data-ajax-url-unlock="{f:uri.action(action: 'unlock')}" data-ajax-url-delete="{f:uri.action(action: 'delete')}" data-ajax-url-delete-selected="{f:uri.action(action: 'deleteSelected')}">
 			<div class="urlTable__header">
 				<span class="urlTable__column urlTable__column--icon"></span>
 				<span class="urlTable__column urlTable__column--icon">L</span>

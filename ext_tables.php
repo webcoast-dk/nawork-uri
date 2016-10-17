@@ -3,6 +3,7 @@
 use Nawork\NaworkUri\Command\MigrationCommandController;
 use Nawork\NaworkUri\Command\NaworkUriCommandController;
 use Nawork\NaworkUri\Hooks\ClearCache;
+use Nawork\NaworkUri\Hooks\ClickMenu;
 use Nawork\NaworkUri\Hooks\TceFormsMainFields;
 use Nawork\NaworkUri\Hooks\TceMainProcessDatamap;
 
@@ -15,7 +16,7 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
 	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule($mainModuleName, '', '', \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('nawork_uri').'Configuration/Module/');
 
 	\TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule('Nawork.' . $_EXTKEY, $mainModuleName, 'uri', '', array(
-		'Url' => 'indexUrls,ajaxLoadUrls,updateSettings,contextMenu,lockToggle,delete'
+		'Url' => 'indexUrls,ajaxLoadUrls,updateSettings,contextMenu,lock,unlock,delete,deleteSelected'
 		), array(
 		'access' => 'user,group',
 		'icon' => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/module.png',
@@ -24,7 +25,7 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
 	));
 
 	\TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule('Nawork.' . $_EXTKEY, $mainModuleName, 'redirect', '', array(
-		'Url' => 'indexRedirects,ajaxLoadRedirects,updateSettings,contextMenu,lockToggle,delete'
+		'Url' => 'indexRedirects,ajaxLoadRedirects,updateSettings,contextMenu,lock,unlock,delete,deleteSelected'
 		), array(
 		'access' => 'user,group',
 		'icon' => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/module.png',
@@ -65,4 +66,42 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
 	// register command controller for uri testing
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = NaworkUriCommandController::class;
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = MigrationCommandController::class;
+
+    // click menu processing
+    $GLOBALS['TBE_MODULES_EXT']['xMOD_alt_clickmenu']['extendCMclasses'][] = [
+        'name' => ClickMenu::class
+    ];
+    // register icons
+    /** @var \TYPO3\CMS\Core\Imaging\IconRegistry $iconRegistry */
+    $iconRegistry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Imaging\IconRegistry::class);
+    $iconRegistry->registerIcon(
+        'record-url-default',
+        \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
+        ['source' => 'EXT:nawork_uri/Resources/Public/Icons/link.svg']
+    );
+    $iconRegistry->registerIcon(
+        'record-url-old',
+        \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
+        ['source' => 'EXT:nawork_uri/Resources/Public/Icons/link-old.svg']
+    );
+    $iconRegistry->registerIcon(
+        'record-url-redirect',
+        \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
+        ['source' => 'EXT:nawork_uri/Resources/Public/Icons/link-redirect.svg']
+    );
+    $iconRegistry->registerIcon(
+        'record-url-locked',
+        \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
+        ['source' => 'EXT:nawork_uri/Resources/Public/Icons/link-locked.svg']
+    );
+    $iconRegistry->registerIcon(
+        'action-url-lock',
+        \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
+        ['source' => 'EXT:nawork_uri/Resources/Public/Icons/lock.svg']
+    );
+    $iconRegistry->registerIcon(
+        'action-url-unlock',
+        \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
+        ['source' => 'EXT:nawork_uri/Resources/Public/Icons/unlock.svg']
+    );
 }

@@ -38,6 +38,15 @@ class UrlRepository extends Repository {
 		return $query->count();
 	}
 
+    public function deleteByUids($uids)
+    {
+        $uidContraints = [];
+        foreach($uids as $uid) {
+            $uidContraints[] = 'uid=' . (int)$uid;
+        }
+        $GLOBALS['TYPO3_DB']->exec_DELETEquery('tx_naworkuri_uri', implode(' OR ', $uidContraints));
+	}
+
 	private function getPidsRecursive($id, &$pids, $depth = 0) {
 		if ($depth == 5) {
 //			return;

@@ -229,14 +229,21 @@ class UrlController extends AbstractController {
 			$this->view->assign('defaultLanguage', array('label' => $tsConfig['mod.']['SHARED.']['defaultLanguageLabel'], 'flag' => $tsConfig['mod.']['SHARED.']['defaultLanguageFlag']));
 		}
 		$count = $this->urlRepository->countUrlsByFilter($filter);
-		return json_encode(
+        $maxPages = $count > 0 ? (int)($count / 100 + 1): 0;
+        $end = ($filter->getOffset() + 1) * 100;
+        if (!($filter->getOffset() < $maxPages - 1)) {
+            $end -= (100 - $count % 100);
+        } elseif ($count < 100) {
+            $end = $count;
+        }
+        return json_encode(
             array(
                 'html' => $this->view->render(),
                 'count' => $count,
                 'start' => $count > 0 ? $filter->getOffset() * 100 + 1 : 0,
-                'end' => $filter->getOffset() * 100 + $count % 100,
-                'page' => $count > 0 ? $filter->getOffset() + 1 : 0,
-                'pagesMax' => $count > 0 ? (int)($count / 100 + 1): 0
+                'end' => $end,
+                'page' => $count > 0 ? $filter->getOffset() : 0,
+                'pagesMax' => $maxPages
             )
         );
 	}

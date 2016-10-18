@@ -16,7 +16,7 @@ class UrlRepository extends Repository {
 
 	public function findUrlsByFilter(Filter $filter) {
 		$query = $this->buildUrlQueryByFilter($filter);
-        $query->setOffset((int) $filter->getOffset());
+        $query->setOffset((int) $filter->getOffset() * 100);
         $query->setLimit(100);
 		return $query->setOrderings(array('path' => QueryInterface::ORDER_ASCENDING))->execute();
 	}
@@ -28,7 +28,7 @@ class UrlRepository extends Repository {
 
 	public function findRedirectsByFilter(Filter $filter) {
 		$query = $this->buildRedirectQueryByFilter($filter);
-        $query->setOffset((int) $filter->getOffset());
+        $query->setOffset((int) $filter->getOffset() * 100);
         $query->setLimit(100);
 		return $query->setOrderings(array('path' => QueryInterface::ORDER_ASCENDING))->execute();
 	}
@@ -128,7 +128,7 @@ class UrlRepository extends Repository {
         if (!empty($parameters)) {
             $constraints[] = $query->like('params', str_replace('*', '%', $parameters));
         }
-		$constraints[] = $query->logicalOr([$query->logicalNot($query->equals('type', 2)), $query->logicalNot($query->equals('type', 3))]); // we do not want redirects in this result
+		$constraints[] = $query->logicalAnd([$query->logicalNot($query->equals('type', 2)), $query->logicalNot($query->equals('type', 3))]); // we do not want redirects in this result
 		if (count($constraints) > 0) {
 			$query = $query->matching($query->logicalAnd($constraints));
 		}

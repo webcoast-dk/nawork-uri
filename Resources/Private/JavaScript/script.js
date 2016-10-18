@@ -104,6 +104,7 @@ Number.prototype.forceInRange = function(minimum, maximum) {
                 var domainValue = $(this.options[this.selectedIndex]).data('domain');
                 if (domainValue && !isNaN(domainValue) && domainValue !== _this.filter.domain) {
                     _this.filter.domain = domainValue;
+                    _this.filter.offset = 0; // always reset pagination on search
                     _this.loadUrls();
                 }
             });
@@ -120,6 +121,7 @@ Number.prototype.forceInRange = function(minimum, maximum) {
                             _this.filter.types.splice(indexToDelete, 1);
                         }
                     }
+                    _this.filter.offset = 0; // always reset pagination on search
                     _this.loadUrls();
                 }
             });
@@ -141,6 +143,7 @@ Number.prototype.forceInRange = function(minimum, maximum) {
                             _this.filter.ignoreLanguage = 0;
                             _this.filter.language = languageValue;
                     }
+                    _this.filter.offset = 0; // always reset pagination on search
                     _this.loadUrls();
                 }
             });
@@ -150,6 +153,7 @@ Number.prototype.forceInRange = function(minimum, maximum) {
                 var scopeValue = $(this.options[this.selectedIndex]).data('scope');
                 if (scopeValue && scopeValue.length > 0 && scopeValue !== _this.filter.scope) {
                     _this.filter.scope = scopeValue;
+                    _this.filter.offset = 0; // always reset pagination on search
                     _this.loadUrls();
                 }
             });
@@ -178,6 +182,7 @@ Number.prototype.forceInRange = function(minimum, maximum) {
                 setTimeout(function() {
                     if ($input.val() !== _this.filter.path) {
                         _this.filter.path = $input.val();
+                        _this.filter.offset = 0; // always reset pagination on search
                         _this.loadUrls();
                     }
                 }, _this.options.inputChangeTimeout);
@@ -196,6 +201,7 @@ Number.prototype.forceInRange = function(minimum, maximum) {
                 setTimeout(function() {
                     if ($input.val() !== _this.filter.parameters) {
                         _this.filter.parameters = $input.val();
+                        _this.filter.offset = 0; // always reset pagination on search
                         _this.loadUrls();
                     }
                 }, _this.options.inputChangeTimeout);
@@ -209,7 +215,7 @@ Number.prototype.forceInRange = function(minimum, maximum) {
             this.controls.$first.click(function() {
                 if (!$(this).hasClass('disabled')) {
                     _this.filter.offset = 0;
-                    _this.updatePagination(this.filter.offset);
+                    _this.updatePagination(_this.filter.offset);
                     _this.loadUrls();
                 }
             });
@@ -217,26 +223,26 @@ Number.prototype.forceInRange = function(minimum, maximum) {
             // previous button
             this.controls.$previous.click(function() {
                 if (!$(this).hasClass('disabled')) {
-                    _this.filter.offset = Math.min(0, _this.filter.offset - 1);
-                    _this.updatePagination(this.filter.offset);
+                    _this.filter.offset = _this.filter.offset.forceInRange(0, _this.filter.offset - 1);
+                    _this.updatePagination(_this.filter.offset);
                     _this.loadUrls();
                 }
             });
 
             // next button
-            this.controls.$previous.click(function() {
+            this.controls.$next.click(function() {
                 if (!$(this).hasClass('disabled')) {
-                    _this.filter.offset = Math.max(_this.state.maxPages - 1, _this.filter.offset + 1);
-                    _this.updatePagination(this.filter.offset);
+                    _this.filter.offset = _this.filter.offset.forceInRange(_this.filter.offset + 1, _this.state.maxPages - 1);
+                    _this.updatePagination(_this.filter.offset);
                     _this.loadUrls();
                 }
             });
 
             // last button
-            this.controls.$previous.click(function() {
+            this.controls.$last.click(function() {
                 if (!$(this).hasClass('disabled')) {
-                    _this.filter.offset = _this.state.maxPages - 1;
-                    _this.updatePagination(this.filter.offset);
+                    _this.filter.offset = _this.state.maxPages -1;
+                    _this.updatePagination(_this.filter.offset);
                     _this.loadUrls();
                 }
             });
@@ -247,13 +253,14 @@ Number.prototype.forceInRange = function(minimum, maximum) {
                     clearTimeout(_this.state.inputChangeTimeout);
                 }
                 _this.state.inputChangeTimeout = setTimeout(function() {
-                    var page = parseInt(_this.controls.$page.val());
+                    var page = parseInt(_this.controls.$page.val()) - 1;
                     if (!isNaN(page)) {
-                        var pageForcedValue = page.forceInRange(1, _this.state.maxPages);
-                        if (pageForcedValue != _this.filter.offset + 1) {
-                            _this.filter.offset = pageForcedValue - 1;
+                        var pageForcedValue = page.forceInRange(0, _this.state.maxPages - 1);
+                        if (pageForcedValue != _this.filter.offset) {
+                            _this.filter.offset = pageForcedValue;
+                            _this.loadUrls();
                         } else {
-                            _this.updatePagination(_this.filter.offset + 1);
+                            _this.updatePagination(_this.filter.offset);
                         }
                     }
                 }, _this.options.inputChangeTimeout);
@@ -524,9 +531,9 @@ Number.prototype.forceInRange = function(minimum, maximum) {
                     } else {
                         _this.controls.$numberOfRecords.text(tx_naworkuri_labels.numberOfRecords.format(0, 0));
                     }
-                    if (data.page && data.pagesMax) {
+                    if (!isNaN(data.page) && !isNaN(data.pagesMax)) {
                         _this.updatePagination(data.page, data.pagesMax);
-                        if (data.page > 1) {
+                        if (data.page > 0) {
                             _this.controls.$first.removeClass('disabled');
                             _this.controls.$previous.removeClass('disabled');
                         } else {
@@ -534,7 +541,7 @@ Number.prototype.forceInRange = function(minimum, maximum) {
                             _this.controls.$previous.addClass('disabled');
                         }
 
-                        if (data.page < data.pagesMax) {
+                        if (data.page < data.pagesMax -1) {
                             _this.controls.$next.removeClass('disabled');
                             _this.controls.$last.removeClass('disabled');
                         } else {
@@ -549,7 +556,8 @@ Number.prototype.forceInRange = function(minimum, maximum) {
         },
 
         updatePagination: function(currentPage, maxPages) {
-            this.controls.$page.val(currentPage);
+            // the +1 is for the user, internal is one less
+            this.controls.$page.val(currentPage + 1);
             if (!isNaN(maxPages)) {
                 this.state.maxPages = maxPages;
                 this.controls.$pagesMax.text(maxPages);

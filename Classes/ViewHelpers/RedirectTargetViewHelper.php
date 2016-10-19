@@ -13,10 +13,11 @@ use TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper;
 class RedirectTargetViewHelper extends AbstractViewHelper {
 	/**
 	 * @param \Nawork\NaworkUri\Domain\Model\Url $url
+     * @param string|null $as
 	 *
 	 * @return string
 	 */
-	public function render($url) {
+	public function render($url, $as = null) {
 		$pageUid = $url->getPageUid();
 		$parameters = $url->getParameters();
 		$language = $url->getLanguage();
@@ -51,6 +52,13 @@ class RedirectTargetViewHelper extends AbstractViewHelper {
 			 */
 			$newUrl = '';
 		}
+
+		if (!empty($as)) {
+		    $this->templateVariableContainer->add($as, $newUrl);
+            $content = $this->renderChildren();
+            $this->templateVariableContainer->remove($as);
+            return $content;
+        }
 
 		return $newUrl;
 	}

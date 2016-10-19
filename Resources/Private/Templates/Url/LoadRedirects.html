@@ -1,0 +1,33 @@
+{namespace u=Nawork\NaworkUri\ViewHelpers}
+{namespace core=TYPO3\CMS\Core\ViewHelpers}
+<f:if condition="{f:count(subject: '{urls}')} > 0">
+	<f:then>
+		<f:for each="{urls}" as="url">
+			<div class="urlTable__row" data-uid="{url.uid}">
+				<span class="urlTable__column urlTable__column--icon">
+					<span class="js-icon">
+						<core:icon identifier="record-url-redirect" alternativeMarkupIdentifier="inline" />
+					</span>
+				</span>
+				<span class="urlTable__column urlTable__column--text" title="{url.path}">{url.path}</span>
+				<f:if condition="{url.type} == 2">
+					<f:then>
+						<span class="urlTable__column urlTable__column--text" title="{url.redirectPath}">{url.redirectPath}</span>
+					</f:then>
+					<f:else>
+						<u:redirectTarget url="{url}" as="targetPath">
+							<span class="urlTable__column urlTable__column--text" title="{targetPath}">{targetPath}</span>
+						</u:redirectTarget>
+					</f:else>
+				</f:if>
+			</div>
+		</f:for>
+	</f:then>
+	<f:else>
+		<div class="urlTable__row">
+			<span class="urlTable__column urlTable__column--fullWidth">
+				<f:translate key="message_no_results" default="No urls have been found with your filter settings!"/>
+			</span>
+		</div>
+	</f:else>
+</f:if>

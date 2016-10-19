@@ -16,6 +16,8 @@ gulp.task('js', function() {
         pipe(gulp.dest('Public/JavaScript'));
 });
 
+gulp.task('build', ['css', 'js']);
+
 gulp.task('default', ['css', 'js'], function () {
     gulp.watch('Private/CSS/**/*.scss', ['css']);
     gulp.watch('Private/JavaScript/**/*.js', ['js']);

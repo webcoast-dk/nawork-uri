@@ -11,7 +11,6 @@ use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Backend\View\BackendTemplateView;
 use TYPO3\CMS\Core\Database\DatabaseConnection;
 use TYPO3\CMS\Core\Imaging\Icon;
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 use TYPO3\CMS\Extbase\Property\TypeConverter\PersistentObjectConverter;
@@ -58,6 +57,12 @@ class UrlController extends AbstractController {
 	 * @var DatabaseConnection
 	 */
 	protected $databaseConnection;
+
+    /**
+     * @var \TYPO3\CMS\Extbase\Service\ExtensionService
+     * @inject
+     */
+    protected $extensionService;
 
 	protected $userSettingsKey = 'tx_naworkuri_moduleUrl';
 
@@ -118,17 +123,22 @@ class UrlController extends AbstractController {
                 ->setIcon($icon);
             $buttonBar->addButton($addButton, ButtonBar::BUTTON_POSITION_LEFT);
 
+            if ($this->actionMethodName === 'indexRedirectsAction') {
+                if (empty($this->pageId)) {
+                    $this->pageId = $this->pageRootIds[0];
+                }
+                $this->addPageRootMenu();
+            }
             $this->addDomainMenu();
-            $this->addTypesMenu();
-            $this->addLanguageMenu();
-            $this->addScopeMenu();
+            if ($this->actionMethodName === 'indexUrlsAction') {
+                $this->addTypesMenu();
+                $this->addLanguageMenu();
+                $this->addScopeMenu();
+            }
+            $this->view->assign('moduleParameterPrefix', $this->extensionService->getPluginNamespace($this->request->getControllerExtensionName(), $this->request->getPluginName()));
         }
 
     }
-
-	public function initializeIndexRedirectsAction() {
-		$this->pageRenderer->addJsFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/redirectModule.js');
-	}
 
     /**
      * @param Filter $filter
@@ -137,34 +147,37 @@ class UrlController extends AbstractController {
 		if (!$this->pageId > 0) {
 			$this->forward('noPageId');
 		}
-		$this->view->assignMultiple([
-		    'filter' => json_encode($filter),
-            'userSettings' => json_encode($this->userSettings),
-            'ajaxUrl' => $this->uriBuilder->reset()->uriFor('ajaxLoadUrls'),
-            'labels' => $this->buildLabelsObject()
-        ]);
+        $this->view->assignMultiple(
+            [
+                'filter' => json_encode($filter),
+                'userSettings' => json_encode($this->userSettings),
+                'labels' => $this->buildLabelsObject()
+            ]
+        );
 	}
 
-	public function indexRedirectsAction() {
-		$pageRoots = $this->determineRootPages();
-		// get page roots
-		if(count($pageRoots) === 1) {
-			$pageId = $pageRoots[0]['uid'];
-		} else {
-			$pageId = GeneralUtility::_GP('pageRoot');
-			if(empty($pageId)) {
-				$pageId = $this->userSettings['pageRoot'];
-			}
-		}
-		if(empty($pageId)) {
-			$pageId = $pageRoots[0]['uid'];
-		}
-		// make sure we store the selected page root
-		$this->setUserSettings('pageRoot', $pageId);
-		$this->view->assign('domains', $this->domainRepository->findByRootPage($pageId)->toArray());
-		$this->view->assign('userSettings', json_encode($this->userSettings));
-		$this->view->assign('pageRoots', $pageRoots);
-		$this->view->assign('currentPageRoot', $pageId);
+    public function initializeIndexRedirectsAction()
+    {
+        if ($this->request->hasArgument('pageId')) {
+            $this->pageId = $this->request->getArgument('pageId');
+        }
+        if (empty($this->pageId)) {
+            $this->pageId = $this->userSettings['pageRoot'];
+        }
+	}
+
+    /**
+     * @param \Nawork\NaworkUri\Domain\Model\Filter $filter
+     */
+	public function indexRedirectsAction(Filter $filter) {
+		$this->setUserSettings('pageRoot', $this->pageId);
+		$this->view->assignMultiple(
+            [
+                'filter' => json_encode($filter),
+                'userSettings' => json_encode($this->userSettings),
+                'labels' => $this->buildLabelsObject()
+            ]
+        );
 	}
 
     /**
@@ -174,7 +187,7 @@ class UrlController extends AbstractController {
 
 	}
 
-    public function initializeAjaxLoadUrlsAction()
+    public function initializeLoadUrlsAction()
     {
         $this->defaultViewObjectName = TemplateView::class;
 	}
@@ -185,44 +198,7 @@ class UrlController extends AbstractController {
 	 *
 	 * @return string
 	 */
-	public function ajaxLoadUrlsAction(Filter $filter) {
-//		/* @var $filter Filter */
-//		$filter = $this->objectManager->get(Filter::class);
-//		$filter->setPageId($this->pageId);
-//
-//		if ($domain instanceof Domain) {
-//			$filter->setDomains(array($domain));
-//		}
-//
-//		if ($language > -1) {
-//			$filter->setLanguage($language);
-//		}
-//
-//		if (is_array($types) && count($types) > 0) {
-//			foreach ($types as $t) {
-//				$filter->addType($t);
-//			}
-//		} else {
-//			$filter->setTypes(array('normal', 'locked', 'old'));
-//		}
-//
-//		if ($scope != NULL) {
-//			$filter->setScope($scope);
-//		}
-//
-//		if ($path != NULL) {
-//			$filter->setPath($path);
-//		}
-//
-//		if ($offset !== NULL) {
-//			$filter->setOffset($offset);
-//		}
-//
-//		if ($limit != NULL && $limit > 0) {
-//			$filter->setLimit($limit);
-//			$this->setUserSettings('filter.pageSize', $limit);
-//		}
-
+	public function loadUrlsAction(Filter $filter) {
 		$this->view->assign('urls', $this->urlRepository->findUrlsByFilter($filter));
 		$tsConfig = BackendUtility::getPagesTSconfig($this->pageId);
 		if(is_array($tsConfig) && !empty($tsConfig['mod.']['SHARED.']['defaultLanguageLabel'])) {
@@ -248,48 +224,36 @@ class UrlController extends AbstractController {
         );
 	}
 
-	/**
-	 *
-	 * @param Domain $domain
-	 * @param string $path
-	 * @param int $offset
-	 * @param int $limit
-	 *
-	 * @return string
-	 */
-	public function ajaxLoadRedirectsAction($domain = NULL, $path = NULL, $offset = NULL, $limit = NULL) {
-		$pageRoot = $this->userSettings['pageRoot'];
-		/* @var $filter Filter */
-		$filter = $this->objectManager->get(Filter::class);
+	public function initializeLoadRedirectsAction()
+    {
+        $this->defaultViewObjectName = TemplateView::class;
+	}
 
-		if ($domain instanceof Domain) {
-			$filter->setDomains(array($domain));
-		} elseif($domain === NULL) {
-			$filter->setDomains($this->domainRepository->findByRootPage($pageRoot));
-		}
-
-		if ($path != NULL) {
-			$filter->setPath($path);
-		}
-
-		if ($offset !== NULL) {
-			$filter->setOffset($offset);
-		}
-
-		if ($limit != NULL && $limit > 0) {
-			$filter->setLimit($limit);
-			$this->setUserSettings('filter.pageSize', $limit);
-		}
-
-		$this->view->assign('urls', $this->urlRepository->findRedirectsByFilter($filter));
-		$tsConfig = BackendUtility::getPagesTSconfig($pageRoot);
-		if(is_array($tsConfig) && !empty($tsConfig['mod.']['SHARED.']['defaultLanguageLabel'])) {
-			$this->view->assign('defaultLanguage', array('label' => $tsConfig['mod.']['SHARED.']['defaultLanguageLabel'], 'flag' => $tsConfig['mod.']['SHARED.']['defaultLanguageFlag']));
-		}
-		return json_encode(array(
-				'html' => $this->view->render(),
-				'count' => $this->urlRepository->countRedirectsByFilter($filter)
-			));
+    /**
+     * @param \Nawork\NaworkUri\Domain\Model\Filter $filter
+     *
+     * @return string
+     */
+	public function loadRedirectsAction(Filter $filter) {
+	    $this->view->assign('urls', $this->urlRepository->findRedirectsByFilter($filter));
+		$count = $this->urlRepository->countRedirectsByFilter($filter);
+        $maxPages = $count > 0 ? (int)($count / 100 + 1): 0;
+        $end = ($filter->getOffset() + 1) * 100;
+        if (!($filter->getOffset() < $maxPages - 1)) {
+            $end -= (100 - $count % 100);
+        } elseif ($count < 100) {
+            $end = $count;
+        }
+        return json_encode(
+            array(
+                'html' => $this->view->render(),
+                'count' => $count,
+                'start' => $count > 0 ? $filter->getOffset() * 100 + 1 : 0,
+                'end' => $end,
+                'page' => $count > 0 ? $filter->getOffset() : 0,
+                'pagesMax' => $maxPages
+            )
+        );
 	}
 
 	/**
@@ -355,6 +319,26 @@ class UrlController extends AbstractController {
         $this->urlRepository->deleteByUids($uids);
 
         return '';
+	}
+
+    private function addPageRootMenu()
+    {
+        if (count($this->pageRootIds) > 1) {
+            $pageRootMenu = $this->view->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->makeMenu();
+            $pageRootMenu->setIdentifier('PageRootMenu')->setLabel(LocalizationUtility::translate('menu.pageRoots', 'NaworkUri'));
+            foreach($this->pageRootIds as $rootId) {
+                $pageRecord = BackendUtility::getRecord('pages', $rootId);
+                if (is_array($pageRecord)) {
+                    $pageRootMenu->addMenuItem(
+                        $pageRootMenu->makeMenuItem()->setActive($this->pageId == $rootId)->setHref(
+                            $this->uriBuilder->reset()->uriFor('indexRedirects', ['pageId' => $rootId])
+                        )->setTitle($pageRecord['title'] . ' [ID: ' . $rootId . ']')
+                    );
+                }
+            }
+
+            $this->view->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->addMenu($pageRootMenu);
+        }
 	}
 
     private function addDomainMenu()

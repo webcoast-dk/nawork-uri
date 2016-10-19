@@ -3,6 +3,9 @@
 	<file source-language="en" datatype="plaintext" original="messages" date="2014-06-02T11:47:10Z" product-name="nawork_uri">
 		<header/>
 		<body>
+            <trans-unit id="menu.pageRoots">
+                <source>Page roots:</source>
+            </trans-unit>
 			<trans-unit id="menu.domain">
 				<source>Domain:</source>
 			</trans-unit>

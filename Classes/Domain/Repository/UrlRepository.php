@@ -138,14 +138,12 @@ class UrlRepository extends Repository {
 	private function buildRedirectQueryByFilter(Filter $filter) {
 		$query = $this->createQuery();
 		// ignore language, because all urls should be selected
-		$query->getQuerySettings()->setRespectSysLanguage(FALSE);$constraints = array();
+		$query->getQuerySettings()->setRespectSysLanguage(FALSE);
 
-		$domainContraints = array();
-		foreach($filter->getDomains() as $domain) {
-			$domainContraints[] = $query->equals('domain', $domain);
-		}
-		if(count($domainContraints) > 0) {
-			$constraints[] = $query->logicalOr($domainContraints);
+        $constraints = [];
+
+		if ($filter->getDomain() instanceof Domain) {
+			$constraints[] = $query->equals('domain', $filter->getDomain());
 		}
 
 		$path = $filter->getPath();

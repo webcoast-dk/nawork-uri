@@ -4,7 +4,7 @@
 		<f:for each="{urls}" as="url">
 			<div class="urlTable__row" data-uid="{url.uid}">
 				<span class="urlTable__column urlTable__column--icon">
-					<a href="javascript:void(0);" onclick="TYPO3.ClickMenu.show('tx_naworkuri_uri', '{url.uid}', '1', '', ''); return false;" title="{url.uid}">
+					<span class="js-icon">
                         <f:switch expression="{url.type}">
                             <f:case value="0">
                                 <f:if condition="{url.locked}">
@@ -20,7 +20,7 @@
                                 <core:icon identifier="record-url-old" alternativeMarkupIdentifier="inline" />
                             </f:case>
                         </f:switch>
-                    </a>
+                    </span>
 					<f:if condition="{url.locked}">
 						<f:then><td class="uid locked" title="ID: {url.uid}"><span class="icon"></span></td></f:then>
 						<f:else>

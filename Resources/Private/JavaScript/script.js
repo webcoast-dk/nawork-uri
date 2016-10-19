@@ -45,7 +45,7 @@ Number.prototype.forceInRange = function(minimum, maximum) {
         },
         filter: null,
         userSettings: null,
-        ajaxUrl: null,
+        moduleParameterPrefix: null,
         $tableInner: null,
         controls: {
             $first: null,
@@ -74,6 +74,7 @@ Number.prototype.forceInRange = function(minimum, maximum) {
         init: function() {
             this.filter = this.$element.data('filter');
             this.userSettings = this.$element.data('settings');
+            this.moduleParameterPrefix = this.$element.data('moduleParameterPrefix');
             // set urls
             this.urls.load = this.$element.data('ajaxUrlLoad');
             this.urls.lock = this.$element.data('ajaxUrlLock');
@@ -280,6 +281,10 @@ Number.prototype.forceInRange = function(minimum, maximum) {
             this.$tableInner.find('.urlTable__row').each(function(index, element) {
                 // use this indexing for identifying the click direction later
                 $(element).data('rowIndex', index);
+                $(element).find('.js-icon').click(function(ev) {
+                    ev.stopImmediatePropagation();
+                    _this.openClickMenu($(this).parents('.urlTable__row').data('uid'));
+                });
             }).click(function(ev) {
                 var $clickedItem = $(this);
                 if (ev.ctrlKey === false && ev.metaKey === false && ev.shiftKey === false || !_this.state.lastClickedRecord) {
@@ -345,7 +350,7 @@ Number.prototype.forceInRange = function(minimum, maximum) {
                 }
                 if (catchEvent) {
                     ev.preventDefault();
-                    TYPO3.ClickMenu.show('tx_naworkuri_uri', $(this).data('uid'), '1', encodeURIComponent('+') + 'show,edit,lock,unlock,delete' + (_this.state.selectedRecords.length > 0 ? ',deleteSelected' : ''), '');
+                    _this.openClickMenu($(this).data('uid'));
                 }
             });
         },
@@ -516,11 +521,10 @@ Number.prototype.forceInRange = function(minimum, maximum) {
             if (this.state.ajaxCall !== null && this.state.ajaxCall.readyState !== XMLHttpRequest.DONE) {
                 this.state.ajaxCall.abort();
             }
-            this.state.ajaxCall = $.getJSON(this.urls.load, {
-                tx_naworkuri_naworkuri_naworkuriuri: {
-                    filter: this.filter
-                }
-            }, function(data) {
+            var requestData = {};
+            requestData[this.moduleParameterPrefix] = {};
+            requestData[this.moduleParameterPrefix].filter = this.filter;
+            this.state.ajaxCall = $.getJSON(this.urls.load, requestData, function(data) {
                 if (data) {
                     if (data.html && data.html.length > 0) {
                         _this.$tableInner.html(data.html);
@@ -562,6 +566,10 @@ Number.prototype.forceInRange = function(minimum, maximum) {
                 this.state.maxPages = maxPages;
                 this.controls.$pagesMax.text(maxPages);
             }
+        },
+
+        openClickMenu: function(uid) {
+            TYPO3.ClickMenu.show('tx_naworkuri_uri', uid, '1', encodeURIComponent('+') + 'show,edit,lock,unlock,delete' + (this.state.selectedRecords.length > 0 ? ',deleteSelected' : ''), '');
         }
     };
 

@@ -36,10 +36,10 @@ class UrlController implements SingletonInterface {
 			if ($incomingParameters['pObj']->siteScript && substr($incomingParameters['pObj']->siteScript, 0, 9) != 'index.php' && substr($incomingParameters['pObj']->siteScript, 0, 1) != '?') {
 				$uri = $incomingParameters['pObj']->siteScript;
 				list($uri, ) = GeneralUtility::trimExplode('?', $uri);
-				/* @var $translator \Nawork\NaworkUri\Utility\TransformationUtility */
-				$translator = GeneralUtility::makeInstance(TransformationUtility::class);
+				/* @var $transformationUtility \Nawork\NaworkUri\Utility\TransformationUtility */
+				$transformationUtility = GeneralUtility::makeInstance(TransformationUtility::class);
 				try {
-					$uri_params = $translator->uri2params($uri);
+					$uri_params = $transformationUtility->uri2params($uri);
 					if (is_array($uri_params)) { // uri found
 						$incomingParameters['pObj']->id = $uri_params['id'];
 						unset($uri_params['id']);
@@ -82,11 +82,11 @@ class UrlController implements SingletonInterface {
 	    $configuration = ConfigurationUtility::getConfiguration($domainName);
 		if ($configuration instanceof Configuration && $link['LD']['url']) {
 			list(, $params) = explode('?', $link['LD']['totalURL']);
-			/** @var \Nawork\NaworkUri\Utility\TransformationUtility $translator */
-			$translator = GeneralUtility::makeInstance(TransformationUtility::class);
+			/** @var \Nawork\NaworkUri\Utility\TransformationUtility $transformationUtility */
+			$transformationUtility = GeneralUtility::makeInstance(TransformationUtility::class);
 			try {
-				$translator->setDomain($domain);
-				$url = $translator->params2uri($params);
+				$transformationUtility->setDomain($domain);
+				$url = $transformationUtility->params2uri($params);
 				$link['LD']['totalURL'] = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($url);
 				/* add hook for post processing the url */
 				if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_naworkuri']['url-postProcess'])) {
@@ -217,18 +217,18 @@ class UrlController implements SingletonInterface {
 
 				/* if the page is called via parameterized form look for a path to redirect to */
 				if ((substr($GLOBALS['TSFE']->siteScript, 0, 9) == 'index.php' || substr($GLOBALS['TSFE']->siteScript, 0, 1) == '?')) {
-					$dontCreateNewUrls = TRUE;
+					$doNotCreateNewUrls = TRUE;
 					$ignoreTimeout = TRUE;
 					$tempParams = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params);
 					if ((count($tempParams) < 3 && array_key_exists('L', $tempParams) && array_key_exists('id', $tempParams)) || (count($tempParams) < 2 && array_key_exists('id', $tempParams))) {
 						if (\Nawork\NaworkUri\Utility\GeneralUtility::isActiveBeUserSession()) {
-							$dontCreateNewUrls = FALSE;
+							$doNotCreateNewUrls = FALSE;
 							// set ignoreTimout to false to allow creation of new urls, e.g. after page title change
 							$ignoreTimeout = FALSE;
 						}
 					}
 					try {
-						$uri = $translator->params2uri($params, $dontCreateNewUrls, $ignoreTimeout);
+						$uri = $translator->params2uri($params, $doNotCreateNewUrls, $ignoreTimeout);
 						if (in_array($_SERVER['REQUEST_METHOD'], array('GET','HEAD')) && ($path == 'index.php' || $path == '') && $uri !== FALSE && $uri != $GLOBALS['TSFE']->siteScript) {
 							$uri = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($uri); // TRUE is for redirect, this applies "/" by default and the baseURL if set
                             $redirectStatus = $configuration->getGeneralConfiguration()->getRedirectStatus();
@@ -251,58 +251,11 @@ class UrlController implements SingletonInterface {
 		}
 	}
 
-	function curl_exec_follow($ch, &$maxredirect = NULL) {
-		$mr = $maxredirect === NULL ? 5 : intval($maxredirect);
-		if (ini_get('open_basedir') == '' && ini_get('safe_mode') == '') {
-			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, $mr > 0);
-			curl_setopt($ch, CURLOPT_MAXREDIRS, $mr);
-		} else {
-			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, FALSE);
-			if ($mr > 0) {
-				$newurl = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
-
-				$rch = curl_copy_handle($ch);
-				curl_setopt($rch, CURLOPT_HEADER, TRUE);
-				curl_setopt($rch, CURLOPT_NOBODY, TRUE);
-				curl_setopt($rch, CURLOPT_FORBID_REUSE, FALSE);
-				curl_setopt($rch, CURLOPT_RETURNTRANSFER, TRUE);
-				do {
-					curl_setopt($rch, CURLOPT_URL, $newurl);
-					$header = curl_exec($rch);
-					if (curl_errno($rch)) {
-						$code = 0;
-					} else {
-						$code = curl_getinfo($rch, CURLINFO_HTTP_CODE);
-						if ($code == 301 || $code == 302) {
-							preg_match('/Location:(.*?)\n/', $header, $matches);
-							$newurl = trim(array_pop($matches));
-						} else {
-							$code = 0;
-						}
-					}
-				} while ($code && --$mr);
-				curl_close($rch);
-				if (!$mr) {
-					if ($maxredirect === NULL) {
-						trigger_error('Too many redirects. When following redirects, libcurl hit the maximum amount.', E_USER_WARNING);
-					} else {
-						$maxredirect = 0;
-					}
-
-					return FALSE;
-				}
-				curl_setopt($ch, CURLOPT_URL, $newurl);
-			}
-		}
-
-		return curl_exec($ch);
-	}
-
 	/**
 	 * Handles the pagenotfound event:
 	 * This function is called from tx_naworkuri_uri::uri2params if the path is not found.
 	 * Additionally it can be used as a user function in $GLOBALS['TYPO3_CONF_VARS']['FE']['pageNotFound_handling'], e.g.:
-	 * USER_FUNCTION:EXT:nawork_uri/class.tx_naworkuri.php:&tx_naworkuri->handlePagenotfound.
+	 * USER_FUNCTION:&Nawork\NaworkUri\Controller\Frontend\UrlController->handlePageNotFound.
 	 *
 	 * Two situations are supported. The page is not found, this is the case, if the path was not found or a
 	 * non-existing page id is requested. The other case is, that a page is requested, that is not accessible without being
@@ -320,7 +273,6 @@ class UrlController implements SingletonInterface {
 		if ($configuration instanceof Configuration) {
 			$output = '';
             $disableOutput = FALSE;
-			$extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
 			/* the page is not accessible without being logged in, so handle this, if configured */
 			if (array_key_exists('pageAccessFailureReasons', $params) && is_array($params['pageAccessFailureReasons']) && array_key_exists('fe_group', $params['pageAccessFailureReasons']) && $configuration->getPageNotAccessibleConfiguration() instanceof PageNotAccessibleConfiguration) {
 				$pageNotAccessibleConfiguration = $configuration->getPageNotAccessibleConfiguration();
@@ -336,26 +288,10 @@ class UrlController implements SingletonInterface {
                             $disableOutput = TRUE;
                             $this->pageNotAccessibleHandlingInProgress = TRUE;
                         } elseif (!$this->pageNotAccessibleHandlingInProgress && GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
-							$curl = curl_init();
 							$urlParts = parse_url($pageNotAccessibleConfiguration->getValue());
 							$urlParts['scheme'] = GeneralUtility::getIndpEnv('TYPO3_SSL') ? 'https' : 'http';
 							$notFoundUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . $urlParts['path'] . (!empty($urlParts['query']) ? '?' . $urlParts['query'] : '');
-							curl_setopt($curl, CURLOPT_URL, $notFoundUrl);
-							curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
-							curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
-							curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
-							curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-							curl_setopt($curl, CURLOPT_USERAGENT, 'nawork_uri');
-							curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
-							curl_setopt($curl, CURLOPT_MAXREDIRS, 1);
-							curl_setopt($curl, CURLOPT_REFERER, GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
-							// disable check for valid peer certificate: this should not be used in
-							// production environments for security reasons
-							if ((bool) $extConf['noSslVerify']) {
-								curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
-								curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
-							}
-							$output = $this->curl_exec_follow($curl);
+							$output = \Nawork\NaworkUri\Utility\HttpUtility::getUrlByCurl($notFoundUrl);
 						} else {
 							$output = '404 not found! The 403 page url or id "' . $pageNotAccessibleConfiguration->getValue() . '"" seems to cause a loop.';
 						}
@@ -383,26 +319,10 @@ class UrlController implements SingletonInterface {
                             $disableOutput = TRUE;
                             $this->pageNotFoundHandlingInProgress = TRUE;
                         } elseif (!$this->pageNotFoundHandlingInProgress && GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
-							$curl = curl_init();
 							$urlParts = parse_url($pageNotFoundConfiguration->getValue());
 							$urlParts['scheme'] = GeneralUtility::getIndpEnv('TYPO3_SSL') ? 'https' : 'http';
 							$notFoundUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . $urlParts['path'] . (!empty($urlParts['query']) ? '?' . $urlParts['query'] : '');
-							curl_setopt($curl, CURLOPT_URL, $notFoundUrl);
-							curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
-							curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
-							curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
-							curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-							curl_setopt($curl, CURLOPT_USERAGENT, 'nawork_uri');
-							curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
-							curl_setopt($curl, CURLOPT_MAXREDIRS, 1);
-							curl_setopt($curl, CURLOPT_REFERER, GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
-							// disable check for valid peer certificate: this should not be used in
-							// production environments for security reasons
-							if ((bool) $extConf['noSslVerify']) {
-								curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
-								curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
-							}
-							$output = $this->curl_exec_follow($curl);
+                            $output = \Nawork\NaworkUri\Utility\HttpUtility::getUrlByCurl($notFoundUrl);
 						} else {
 							$output = '404 not found! The 404 page url or id "' . $pageNotFoundConfiguration->getValue() . '"" seems to cause a loop.';
 						}

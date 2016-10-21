@@ -6,15 +6,19 @@ use Nawork\NaworkUri\Configuration\Configuration;
 use Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration;
 use Nawork\NaworkUri\Configuration\PageNotFoundConfiguration;
 use Nawork\NaworkUri\Exception\DbErrorException;
+use Nawork\NaworkUri\Exception\TransformationServiceException;
 use Nawork\NaworkUri\Exception\UrlIsNotUniqueException;
 use Nawork\NaworkUri\Exception\UrlIsRedirectException;
 use Nawork\NaworkUri\Hooks\UrlControllerHookInterface;
 use Nawork\NaworkUri\Utility\ConfigurationUtility;
 use Nawork\NaworkUri\Utility\TransformationUtility;
+use TYPO3\CMS\Core\Core\Bootstrap;
+use TYPO3\CMS\Core\Http\ServerRequestFactory;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\HttpUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
+use TYPO3\CMS\Frontend\Http\RequestHandler;
 
 class UrlController implements SingletonInterface {
 
@@ -33,7 +37,7 @@ class UrlController implements SingletonInterface {
         $configuration = ConfigurationUtility::getConfiguration();
 
 		if ($configuration instanceof Configuration) {
-			if ($incomingParameters['pObj']->siteScript && substr($incomingParameters['pObj']->siteScript, 0, 9) != 'index.php' && substr($incomingParameters['pObj']->siteScript, 0, 1) != '?') {
+			if ($incomingParameters['pObj']->siteScript && substr($incomingParameters['pObj']->siteScript, 0, 9) != 'index.php' && substr($incomingParameters['pObj']->siteScript, 0, 1) != '?' && !$this->pageNotFoundHandlingInProgress && !$this->pageNotAccessibleHandlingInProgress) {
 				$uri = $incomingParameters['pObj']->siteScript;
 				list($uri, ) = GeneralUtility::trimExplode('?', $uri);
 				/* @var $transformationUtility \Nawork\NaworkUri\Utility\TransformationUtility */
@@ -45,7 +49,7 @@ class UrlController implements SingletonInterface {
 						unset($uri_params['id']);
 						$incomingParameters['pObj']->mergingWithGetVars($uri_params);
 					} else { // handle 404
-						$this->handlePageNotFound(array('currentUrl' => $ref->siteScript, 'reasonText' => 'The requested path could not be found', 'pageAccessFailureReasons' => array()), $ref);
+						$this->handlePagenotfound(array('currentUrl' => $ref->siteScript, 'reasonText' => 'The requested path could not be found', 'pageAccessFailureReasons' => array('nawork_uri' => 'Url not found')), $ref);
 					}
 				} catch (UrlIsRedirectException $ex) {
 					$this->redirectUrl = $ex->getUrl();
@@ -109,7 +113,9 @@ class UrlController implements SingletonInterface {
 			} catch (DbErrorException $ex) {
 				/* log db errors to belog */
 				\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "%s"', GeneralUtility::SYSLOG_SEVERITY_ERROR, array($ex->getSqlError()));
-			}
+			} catch (TransformationServiceException $ex) {
+                \Nawork\NaworkUri\Utility\GeneralUtility::log('A transformation could not completed: ' . $ex->getMessage() . ($ex->getPrevious() instanceof \Exception ? ' The previous error was:' . $ex->getPrevious()->getMessage(): ''));
+            }
 		}
 	}
 
@@ -245,7 +251,9 @@ class UrlController implements SingletonInterface {
 					} catch (DbErrorException $ex) {
 						/* log db errors to belog */
 						\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "%s"', GeneralUtility::SYSLOG_SEVERITY_ERROR, array($ex->getSqlError()));
-					}
+					} catch (TransformationServiceException $ex) {
+					    \Nawork\NaworkUri\Utility\GeneralUtility::log('A transformation could not completed: ' . $ex->getMessage() . ($ex->getPrevious() instanceof \Exception ? ' The previous error was:' . $ex->getPrevious()->getMessage(): ''));
+                    }
 				}
 			}
 		}
@@ -283,18 +291,24 @@ class UrlController implements SingletonInterface {
 						$output = $pageNotAccessibleConfiguration->getValue();
 						break;
 					case PageNotAccessibleConfiguration::BEHAVIOR_PAGE:
-						if (!$this->pageNotAccessibleHandlingInProgress && (MathUtility::canBeInterpretedAsInteger($pageNotAccessibleConfiguration->getValue()) || MathUtility::canBeInterpretedAsInteger(\Nawork\NaworkUri\Utility\GeneralUtility::aliasToId($pageNotAccessibleConfiguration->getValue())))) {
-                            $frontendController->id = $pageNotAccessibleConfiguration->getValue();
-                            $disableOutput = TRUE;
-                            $this->pageNotAccessibleHandlingInProgress = TRUE;
-                        } elseif (!$this->pageNotAccessibleHandlingInProgress && GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
-							$urlParts = parse_url($pageNotAccessibleConfiguration->getValue());
-							$urlParts['scheme'] = GeneralUtility::getIndpEnv('TYPO3_SSL') ? 'https' : 'http';
-							$notFoundUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . $urlParts['path'] . (!empty($urlParts['query']) ? '?' . $urlParts['query'] : '');
-							$output = \Nawork\NaworkUri\Utility\HttpUtility::getUrlByCurl($notFoundUrl);
-						} else {
-							$output = '404 not found! The 403 page url or id "' . $pageNotAccessibleConfiguration->getValue() . '"" seems to cause a loop.';
-						}
+					    if (!$this->pageNotAccessibleHandlingInProgress) {
+					        $this->pageNotAccessibleHandlingInProgress = true; // avoid loops
+                            if (MathUtility::canBeInterpretedAsInteger($pageNotAccessibleConfiguration->getValue()) || MathUtility::canBeInterpretedAsInteger(\Nawork\NaworkUri\Utility\GeneralUtility::aliasToId($pageNotAccessibleConfiguration->getValue()))) {
+                                // the TSFE called the page not found handling, so we build a new request
+                                GeneralUtility::_GETset($pageNotAccessibleConfiguration->getValue(), 'id');
+                                $request = ServerRequestFactory::fromGlobals();
+                                $bootstrap = Bootstrap::getInstance();
+                                $requestHandler = new RequestHandler($bootstrap);
+                                $response = $requestHandler->handleRequest($request);
+                                $output = $response->getBody()->__toString();
+                            } elseif (GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
+                                // we have a url as the page not found config value AND the user agent is not nawork_uri (avoid loops)
+                                $urlParts = parse_url($pageNotAccessibleConfiguration->getValue());
+                                $urlParts['scheme'] = GeneralUtility::getIndpEnv('TYPO3_SSL') ? 'https' : 'http';
+                                $notFoundUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . $urlParts['path'] . (!empty($urlParts['query']) ? '?' . $urlParts['query'] : '');
+                                $output = \Nawork\NaworkUri\Utility\HttpUtility::getUrlByCurl($notFoundUrl);
+                            }
+                        }
 						break;
 					case PageNotAccessibleConfiguration::BEHAVIOR_REDIRECT:
 						$path = html_entity_decode($pageNotAccessibleConfiguration->getValue());
@@ -302,9 +316,10 @@ class UrlController implements SingletonInterface {
 							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($path, 301); // send headers and exits
 						}
 						break;
-					default:
-						$output = '<html><head><title>403 Forbidden</title></head><body><h1>403 Forbidden</h1><p>You don\'t have the permission to access this page</p></body></html>';
 				}
+				if (empty($output)) {
+                    $output = '<html><head><title>403 Forbidden</title></head><body><h1>403 Forbidden</h1><p>You don\'t have the permission to access this page</p></body></html>';
+                }
 			} elseif ($configuration->getPageNotFoundConfiguration() instanceof PageNotFoundConfiguration) {
 				$pageNotFoundConfiguration = $configuration->getPageNotFoundConfiguration();
 				header('Content-Type: text/html; charset=utf-8');
@@ -314,18 +329,32 @@ class UrlController implements SingletonInterface {
 						$output = $pageNotFoundConfiguration->getValue();
 						break;
 					case PageNotFoundConfiguration::BEHAVIOR_PAGE:
-                        if (!$this->pageNotFoundHandlingInProgress && (MathUtility::canBeInterpretedAsInteger($pageNotFoundConfiguration->getValue()) || MathUtility::canBeInterpretedAsInteger(\Nawork\NaworkUri\Utility\GeneralUtility::aliasToId($pageNotFoundConfiguration->getValue())))) {
-                            $frontendController->id = $pageNotFoundConfiguration->getValue();
-                            $disableOutput = TRUE;
-                            $this->pageNotFoundHandlingInProgress = TRUE;
-                        } elseif (!$this->pageNotFoundHandlingInProgress && GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
-							$urlParts = parse_url($pageNotFoundConfiguration->getValue());
-							$urlParts['scheme'] = GeneralUtility::getIndpEnv('TYPO3_SSL') ? 'https' : 'http';
-							$notFoundUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . $urlParts['path'] . (!empty($urlParts['query']) ? '?' . $urlParts['query'] : '');
-                            $output = \Nawork\NaworkUri\Utility\HttpUtility::getUrlByCurl($notFoundUrl);
-						} else {
-							$output = '404 not found! The 404 page url or id "' . $pageNotFoundConfiguration->getValue() . '"" seems to cause a loop.';
-						}
+					    if (!$this->pageNotFoundHandlingInProgress) {
+					        $this->pageNotFoundHandlingInProgress = TRUE;
+                            if (MathUtility::canBeInterpretedAsInteger($pageNotFoundConfiguration->getValue()) || MathUtility::canBeInterpretedAsInteger(\Nawork\NaworkUri\Utility\GeneralUtility::aliasToId($pageNotFoundConfiguration->getValue()))) {
+                                // we have an id/alias as page not found config value
+                                if (is_array($params['pageAccessFailureReasons']) && !array_key_exists('nawork_uri', $params['pageAccessFailureReasons'])) {
+                                    // the TSFE called the page not found handling, so we build a new request
+                                    GeneralUtility::_GETset($pageNotFoundConfiguration->getValue(), 'id');
+                                    $request = ServerRequestFactory::fromGlobals();
+                                    $bootstrap = Bootstrap::getInstance();
+                                    $requestHandler = new RequestHandler($bootstrap);
+                                    $response = $requestHandler->handleRequest($request);
+                                    $output = $response->getBody()->__toString();
+                                } else {
+                                    // the page not found handling is called by nawork-uri after request to unknown url/path
+                                    $frontendController->id = $pageNotFoundConfiguration->getValue();
+                                    $disableOutput = TRUE; // let the frontend render normally
+                                }
+                            } elseif (GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
+                                // we have a url as the page not found config value AND the user agent is not nawork_uri (avoid loops)
+                                $urlParts = parse_url($pageNotFoundConfiguration->getValue());
+                                $urlParts['scheme'] = GeneralUtility::getIndpEnv('TYPO3_SSL') ? 'https' : 'http';
+                                $notFoundUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . $urlParts['path'] . (!empty($urlParts['query']) ? '?' . $urlParts['query'] : '');
+                                $output = \Nawork\NaworkUri\Utility\HttpUtility::getUrlByCurl($notFoundUrl);
+                            }
+                        }
+                        // no else here. If the content is empty, the default message will be shown.
 						break;
 					case PageNotFoundConfiguration::BEHAVIOR_REDIRECT:
 						$path = html_entity_decode($pageNotFoundConfiguration->getValue());
@@ -347,5 +376,4 @@ class UrlController implements SingletonInterface {
             }
 		}
 	}
-
 }

@@ -1,6 +1,7 @@
 <?php
 
 namespace Nawork\NaworkUri\Utility;
+
 use Nawork\NaworkUri\Cache\UrlCache;
 use Nawork\NaworkUri\Exception\TransformationException;
 use Nawork\NaworkUri\Exception\TransformationServiceException;
@@ -278,10 +279,8 @@ class TransformationUtility implements SingletonInterface {
 					} else {
 						throw new TransformationServiceException($transformationConfiguration->getName(), $transformationConfiguration->getType(), 'No transformation service for type "' . $transformationConfiguration->getType() . '" registered');
 					}
-				} catch (\Exception $ex) {
-					/**
-					 * @todo Do some logging here
-					 */
+				} catch (\RuntimeException $ex) {
+					throw new TransformationServiceException($transformationConfiguration->getName(), $transformationConfiguration->getType(), 'An unknown error occurred during transformation', $ex);
 				}
 			}
 		}

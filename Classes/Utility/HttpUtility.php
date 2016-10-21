@@ -4,7 +4,6 @@ namespace Nawork\NaworkUri\Utility;
 
 
 use Nawork\NaworkUri\Configuration\ExtensionConfiguration;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class HttpUtility
 {
@@ -16,14 +15,14 @@ class HttpUtility
     public static function getUrlByCurl($url)
     {
         /** @var ExtensionConfiguration $extensionConfiguration */
-        $extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class);
+        $extensionConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(ExtensionConfiguration::class);
         $maxRedirects = 5;
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
         curl_setopt($curl, CURLOPT_TIMEOUT, 30);
         curl_setopt($curl, CURLOPT_USERAGENT, 'nawork_uri');
-        curl_setopt($curl, CURLOPT_REFERER, GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
+        curl_setopt($curl, CURLOPT_REFERER, \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL'));
         // disable check for valid peer certificate: this should not be used in
         // production environments for security reasons
         if ($extensionConfiguration->getNoSslVerify()) {

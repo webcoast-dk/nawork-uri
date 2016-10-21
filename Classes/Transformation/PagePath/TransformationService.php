@@ -23,7 +23,9 @@ class TransformationService extends AbstractTransformationService {
 	 */
 	public function transform($configuration, $value, $transformationUtility) {
 		$rootLine = $this->getRootline($value, $configuration->getTable());
-		if (count($rootLine) === 1) {
+        if (count($rootLine) === 0) {
+            throw new \RuntimeException('Page path could not be transformed, due to empty rootline.', 1469629524);
+        } elseif (count($rootLine) === 1) {
 			return '';
 		} elseif (count($rootLine) > 1) {
 			// reverse root line

@@ -111,17 +111,24 @@ class UrlController extends AbstractController {
             $this->view->getModuleTemplate()->getPageRenderer()->addCssFile('../typo3conf/ext/nawork_uri/Resources/Public/CSS/styles.css' ,'stylesheet', 'all', '', false, false, '', true);
             $this->view->getModuleTemplate()->getPageRenderer()->addJsFile('../typo3conf/ext/nawork_uri/Resources/Public/JavaScript/script.js' ,'text/javascript', false, false, '', true);
 
-            $buttonBar = $this->view->getModuleTemplate()->getDocHeaderComponent()->getButtonBar();
-            $returnUrl = rawurlencode(BackendUtility::getModuleUrl('naworkuri_NaworkUriUri'));
-            $parameters = GeneralUtility::explodeUrl2Array('edit[tx_naworkuri_uri][0]=new&returnUrl=' . $returnUrl);
-            $addUserLink = BackendUtility::getModuleUrl('record_edit', $parameters);
-            $title = $this->getLanguageService()->sL('LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:newRecordGeneral');
-            $icon = $this->view->getModuleTemplate()->getIconFactory()->getIcon('actions-document-new', Icon::SIZE_SMALL);
-            $addButton = $buttonBar->makeLinkButton()
-                ->setHref($addUserLink)
-                ->setTitle($title)
-                ->setIcon($icon);
-            $buttonBar->addButton($addButton, ButtonBar::BUTTON_POSITION_LEFT);
+            if ($this->actionMethodName !== 'noPageIdAction') {
+                $buttonBar = $this->view->getModuleTemplate()->getDocHeaderComponent()->getButtonBar();
+                $returnUrl = rawurlencode(BackendUtility::getModuleUrl('naworkuri_NaworkUriUri'));
+                $parameters = GeneralUtility::explodeUrl2Array('edit[tx_naworkuri_uri][0]=new&returnUrl=' . $returnUrl);
+                $addUserLink = BackendUtility::getModuleUrl('record_edit', $parameters);
+                $title = $this->getLanguageService()->sL(
+                    'LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:newRecordGeneral'
+                );
+                $icon = $this->view->getModuleTemplate()->getIconFactory()->getIcon(
+                    'actions-document-new',
+                    Icon::SIZE_SMALL
+                );
+                $addButton = $buttonBar->makeLinkButton()
+                    ->setHref($addUserLink)
+                    ->setTitle($title)
+                    ->setIcon($icon);
+                $buttonBar->addButton($addButton, ButtonBar::BUTTON_POSITION_LEFT);
+            }
 
             if ($this->actionMethodName === 'indexRedirectsAction') {
                 if (empty($this->pageId)) {
@@ -129,7 +136,9 @@ class UrlController extends AbstractController {
                 }
                 $this->addPageRootMenu();
             }
-            $this->addDomainMenu();
+            if ($this->actionMethodName !== 'noPageIdAction') {
+                $this->addDomainMenu();
+            }
             if ($this->actionMethodName === 'indexUrlsAction') {
                 $this->addTypesMenu();
                 $this->addLanguageMenu();

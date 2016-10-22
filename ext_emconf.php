@@ -12,7 +12,7 @@
 
 $EM_CONF[$_EXTKEY] = array(
 	'title' => 'n@work URI',
-	'description' => 'Create nice looking URLs like RealURL or CoolURI. It follows the concept of cooluri creating and caching the urls. Requirements: PHP 5+ with SimpleXML, cURL! MySQL 4.1+.',
+	'description' => 'A modern, flexible extension for creating and managing urls and redirects in the TYPO3 CMS.',
 	'category' => 'fe',
 	'shy' => 0,
 	'version' => '2.7.3',

@@ -91,7 +91,7 @@ class TransformationUtility implements SingletonInterface {
 			}
 			// cachedparams
 			$cachedparams = Array();
-			parse_str($cache['params'], $cachedparams);
+			parse_str($cache['parameters'], $cachedparams);
 			$cachedparams['id'] = $cache['page_uid'];
 			$cachedparams['L'] = $cache['sys_language_uid'];
 			// classic url params

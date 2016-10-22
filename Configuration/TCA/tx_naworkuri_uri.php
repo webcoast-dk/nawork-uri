@@ -31,7 +31,7 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 		)
 	),
 	'interface' => Array(
-		'showRecordFieldList' => 'sys_language_uid,domain,path,params,hash_path,hash_params,locked,type,redirect_mode'
+		'showRecordFieldList' => 'sys_language_uid,domain,path,parameters,path_hash,parameters_hash,locked,type,redirect_mode'
 	),
 	'columns' => Array(
 		'page_uid' => Array(
@@ -83,15 +83,15 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 				'size' => '60',
 			)
 		),
-		'params' => Array(
+		'parameters' => Array(
 			'exclude' => 1,
-			'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.params',
+			'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.parameters',
 			'config' => Array(
 				'type' => 'input',
 				'size' => '30',
 			)
 		),
-		'hash_path' => Array(
+		'path_hash' => Array(
 			'exclude' => 0,
 			'label' => 'Hash Path',
 			'config' => Array(
@@ -100,7 +100,7 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 				'size' => '30',
 			)
 		),
-		'hash_params' => Array(
+		'parameters_hash' => Array(
 			'exclude' => 0,
 			'label' => 'Hash Params',
 			'config' => Array(
@@ -156,7 +156,7 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 	),
 	'types' => array(
 		'0' => array(
-			'showitem' => 'type, domain, sys_language_uid, page_uid, path, params, locked'
+			'showitem' => 'type, domain, sys_language_uid, page_uid, path, parameters, locked'
 		),
 		'1' => array(
 			'showitem' => 'type, domain, sys_language_uid, page_uid, path'
@@ -165,7 +165,7 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 			'showitem' => 'type, domain, path, redirect_path, redirect_mode'
 		),
 		'3' => array(
-			'showitem' => 'type, domain, sys_language_uid, path, page_uid, params;LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.params_redirect, redirect_mode'
+			'showitem' => 'type, domain, sys_language_uid, path, page_uid, parameters;LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.parameters_redirect, redirect_mode'
 		)
 	)
 );

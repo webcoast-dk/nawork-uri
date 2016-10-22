@@ -94,7 +94,7 @@ class UrlController implements SingletonInterface {
 				$link['LD']['totalURL'] = \Nawork\NaworkUri\Utility\GeneralUtility::finalizeUrl($url);
 				/* add hook for post processing the url */
 				if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_naworkuri']['url-postProcess'])) {
-					$hookParams = array('url' => $url, 'params' => \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params), 'LD' => $link['LD']);
+					$hookParams = array('url' => $url, 'parameters' => \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params), 'LD' => $link['LD']);
 					foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_naworkuri']['url-postProcess'] as $funcRef) {
 						GeneralUtility::callUserFunction($funcRef, $hookParams, $this);
 					}
@@ -149,8 +149,8 @@ class UrlController implements SingletonInterface {
 					case 1:
 						// get the id, language and parameters and try to find a current url to this set
 						$newUrlParameters = array('id' => $this->redirectUrl['page_uid'], 'L' => $this->redirectUrl['sys_language_uid']);
-						if (!empty($this->redirectUrl['params'])) {
-							$newUrlParameters = array_merge($newUrlParameters, \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($this->redirectUrl['params']));
+						if (!empty($this->redirectUrl['parameters'])) {
+							$newUrlParameters = array_merge($newUrlParameters, \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($this->redirectUrl['parameters']));
 						}
 						// do not create new urls when trying to find one
 						$newUrl = $translator->params2uri(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($newUrlParameters, FALSE), TRUE, TRUE);
@@ -160,7 +160,7 @@ class UrlController implements SingletonInterface {
 						$newUrl = $this->redirectUrl['redirect_path'];
 						break;
 					case 3:
-						$newUrlParameters = array_merge(\Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($this->redirectUrl['params']), array('id' => $this->redirectUrl['page_uid'], 'L' => $this->redirectUrl['sys_language_uid']));
+						$newUrlParameters = array_merge(\Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($this->redirectUrl['parameters']), array('id' => $this->redirectUrl['page_uid'], 'L' => $this->redirectUrl['sys_language_uid']));
 						// try to find a new url or create one, if it does not exist
 						$newUrl = $translator->params2uri(\Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($newUrlParameters, FALSE), FALSE, TRUE);
 						break;

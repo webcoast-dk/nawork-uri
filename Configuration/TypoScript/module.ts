@@ -7,7 +7,6 @@ module.tx_naworkuri {
 					tableName = tx_naworkuri_uri
 					columns {
 						sys_language_uid.mapOnProperty = language
-						params.mapOnProperty = parameters
 					}
 				}
 			}

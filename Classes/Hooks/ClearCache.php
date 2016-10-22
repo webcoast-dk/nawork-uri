@@ -2,6 +2,10 @@
 
 namespace Nawork\NaworkUri\Hooks;
 use TYPO3\CMS\Backend\Toolbar\ClearCacheActionsHookInterface;
+use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Core\Imaging\Icon;
+use TYPO3\CMS\Core\Imaging\IconFactory;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Description of ClearCache
@@ -16,13 +20,15 @@ class ClearCache implements ClearCacheActionsHookInterface {
 	 * @param array $optionValues AccessConfigurations-identifiers (typically  used by userTS with options.clearCache.identifier)
 	 */
 	public function manipulateCacheActions(&$cacheActions, &$optionValues) {
+	    /** @var IconFactory $iconFactory */
+	    $iconFactory = GeneralUtility::makeInstance(IconFactory::class);
 		if ($GLOBALS['BE_USER']->isAdmin() || $GLOBALS['BE_USER']->getTSConfigVal('options.clearCache.urls')) {
 			// Add new cache menu item
 			$cacheActions[] = array(
 				'id' => 'clearUrlCache',
 				'title' => $title = $GLOBALS['LANG']->sL('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_backend.xlf:cache.clearUrlCache'),
-				'href' => $GLOBALS['BACK_PATH'] . 'ajax.php?ajaxID=tx_naworkuri::clearUrlCache',
-				'icon' => '<img' . \TYPO3\CMS\Backend\Utility\IconUtility::skinImg($GLOBALS['BACK_PATH'], '../typo3conf/ext/nawork_uri/Resources/Public/Icons/module.png', 'width="16" height="16"') . ' title="' . $title . '" alt="' . $title . '" />'
+				'href' => BackendUtility::getAjaxUrl('tx_naworkuri::clearUrlCache'),
+				'icon' => $iconFactory->getIcon('tx-naworkuri', Icon::SIZE_SMALL)->getMarkup()
 			);
 			$optionValues[] = 'urls';
 		}
@@ -32,8 +38,8 @@ class ClearCache implements ClearCacheActionsHookInterface {
 			$cacheActions[] = array(
 				'id' => 'clearUrlConfigurationCache',
 				'title' => $title = $GLOBALS['LANG']->sL('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_backend.xlf:cache.clearConfigurationCache'),
-				'href' => $GLOBALS['BACK_PATH'] . 'ajax.php?ajaxID=tx_naworkuri::clearUrlConfigurationCache',
-				'icon' => '<img' . \TYPO3\CMS\Backend\Utility\IconUtility::skinImg($GLOBALS['BACK_PATH'], '../typo3conf/ext/nawork_uri/Resources/Public/Icons/module.png', 'width="16" height="16"') . ' title="' . $title . '" alt="' . $title . '" />'
+				'href' => BackendUtility::getAjaxUrl('tx_naworkuri::clearUrlConfigurationCache'),
+				'icon' => $iconFactory->getIcon('tx-naworkuri', Icon::SIZE_SMALL)->getMarkup()
 			);
 			$optionValues[] = 'urlConfiguration';
 		}

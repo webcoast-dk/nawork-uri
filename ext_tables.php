@@ -104,4 +104,9 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
         \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
         ['source' => 'EXT:nawork_uri/Resources/Public/Icons/unlock.svg']
     );
+    $iconRegistry->registerIcon(
+        'tx-naworkuri',
+        TYPO3\CMS\Core\Imaging\IconProvider\BitmapIconProvider::class,
+        ['source' => 'EXT:nawork_uri/Resources/Public/Icons/module.png']
+    );
 }

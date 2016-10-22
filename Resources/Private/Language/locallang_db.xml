@@ -21,8 +21,8 @@
 			<label index="tx_naworkuri_uri.type.3">Redirect to page</label>
 			<label index="tx_naworkuri_uri.domain">Domain</label>
 			<label index="tx_naworkuri_uri.path">Path</label>
-			<label index="tx_naworkuri_uri.params">Params</label>
-			<label index="tx_naworkuri_uri.params_redirect">Additional parameters (e.g. "?utm_source=tv&amp;utm_campaign=autumn" without "?")</label>
+			<label index="tx_naworkuri_uri.parameters">parameters</label>
+			<label index="tx_naworkuri_uri.parameters_redirect">Additional parameters (e.g. "?utm_source=tv&amp;utm_campaign=autumn" without "?")</label>
 			<label index="tx_naworkuri_uri.locked">Locked</label>
 			<label index="tx_naworkuri_uri.redirect_path">Redirect path</label>
 			<label index="tx_naworkuri_uri.redirect_mode">Redirect mode</label>
@@ -47,8 +47,8 @@
 			<label index="tx_naworkuri_uri.type.3">Weiterleitung zu Seite</label>
 			<label index="tx_naworkuri_uri.domain">Domain</label>
 			<label index="tx_naworkuri_uri.path">Pfad</label>
-			<label index="tx_naworkuri_uri.params">Parameter</label>
-			<label index="tx_naworkuri_uri.params_redirect">Zusätzliche Parameter (z.B. "?utm_source=tv&amp;utm_campaign=autumn" ohne "?")</label>
+			<label index="tx_naworkuri_uri.parameters">Parameter</label>
+			<label index="tx_naworkuri_uri.parameters_redirect">Zusätzliche Parameter (z.B. "?utm_source=tv&amp;utm_campaign=autumn" ohne "?")</label>
 			<label index="tx_naworkuri_uri.locked">Gesperrt</label>
 			<label index="tx_naworkuri_uri.redirect_path">Ziel-Pfad/Ziel-URL</label>
 			<label index="tx_naworkuri_uri.redirect_mode">Weiterleitungsmodus</label>

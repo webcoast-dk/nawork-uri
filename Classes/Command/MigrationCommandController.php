@@ -92,9 +92,9 @@ class MigrationCommandController extends CommandController {
 	 */
 	public function updateCacheHashCommand() {
 		$urls = $this->databaseConnection->exec_SELECTgetRows(
-			'uid,page_uid,sys_language_uid,params',
+			'uid,page_uid,sys_language_uid,parameters',
 			'tx_naworkuri_uri',
-			'params LIKE "%cHash%"'
+			'parameters LIKE "%cHash%"'
 		);
 		/** @var \TYPO3\CMS\Frontend\Page\CacheHashCalculator $cacheHashCalculator */
 		$cacheHashCalculator = GeneralUtility::makeInstance(CacheHashCalculator::class);
@@ -103,7 +103,7 @@ class MigrationCommandController extends CommandController {
 		$lastPercentageUpdate = 0;
 		$this->outputLine('Found ' . $urlsFound . ' urls to update');
 		foreach ($urls as $index => $url) {
-			$parametersAsArray = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($url['params']);
+			$parametersAsArray = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($url['parameters']);
 			$parametersAsArray['id'] = $url['page_uid'];
 			$parametersAsArray['L'] = $url['sys_language_uid'];
 			$cacheHash = $cacheHashCalculator->generateForParameters(
@@ -120,7 +120,7 @@ class MigrationCommandController extends CommandController {
 				if ($this->databaseConnection->exec_UPDATEquery(
 					'tx_naworkuri_uri',
 					'uid=' . (int) $url['uid'],
-					array('params' => $parameterString, 'hash_params' => md5($parameterString))
+					array('parameters' => $parameterString, 'parameters_hash' => md5($parameterString))
 				)
 				) {
 					++$counter;
@@ -185,6 +185,18 @@ class MigrationCommandController extends CommandController {
 	 */
 	public function cleanupCommand() {
 		$this->databaseConnection->exec_DELETEquery('tx_naworkuri_uri', 'domain NOT REGEXP "^[0-9]+$"');
+	}
+
+    /**
+     * Migrate fields from 2.x to 3.0
+     *
+     * * hash_path => path_hash
+     * * params => parameters
+     * * hash_params => parameters_hash
+     */
+    public function fieldsV2xToV3Command()
+    {
+        $this->databaseConnection->sql_query('UPDATE tx_naworkuri_uri SET parameters=parameters, path_hash=hash_path, parameters_hash=hash_params');
 	}
 
 	/**

@@ -35,13 +35,12 @@ CREATE TABLE tx_naworkuri_uri (
   page_uid int(11) DEFAULT '0' NOT NULL,
   tstamp int(11) DEFAULT '0' NOT NULL,
   crdate int(11) DEFAULT '0' NOT NULL,
-  cruser_id int(11) DEFAULT '0' NOT NULL,
   sys_language_uid int(11) DEFAULT '0' NOT NULL,
   domain varchar(255) DEFAULT '' NOT NULL,
   path varchar(255) DEFAULT '' NOT NULL,
-  params text NOT NULL,
-	hash_path varchar(32) DEFAULT '' NOT NULL,
-	hash_params varchar(32) DEFAULT '' NOT NULL,
+	path_hash varchar(32) DEFAULT '' NOT NULL,
+  parameters text NOT NULL,
+	parameters_hash varchar(32) DEFAULT '' NOT NULL,
 	locked tinyint(1) DEFAULT '0' NOT NULL,
 	type tinyint(1) DEFAULT '0' NOT NULL,
   redirect_path varchar(500) NOT NULL DEFAULT '',
@@ -50,8 +49,8 @@ CREATE TABLE tx_naworkuri_uri (
 
   PRIMARY KEY (uid),
   KEY parent (pid),
-  UNIQUE KEY domain_path (domain,hash_path),
-	KEY cache (page_uid,sys_language_uid,domain,hash_params,type),
-	KEY hash_path (hash_path),
-	KEY unique_params (type,hash_params)
+  UNIQUE KEY domain_path (domain,path_hash),
+	KEY cache (page_uid,sys_language_uid,domain,parameters_hash,type),
+	KEY path_hash (path_hash),
+	KEY unique_parameters (type,parameters_hash)
 );

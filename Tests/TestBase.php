@@ -105,9 +105,9 @@ class TestBase extends \Tx_Phpunit_TestCase {
 				deleted tinyint(4) DEFAULT '0' NOT NULL,
 				domain varchar(255) DEFAULT '' NOT NULL,
 				path varchar(255) DEFAULT '' NOT NULL,
-				params tinytext NOT NULL,
-				hash_path varchar(32) DEFAULT '' NOT NULL,
-				hash_params varchar(32) DEFAULT '' NOT NULL,
+				parameters tinytext NOT NULL,
+				path_hash varchar(32) DEFAULT '' NOT NULL,
+				parameters_hash varchar(32) DEFAULT '' NOT NULL,
 				debug_info text NOT NULL,
 				locked tinyint(1) DEFAULT '0' NOT NULL,
 				type tinyint(1) DEFAULT '0' NOT NULL,
@@ -117,7 +117,7 @@ class TestBase extends \Tx_Phpunit_TestCase {
 
 				PRIMARY KEY (uid),
 				KEY parent (pid),
-				KEY domain_path (domain,hash_path)
+				KEY domain_path (domain,path_hash)
 			);");
 	}
 

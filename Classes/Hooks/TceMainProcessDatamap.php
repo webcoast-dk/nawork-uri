@@ -13,11 +13,11 @@ class TceMainProcessDatamap {
 	public function processDatamap_preProcessFieldArray(&$fields, $table, $id, $tceMain) {
 		if ($table == 'tx_naworkuri_uri' && is_array($fields)) {
 			if (array_key_exists('path', $fields)) {
-				$fields['hash_path'] = md5($fields['path']);
+				$fields['path_hash'] = md5($fields['path']);
 			}
 
-			if (array_key_exists('params', $fields)) {
-				$fields['hash_params'] = md5($fields['params']);
+			if (array_key_exists('parameters', $fields)) {
+				$fields['parameters_hash'] = md5($fields['parameters']);
 			}
 		}
 	}

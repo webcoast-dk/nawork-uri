@@ -148,7 +148,7 @@ class TransformationUtilityTest extends \Nawork\NaworkUri\Tests\TestBase {
 					'L' => 0,
 				),
 			),
-			'three encoded(id,L,cHash) and two unencoded(foo,blub) parameters: remove cHash on unencoded params' => array(
+			'three encoded(id,L,cHash) and two unencoded(foo,blub) parameters: remove cHash on unencoded parameters' => array(
 				'id=8&foo=bar&cHash=123&blub=bla&L=0',
 				'sub-2/sub-2-2/',
 				array(
@@ -188,7 +188,7 @@ class TransformationUtilityTest extends \Nawork\NaworkUri\Tests\TestBase {
 		$this->transformer->params2uri('id=10');
 		$this->db->exec_UPDATEquery('test_tx_naworkuri_uri', 'uid=1', array(
 			'path' => 'home.html',
-			'hash_path' => md5('home.html'),
+			'path_hash' => md5('home.html'),
 		));
 		$this->assertEquals(array(
 			'id' => '10',

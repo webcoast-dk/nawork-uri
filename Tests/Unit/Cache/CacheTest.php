@@ -38,13 +38,13 @@ class CacheTest extends \Nawork\NaworkUri\Tests\TestBase {
 				array(
 					array(
 						'pageUid' => 1,
-						'params' => array(),
+						'parameters' => array(),
 						'path' => ''
 					)
 				),
 				array(
 					'pageUid' => 1,
-					'params' => array('no_cache' => 1),
+					'parameters' => array('no_cache' => 1),
 					'path' => ''
 				),
 				'1/',
@@ -53,13 +53,13 @@ class CacheTest extends \Nawork\NaworkUri\Tests\TestBase {
 				array(
 					array(
 						'pageUid' => 2,
-						'params' => array(),
+						'parameters' => array(),
 						'path' => 'sub-1/'
 					)
 				),
 				array(
 					'pageUid' => 2,
-					'params' => array('no_cache' => 1),
+					'parameters' => array('no_cache' => 1),
 					'path' => 'sub-1/'
 				),
 				'sub-1-1/'
@@ -68,18 +68,18 @@ class CacheTest extends \Nawork\NaworkUri\Tests\TestBase {
 				array(
 					array(
 						'pageUid' => 2,
-						'params' => array(),
+						'parameters' => array(),
 						'path' => 'sub-1/'
 					),
 					array(
 						'pageUid' => 2,
-						'params' => array('no_cache' => 1),
+						'parameters' => array('no_cache' => 1),
 						'path' => 'sub-1-1/'
 					)
 				),
 				array(
 					'pageUid' => 2,
-					'params' => array('no_cache' => 2),
+					'parameters' => array('no_cache' => 2),
 					'path' => 'sub-1/'
 				),
 				'sub-1-2/',
@@ -88,13 +88,13 @@ class CacheTest extends \Nawork\NaworkUri\Tests\TestBase {
 				array(
 					array(
 						'pageUid' => 11,
-						'params' => array(),
+						'parameters' => array(),
 						'path' => 'sub-3/sub-3-1/'
 					)
 				),
 				array(
 					'pageUid' => 14,
-					'params' => array(),
+					'parameters' => array(),
 					'path' => 'sub-3/sub-3-1/'
 				),
 				'sub-3/sub-3-1-1/'
@@ -103,18 +103,18 @@ class CacheTest extends \Nawork\NaworkUri\Tests\TestBase {
 				array(
 					array(
 						'pageUid' => 11,
-						'params' => array(),
+						'parameters' => array(),
 						'path' => 'sub-3/sub-3-1/'
 					),
 					array(
 						'pageUid' => 11,
-						'params' => array('no_cache' => 1),
+						'parameters' => array('no_cache' => 1),
 						'path' => 'sub-3/sub-3-1-1/'
 					)
 				),
 				array(
 					'pageUid' => 14,
-					'params' => array(),
+					'parameters' => array(),
 					'path' => 'sub-3/sub-3-1/'
 				),
 				'sub-3/sub-3-1-2/'
@@ -123,18 +123,18 @@ class CacheTest extends \Nawork\NaworkUri\Tests\TestBase {
 				array(
 					array(
 						'pageUid' => 10,
-						'params' => array(),
+						'parameters' => array(),
 						'path' => 'sub-2/sub-2-4/'
 					),
 					array(
 						'pageUid' => 10,
-						'params' => array('cHash' => 123),
+						'parameters' => array('cHash' => 123),
 						'path' => 'sub-2/sub-2-4-1/'
 					)
 				),
 				array(
 					'pageUid' => 10,
-					'params' => array('cHash' => 456),
+					'parameters' => array('cHash' => 456),
 					'path' => 'sub-2/sub-2-4/'
 				),
 				'sub-2/sub-2-4-2/'
@@ -148,9 +148,9 @@ class CacheTest extends \Nawork\NaworkUri\Tests\TestBase {
 	 */
 	public function uniqueReturnsUniquePath($preparedUris, $test, $expected) {
 		foreach ($preparedUris as $uri) {
-			$uri = $this->cache->createUrl($uri['pageUid'], 0, 1, $uri['params'], $uri['path'], $uri['path']);
+			$uri = $this->cache->createUrl($uri['pageUid'], 0, 1, $uri['parameters'], $uri['path'], $uri['path']);
 		}
-		$result = $this->cache->unique($test['pageUid'], 0, $test['path'], $test['params'], 1);
+		$result = $this->cache->unique($test['pageUid'], 0, $test['path'], $test['parameters'], 1);
 		$this->assertEquals($expected, $result);
 	}
 

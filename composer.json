@@ -8,6 +8,7 @@
 	},
 	"type": "typo3-cms-extension",
 	"version": "2.5.5",
+	"license": "GPL-3.0",
 	"authors": [
 		{
 			"name": "Thorben Kapp",

@@ -1,6 +1,6 @@
 {
 	"name": "nawork/nawork-uri",
-	"description": "Create nice looking URLs like RealURL or CoolURI. It follows the concept of cooluri creating and caching the urls. Requirements: PHP 5+ with SimpleXML, cURL! MySQL 4.1+.",
+	"description": "A modern, flexible extension for creating and managing urls and redirects in the TYPO3 CMS.",
 	"autoload": {
 		"psr-4": {
 			"Nawork\\NaworkUri\\": "Classes/"

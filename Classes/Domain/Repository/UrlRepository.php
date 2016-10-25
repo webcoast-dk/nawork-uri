@@ -53,7 +53,7 @@ class UrlRepository extends Repository {
 		}
 		/* @var $db \TYPO3\CMS\Core\Database\DatabaseConnection */
 		$db = $GLOBALS['TYPO3_DB'];
-		$rows = $db->exec_SELECTgetRows('uid', 'pages', 'pid=' . intval($id));
+		$rows = $db->exec_SELECTgetRows('uid', 'pages', 'pid=' . intval($id) . ' AND deleted=0');
 		foreach ($rows as $page) {
 			$pids[] = $page['uid'];
 			$this->getPidsRecursive($page['uid'], $pids, ($depth + 1));

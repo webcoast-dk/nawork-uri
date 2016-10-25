@@ -11,6 +11,12 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 class RedirectTargetViewHelper extends AbstractViewHelper {
+
+    /**
+     * @var bool
+     */
+    protected $escapeOutput = false;
+
 	/**
 	 * @param \Nawork\NaworkUri\Domain\Model\Url $url
      * @param string|null $as

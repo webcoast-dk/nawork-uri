@@ -74,26 +74,28 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
     // register icons
     /** @var \TYPO3\CMS\Core\Imaging\IconRegistry $iconRegistry */
     $iconRegistry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Imaging\IconRegistry::class);
+    // register record icons
     $iconRegistry->registerIcon(
-        'record-url-default',
+        'tcarecords-tx_naworkuri_uri-default',
         \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
         ['source' => 'EXT:nawork_uri/Resources/Public/Icons/link.svg']
     );
     $iconRegistry->registerIcon(
-        'record-url-old',
+        'tcarecords-tx_naworkuri_uri-locked',
+        \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
+        ['source' => 'EXT:nawork_uri/Resources/Public/Icons/link-locked.svg']
+    );
+    $iconRegistry->registerIcon(
+        'tcarecords-tx_naworkuri_uri-old',
         \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
         ['source' => 'EXT:nawork_uri/Resources/Public/Icons/link-old.svg']
     );
     $iconRegistry->registerIcon(
-        'record-url-redirect',
+        'tcarecords-tx_naworkuri_uri-redirect',
         \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
         ['source' => 'EXT:nawork_uri/Resources/Public/Icons/link-redirect.svg']
     );
-    $iconRegistry->registerIcon(
-        'record-url-locked',
-        \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
-        ['source' => 'EXT:nawork_uri/Resources/Public/Icons/link-locked.svg']
-    );
+    // register action icons for click menu
     $iconRegistry->registerIcon(
         'action-url-lock',
         \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,

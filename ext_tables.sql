@@ -39,7 +39,7 @@ CREATE TABLE tx_naworkuri_uri (
   domain varchar(255) DEFAULT '' NOT NULL,
   path varchar(255) DEFAULT '' NOT NULL,
 	path_hash varchar(32) DEFAULT '' NOT NULL,
-  parameters text NOT NULL,
+	parameters text NOT NULL,
 	parameters_hash varchar(32) DEFAULT '' NOT NULL,
 	locked tinyint(1) DEFAULT '0' NOT NULL,
 	type tinyint(1) DEFAULT '0' NOT NULL,

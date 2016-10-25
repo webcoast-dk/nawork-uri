@@ -1,5 +1,7 @@
 <?php
 
+use Nawork\NaworkUri\Hooks\IconFactory;
+
 if (!defined('TYPO3_MODE'))
 	die('Access denied.');
 
@@ -16,15 +18,12 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 		'rootLevel' => '-1',
 		'enablecolumns' => array(
 		),
-		'iconfile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Icons/Types/uri.png',
+		'iconfile' => 'EXT:nawork_uri/Resources/Public/Icons/Types/link.svg',
 		'hideTable' => true,
 		'typeicon_column' => 'type',
-		'typeicons' => Array(
-			'0' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Icons/Types/uri.png',
-			'1' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Icons/Types/old.png',
-			'2' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Icons/Types/redirect.png',
-			'3' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/Icons/Types/redirect.png',
-		),
+		'typeicon_classes' => [
+		    'userFunc' => IconFactory::class . '->getRecordIconIdentifier',
+        ],
 		'security' => array(
 			'ignoreWebMountRestriction' => TRUE,
 			'ignoreRootLevelRestriction' => TRUE
@@ -56,6 +55,7 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.language',
 			'config' => array(
 				'type' => 'select',
+                'renderType' => 'selectSingle',
 				'foreign_table' => 'sys_language',
 				'foreign_table_where' => 'ORDER BY sys_language.title',
 				'items' => array(
@@ -68,6 +68,7 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 			'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.domain',
 			'config' => Array(
 				'type' => 'select',
+                'renderType' => 'selectSingle',
 				'foreign_table' => 'sys_domain',
 				'foreign_table_where' => 'AND tx_naworkuri_masterDomain=0 AND deleted=0',
                 'items' => array(
@@ -122,6 +123,7 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 			'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.type',
 			'config' => array(
 				'type' => 'select',
+                'renderType' => 'selectSingle',
 				'items' => array(
 					array('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.type.0', 0), // normal url
 					array('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.type.1', 1), // old url
@@ -136,6 +138,7 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 			'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode',
 			'config' => array(
 				'type' => 'select',
+                'renderType' => 'selectSingle',
 				'items' => array(
 					array('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode.301', 301),
 					array('LLL:EXT:nawork_uri/Resources/Private/Language/locallang_db.xml:tx_naworkuri_uri.redirect_mode.302', 302),

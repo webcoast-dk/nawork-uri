@@ -196,7 +196,7 @@ class MigrationCommandController extends CommandController {
      */
     public function fieldsV2xToV3Command()
     {
-        $this->databaseConnection->sql_query('UPDATE tx_naworkuri_uri SET parameters=parameters, path_hash=hash_path, parameters_hash=hash_params');
+        $this->databaseConnection->sql_query('UPDATE tx_naworkuri_uri SET parameters=params, path_hash=hash_path, parameters_hash=hash_params');
 	}
 
 	/**

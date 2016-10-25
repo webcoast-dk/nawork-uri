@@ -16,7 +16,7 @@
 		}
 	],
 	"require": {
-		"typo3/cms": "^7.6.0"
+		"typo3/cms": "^7.6.0 || ^8.4.0"
 	},
 	"minimum-stability": "dev"
 }

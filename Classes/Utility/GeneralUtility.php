@@ -152,7 +152,7 @@ class GeneralUtility {
 	 *
 	 * @return string
 	 */
-	function uri_handle_whitespace($uri) {
+    public static function uri_handle_whitespace($uri) {
 		$uri = preg_replace('/[\s\-]+/u', '-', $uri);
 
 		return $uri;
@@ -168,7 +168,7 @@ class GeneralUtility {
 	 *
 	 * @return string
 	 */
-	function uri_handle_punctuation($uri) {
+	public static function uri_handle_punctuation($uri) {
 		$uri = preg_replace('/[\!\"\#\&\'\?\@\[\\\\\]\^\`\{\|\}\%\<\>\+]+/u', '-', $uri);
 
 		return $uri;
@@ -182,7 +182,7 @@ class GeneralUtility {
 	 *
 	 * @return unknown
 	 */
-	function uri_limit_allowed_chars($uri) {
+	public static function uri_limit_allowed_chars($uri) {
 		return preg_replace('/[^A-Za-z0-9\/\-\_\.\~\!\(\)\*\:\;\=]+/u', '', $uri);
 	}
 
@@ -196,7 +196,7 @@ class GeneralUtility {
 	 *
 	 * @return string
 	 */
-	function uri_make_wellformed($uri) {
+	public static function uri_make_wellformed($uri) {
 		$uri = preg_replace('/[\-]+/', '-', $uri);
 		$uri = preg_replace('/\/-/', '/', $uri);
 		$uri = preg_replace('/-\//', '/', $uri);

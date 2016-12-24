@@ -35,6 +35,7 @@ CREATE TABLE tx_naworkuri_uri (
   page_uid int(11) DEFAULT '0' NOT NULL,
   tstamp int(11) DEFAULT '0' NOT NULL,
   crdate int(11) DEFAULT '0' NOT NULL,
+  cruser_id int(11) DEFAULT '0' NOT NULL,
   sys_language_uid int(11) DEFAULT '0' NOT NULL,
   domain varchar(255) DEFAULT '' NOT NULL,
   path varchar(255) DEFAULT '' NOT NULL,

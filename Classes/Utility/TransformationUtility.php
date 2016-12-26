@@ -223,9 +223,9 @@ class TransformationUtility implements SingletonInterface {
 		$result_path = \Nawork\NaworkUri\Utility\GeneralUtility::sanitize_uri($encoded_uri);
 
         // append
-        if ($result_path){
+        if ($result_path) {
             $appendIfNotPattern = ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getAppendIfNotPattern();
-            if(!$appendIfNotPattern || ($appendIfNotPattern && !preg_match("/" . $appendIfNotPattern . "/", $result_path))) {
+            if (!$appendIfNotPattern || ($appendIfNotPattern && !preg_match('/' . $appendIfNotPattern . '/', $result_path))) {
                 $append = ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getAppend();
                 if (substr($result_path, -strlen($append)) != $append) {
                     $result_path = $result_path . $append;

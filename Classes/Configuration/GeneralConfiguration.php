@@ -10,10 +10,16 @@ class GeneralConfiguration {
 	 * @var bool
 	 */
 	protected $disabled = FALSE;
+
 	/**
 	 * @var string
 	 */
 	protected $append = '.html';
+
+    /**
+     * @var string
+     */
+    protected $appendIfNotPattern = NULL;
 
 	/**
 	 * @var string
@@ -31,6 +37,14 @@ class GeneralConfiguration {
 	public function getAppend() {
 		return $this->append;
 	}
+
+    /**
+     * @return string
+     */
+    public function getAppendIfNotPattern()
+    {
+        return $this->appendIfNotPattern;
+    }
 
 	/**
 	 * @return boolean
@@ -59,6 +73,14 @@ class GeneralConfiguration {
 	public function setAppend($append) {
 		$this->append = $append;
 	}
+
+    /**
+     * @param string $appendIfNotPattern
+     */
+    public function setAppendIfNotPattern($appendIfNotPattern)
+    {
+        $this->appendIfNotPattern = $appendIfNotPattern;
+    }
 
 	/**
 	 * @param boolean $disabled

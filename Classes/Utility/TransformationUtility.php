@@ -222,13 +222,16 @@ class TransformationUtility implements SingletonInterface {
 
 		$result_path = \Nawork\NaworkUri\Utility\GeneralUtility::sanitize_uri($encoded_uri);
 
-		// append
-		if ($result_path) {
-			$append = ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getAppend();
-			if (substr($result_path, -strlen($append)) != $append) {
-				$result_path = $result_path . $append;
-			}
-		}
+        // append
+        if ($result_path) {
+            $appendIfNotPattern = ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getAppendIfNotPattern();
+            if (!$appendIfNotPattern || ($appendIfNotPattern && !preg_match('/' . $appendIfNotPattern . '/', $result_path))) {
+                $append = ConfigurationUtility::getConfiguration()->getGeneralConfiguration()->getAppend();
+                if (substr($result_path, -strlen($append)) != $append) {
+                    $result_path = $result_path . $append;
+                }
+            }
+        }
 		DebugUtility::debug('Before writing url', array('result_path' => $result_path, 'pathElements' => $pathElements, 'this->domain' => $this->domain, 'this->language' => $this->language), __CLASS__);
 		$uri = $this->cache->writeUrl($encodedParameters, $this->domain, $this->language, $result_path);
 		DebugUtility::debug('After writing url', array('uri' => $uri, 'this->domain' => $this->domain, 'this->language' => $this->language), __CLASS__);

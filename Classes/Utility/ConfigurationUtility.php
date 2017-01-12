@@ -351,6 +351,9 @@ class ConfigurationUtility {
 		if ($xml->Append) {
 			$configuration->setAppend((string)$xml->Append);
 		}
+        if ($xml->AppendIfNotPattern) {
+            $configuration->setAppendIfNotPattern((string)$xml->AppendIfNotPattern);
+        }
 		$configuration->setDisabled((bool)(int)$xml->Disabled);
 		if ($xml->PathSeparator) {
 			$configuration->setPathSeparator((string)$xml->PathSeparator);

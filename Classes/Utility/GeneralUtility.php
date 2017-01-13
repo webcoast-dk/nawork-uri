@@ -7,7 +7,9 @@ namespace Nawork\NaworkUri\Utility;
  */
 
 use Nawork\NaworkUri\Configuration\TableConfiguration;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Utility\HttpUtility;
+use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 class GeneralUtility {
 
@@ -213,15 +215,12 @@ class GeneralUtility {
 	}
 
 	public static function isActiveBeUserSession() {
-		if (array_key_exists('be_typo_user', $_COOKIE) && !empty($_COOKIE['be_typo_user'])) {
-			$tstamp = time() - $GLOBALS['TYPO3_CONF_VARS']['BE']['sessionTimeout'];
-			$beSessionResult = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', 'be_sessions', 'ses_id=\'' . $GLOBALS['TYPO3_DB']->quoteStr($_COOKIE['be_typo_user'], 'be_sessions') . '\' AND ses_tstamp>' . $tstamp);
-			if (count($beSessionResult) == 1) {
-				return TRUE;
-			}
-		}
-
-		return FALSE;
+        if ($GLOBALS['TSFE'] instanceof TypoScriptFrontendController) {
+            return $GLOBALS['TSFE']->isBackendUserLoggedIn();
+        } elseif ($GLOBALS['BE_USER'] instanceof BackendUserAuthentication) {
+            return $GLOBALS['BE_USER']->isExistingSessionRecord($GLOBALS['BE_USER']->id);
+        }
+        return false;
 	}
 
 	public static function getCurrentDomain($linkDomain = NULL) {

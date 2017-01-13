@@ -225,14 +225,11 @@ class UrlController implements SingletonInterface {
 				if ((substr($GLOBALS['TSFE']->siteScript, 0, 9) == 'index.php' || substr($GLOBALS['TSFE']->siteScript, 0, 1) == '?')) {
 					$doNotCreateNewUrls = TRUE;
 					$ignoreTimeout = TRUE;
-					$tempParams = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($params);
-					if ((count($tempParams) < 3 && array_key_exists('L', $tempParams) && array_key_exists('id', $tempParams)) || (count($tempParams) < 2 && array_key_exists('id', $tempParams))) {
-						if (\Nawork\NaworkUri\Utility\GeneralUtility::isActiveBeUserSession()) {
-							$doNotCreateNewUrls = FALSE;
-							// set ignoreTimout to false to allow creation of new urls, e.g. after page title change
-							$ignoreTimeout = FALSE;
-						}
-					}
+                    if (\Nawork\NaworkUri\Utility\GeneralUtility::isActiveBeUserSession()) {
+                        $doNotCreateNewUrls = FALSE;
+                        // set ignoreTimeout to false to allow creation of new urls, e.g. after page title change
+                        $ignoreTimeout = FALSE;
+                    }
 					try {
 						$uri = $translator->params2uri($params, $doNotCreateNewUrls, $ignoreTimeout);
 						if (in_array($_SERVER['REQUEST_METHOD'], array('GET','HEAD')) && ($path == 'index.php' || $path == '') && $uri !== FALSE && $uri != $GLOBALS['TSFE']->siteScript) {

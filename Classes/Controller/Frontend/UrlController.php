@@ -310,7 +310,7 @@ class UrlController implements SingletonInterface {
 					case PageNotAccessibleConfiguration::BEHAVIOR_REDIRECT:
 						$path = html_entity_decode($pageNotAccessibleConfiguration->getValue());
 						if (!($_SERVER['REQUEST_METHOD'] == 'POST' && preg_match('/index.php/', $_SERVER['SCRIPT_NAME']))) {
-							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($path, 301); // send headers and exits
+							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($path, HttpUtility::HTTP_STATUS_301); // send headers and exit
 						}
 						break;
 				}
@@ -356,7 +356,7 @@ class UrlController implements SingletonInterface {
 					case PageNotFoundConfiguration::BEHAVIOR_REDIRECT:
 						$path = html_entity_decode($pageNotFoundConfiguration->getValue());
 						if (!($_SERVER['REQUEST_METHOD'] == 'POST' && preg_match('/index.php/', $_SERVER['SCRIPT_NAME']))) {
-							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($path, 301); // send headers and exits
+							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($path, HttpUtility::HTTP_STATUS_301); // send headers and exit
 						}
 						break;
 					default:

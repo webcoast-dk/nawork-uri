@@ -363,7 +363,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 					case \Nawork\NaworkUri\Configuration\PageNotAccessibleConfiguration::BEHAVIOR_REDIRECT:
 						$path = html_entity_decode($pageNotAccessibleConfiguration->getValue());
 						if (!($_SERVER['REQUEST_METHOD'] == 'POST' && preg_match('/index.php/', $_SERVER['SCRIPT_NAME']))) {
-							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($path, 301); // send headers and exits
+							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($path, HttpUtility::HTTP_STATUS_301); // send headers and exit
 						}
 					default:
 						$output = '<html><head><title>403 Forbidden</title></head><body><h1>403 Forbidden</h1><p>You don\'t have the permission to access this page</p></body></html>';
@@ -409,7 +409,7 @@ class UrlController implements \TYPO3\CMS\Core\SingletonInterface {
 					case \Nawork\NaworkUri\Configuration\PageNotFoundConfiguration::BEHAVIOR_REDIRECT:
 						$path = html_entity_decode($pageNotFoundConfiguration->getValue());
 						if (!($_SERVER['REQUEST_METHOD'] == 'POST' && preg_match('/index.php/', $_SERVER['SCRIPT_NAME']))) {
-							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($path, 301); // send headers and exits
+							\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($path, HttpUtility::HTTP_STATUS_301); // send headers and exit
 						}
 					default:
 						$output = '';

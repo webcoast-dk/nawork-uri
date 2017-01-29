@@ -112,3 +112,15 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
         ['source' => 'EXT:nawork_uri/Resources/Public/Icons/module.png']
     );
 }
+
+// signal registration
+$extensionConfiguration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
+if($extensionConfiguration["useDefaultMultilang404ErrorHandling"]) {
+    $signalSlotDispatcher = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\SignalSlot\Dispatcher::class);
+    $signalSlotDispatcher->connect(
+        \Nawork\NaworkUri\Controller\Frontend\UrlController::class,
+        'afterSetting404PageId',
+        \Nawork\NaworkUri\Signals\AfterSetting404PageId::class,
+        'afterSetting404PageId'
+    );
+}

@@ -115,7 +115,7 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
 
 // signal registration
 $extensionConfiguration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
-if($extensionConfiguration["useDefaultMultilang404ErrorHandling"]) {
+if($extensionConfiguration['enablePageNotFoundBasicLanguageSupport']) {
     $signalSlotDispatcher = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\SignalSlot\Dispatcher::class);
     $signalSlotDispatcher->connect(
         \Nawork\NaworkUri\Controller\Frontend\UrlController::class,

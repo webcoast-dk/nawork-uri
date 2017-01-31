@@ -274,7 +274,7 @@ class UrlController implements SingletonInterface {
 	 *
 	 * @todo Handle not found and not accessible differently
 	 */
-	public function handlePageNotFound($params, &$frontendController) {
+	public function handlePageNotFound($params, $frontendController) {
 	    $configuration = ConfigurationUtility::getConfiguration();
 		if ($configuration instanceof Configuration) {
 			$output = '';
@@ -346,7 +346,7 @@ class UrlController implements SingletonInterface {
                                     $frontendController->id = $pageNotFoundConfiguration->getValue();
                                     $disableOutput = TRUE; // let the frontend render normally
                                     $signalSlotDispatcher = GeneralUtility::makeInstance(Dispatcher::class);
-                                    $signalSlotDispatcher->dispatch(UrlController::class, 'afterSetting404PageId', array($params, $frontendController));
+                                    $signalSlotDispatcher->dispatch(UrlController::class, 'afterSetting404PageId', ['params' => $params]);
                                 }
                             } elseif (GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
                                 // we have a url as the page not found config value AND the user agent is not nawork_uri (avoid loops)

@@ -5,7 +5,7 @@ default_locale = en_US
 noSslVerify = 0
 
 # cat=PageNotFound; type=boolean; label=Enable basic language page not found handling
-enablePageNotFoundBasicLanguageSupport = 1
+pageNotFoundBasicLanguageSupportEnable = 1
 
 # cat=modules; type=boolean; label=Enable configuration module
 configurationModuleEnable = 0

@@ -70,6 +70,7 @@ Number.prototype.forceInRange = function(minimum, maximum) {
             selectedRecords: [],
             lastClickedRecord: null
         },
+        contextMenu: null,
 
         init: function() {
             this.filter = this.$element.data('filter');
@@ -92,6 +93,17 @@ Number.prototype.forceInRange = function(minimum, maximum) {
             this.controls.$next = this.$element.find('.js-paginationNext');
             this.controls.$last = this.$element.find('.js-paginationLast');
             this.controls.$reload = this.$element.find('.js-reload');
+            // load the context menu
+            if (TYPO3.ClickMenu) {
+                // if available use the old ClickMenu
+                this.contextMenu = TYPO3.ClickMenu;
+            } else {
+                // otherwise require the new ContextMenu
+                var me = this;
+                define(['TYPO3/CMS/Backend/ContextMenu'], function(ContextMenu) {
+                    me.contextMenu = ContextMenu;
+                });
+            }
             this.initListener();
             this.initContextMenuEvents();
             this.loadUrls()
@@ -413,37 +425,38 @@ Number.prototype.forceInRange = function(minimum, maximum) {
                 var $row = _this.$element.find('[data-uid="' + uid + '"]').first();
                 if ($row && $row.length === 1) {
                     var $url = $row.find('.urlTable__column--text').first();
-                    if ($url && $url.length === 1)
-                    var path = $url.text();
-                    var $modal = top.TYPO3.Modal.confirm(tx_naworkuri_labels.title.delete, tx_naworkuri_labels.message.delete.format(path), top.TYPO3.Severity.warning);
-                    $modal.on('confirm.button.cancel', function() {
-                        top.TYPO3.Modal.dismiss();
-                    });
-                    $modal.on('confirm.button.ok', function() {
-                        top.TYPO3.Modal.dismiss();
-                        $.ajax({
-                            url: _this.urls.delete,
-                            data: {
-                                tx_naworkuri_naworkuri_naworkuriuri: {
-                                    url: uid
-                                }
-                            },
-                            success: function() {
-                                // just reload the urls
-                                _this.loadUrls();
-                            },
-                            error: function(request, status, serverMessage) {
-                                var $modal = top.TYPO3.Modal.confirm(tx_naworkuri_labels.title.error, tx_naworkuri_labels.message.error.format(serverMessage), top.TYPO3.Severity.error, [{
-                                    text: $(this).data('button-ok-text') || top.TYPO3.lang['button.ok'] || 'OK',
-                                    btnClass: 'btn-' + top.TYPO3.Modal.getSeverityClass(top.TYPO3.Severity.error),
-                                    name: 'ok'
-                                }]);
-                                $modal.on('confirm.button.ok', function() {
-                                    top.TYPO3.Modal.dismiss();
-                                });
-                            }
+                    if ($url && $url.length === 1) {
+                        var path = $url.text();
+                        var $modal = top.TYPO3.Modal.confirm(tx_naworkuri_labels.title.delete, tx_naworkuri_labels.message.delete.format(path), top.TYPO3.Severity.warning);
+                        $modal.on('confirm.button.cancel', function () {
+                            top.TYPO3.Modal.dismiss();
                         });
-                    });
+                        $modal.on('confirm.button.ok', function () {
+                            top.TYPO3.Modal.dismiss();
+                            $.ajax({
+                                url: _this.urls.delete,
+                                data: {
+                                    tx_naworkuri_naworkuri_naworkuriuri: {
+                                        url: uid
+                                    }
+                                },
+                                success: function () {
+                                    // just reload the urls
+                                    _this.loadUrls();
+                                },
+                                error: function (request, status, serverMessage) {
+                                    var $modal = top.TYPO3.Modal.confirm(tx_naworkuri_labels.title.error, tx_naworkuri_labels.message.error.format(serverMessage), top.TYPO3.Severity.error, [{
+                                        text: $(this).data('button-ok-text') || top.TYPO3.lang['button.ok'] || 'OK',
+                                        btnClass: 'btn-' + top.TYPO3.Modal.getSeverityClass(top.TYPO3.Severity.error),
+                                        name: 'ok'
+                                    }]);
+                                    $modal.on('confirm.button.ok', function () {
+                                        top.TYPO3.Modal.dismiss();
+                                    });
+                                }
+                            });
+                        });
+                    }
                 }
             });
 
@@ -569,7 +582,7 @@ Number.prototype.forceInRange = function(minimum, maximum) {
         },
 
         openClickMenu: function(uid) {
-            TYPO3.ClickMenu.show('tx_naworkuri_uri', uid, '1', encodeURIComponent('+') + 'show,edit,lock,unlock,delete' + (this.state.selectedRecords.length > 0 ? ',deleteSelected' : ''), '');
+            this.contextMenu.show('tx_naworkuri_uri', uid, this.state.selectedRecords.length < 2 ? 'single' : 'multiple');
         }
     };
 

@@ -13,7 +13,16 @@ if (!defined('TYPO3_MODE')) {
 
 if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
     $mainModuleName = 'naworkuri';
-	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule($mainModuleName, '', '', \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('nawork_uri').'Configuration/Module/');
+    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule(
+        $mainModuleName,
+        '',
+        '',
+        \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('nawork_uri') . 'Configuration/Module/',
+        [
+            'icon' => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/module.png',
+            'labels' => 'LLL:EXT:' . $_EXTKEY . '/Resources/Private/Language/locallang_mod_main.xml',
+        ]
+    );
 
 	\TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule('Nawork.' . $_EXTKEY, $mainModuleName, 'uri', '', array(
 		'Url' => 'indexUrls,loadUrls,updateSettings,lock,unlock,delete,deleteSelected'

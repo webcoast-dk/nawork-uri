@@ -77,9 +77,14 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = MigrationCommandController::class;
 
     // click menu processing
-    $GLOBALS['TBE_MODULES_EXT']['xMOD_alt_clickmenu']['extendCMclasses'][] = [
-        'name' => ClickMenu::class
-    ];
+    if (TYPO3\CMS\Core\Utility\VersionNumberUtility::convertVersionNumberToInteger(TYPO3\CMS\Core\Utility\VersionNumberUtility::getCurrentTypo3Version()) <= 8005000) {
+        $GLOBALS['TBE_MODULES_EXT']['xMOD_alt_clickmenu']['extendCMclasses'][] = [
+            'name' => ClickMenu::class
+        ];
+    } else {
+	    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addUserTSConfig('<INCLUDE_TYPOSCRIPT: source="FILE:EXT:nawork_uri/Configuration/TSConfig/module.ts">');
+        $GLOBALS['TYPO3_CONF_VARS']['BE']['ContextMenu']['ItemProviders'][1486554866] = Nawork\NaworkUri\ContextMenu\ItemProvider::class;
+    }
     // register icons
     /** @var \TYPO3\CMS\Core\Imaging\IconRegistry $iconRegistry */
     $iconRegistry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Imaging\IconRegistry::class);

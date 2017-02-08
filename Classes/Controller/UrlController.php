@@ -12,6 +12,7 @@ use TYPO3\CMS\Backend\View\BackendTemplateView;
 use TYPO3\CMS\Core\Database\DatabaseConnection;
 use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 use TYPO3\CMS\Extbase\Property\TypeConverter\PersistentObjectConverter;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
@@ -110,6 +111,11 @@ class UrlController extends AbstractController {
         if ($view instanceof BackendTemplateView) {
             $this->view->getModuleTemplate()->getPageRenderer()->addCssFile('../typo3conf/ext/nawork_uri/Resources/Public/CSS/styles.css' ,'stylesheet', 'all', '', false, false, '', true);
             $this->view->getModuleTemplate()->getPageRenderer()->addJsFile('../typo3conf/ext/nawork_uri/Resources/Public/JavaScript/script.js' ,'text/javascript', false, false, '', true);
+            if (VersionNumberUtility::convertVersionNumberToInteger(VersionNumberUtility::getCurrentTypo3Version()) <= 8005000) {
+                $this->view->assign('includeRequireJsModules', ['TYPO3/CMS/Backend/ClickMenu']);
+            } else {
+                $this->view->assign('includeRequireJsModules', ['TYPO3/CMS/Backend/ContextMenu', 'TYPO3/CMS/NaworkUri/ContextMenuActions']);
+            }
 
             if ($this->actionMethodName !== 'noPageIdAction') {
                 $buttonBar = $this->view->getModuleTemplate()->getDocHeaderComponent()->getButtonBar();

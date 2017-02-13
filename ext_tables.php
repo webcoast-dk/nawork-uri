@@ -123,4 +123,12 @@ if($extensionConfiguration['pageNotFoundBasicLanguageSupportEnable']) {
         \Nawork\NaworkUri\Signals\AfterSetting404PageId::class,
         'afterSetting404PageId'
     );
+
+    $signalSlotDispatcher = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\SignalSlot\Dispatcher::class);
+    $signalSlotDispatcher->connect(
+        \Nawork\NaworkUri\Controller\Frontend\UrlController::class,
+        'beforeInternal404Request',
+        \Nawork\NaworkUri\Signals\BeforeInternal404Request::class,
+        'beforeInternal404Request'
+    );
 }

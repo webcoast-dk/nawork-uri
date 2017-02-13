@@ -5,12 +5,12 @@ namespace Nawork\NaworkUri\Signals;
 use Nawork\NaworkUri\Utility\ConfigurationUtility;
 use TYPO3\CMS\Core\SingletonInterface;
 
-class AfterSetting404PageId implements SingletonInterface {
+class BeforeInternal404Request implements SingletonInterface {
 
     /**
      * @param array $params
      */
-    public function afterSetting404PageId($params) {
+    public function beforeInternal404Request($params) {
         $configuration = ConfigurationUtility::getConfiguration();
         $parameterConfiguration = $configuration->getParametersConfiguration();
         $languageConfiguration = $parameterConfiguration->getParameterTransformationConfigurationByName('L');

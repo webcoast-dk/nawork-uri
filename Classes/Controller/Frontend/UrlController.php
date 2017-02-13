@@ -335,7 +335,7 @@ class UrlController implements SingletonInterface {
                                     // the TSFE called the page not found handling, so we build a new request
                                     GeneralUtility::_GETset($pageNotFoundConfiguration->getValue(), 'id');
                                     $signalSlotDispatcher = GeneralUtility::makeInstance(Dispatcher::class);
-                                    $signalSlotDispatcher->dispatch(UrlController::class, 'beforeInternal404Request');
+                                    $signalSlotDispatcher->dispatch(UrlController::class, 'beforeInternal404Request', ['params' => $params]);
                                     $request = ServerRequestFactory::fromGlobals();
                                     $bootstrap = Bootstrap::getInstance();
                                     $requestHandler = new RequestHandler($bootstrap);

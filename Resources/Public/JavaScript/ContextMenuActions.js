@@ -1,0 +1,1 @@
+define(["jquery"],function(e){"use strict";var l={};return l.lockUrl=function(l,r){e(".urlTable").trigger("lock",[r])},l.unlockUrl=function(l,r){e(".urlTable").trigger("unlock",[r])},l.delete=function(l,r){e(".urlTable").trigger("delete",[r])},l.deleteSelected=function(){e(".urlTable").trigger("deleteSelected")},l});

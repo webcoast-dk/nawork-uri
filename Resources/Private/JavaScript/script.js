@@ -76,6 +76,7 @@ Number.prototype.forceInRange = function(minimum, maximum) {
             this.filter = this.$element.data('filter');
             this.userSettings = this.$element.data('settings');
             this.moduleParameterPrefix = this.$element.data('moduleParameterPrefix');
+            this.contextMenuType = this.$element.data('menu');
             // set urls
             this.urls.load = this.$element.data('ajaxUrlLoad');
             this.urls.lock = this.$element.data('ajaxUrlLock');
@@ -94,13 +95,15 @@ Number.prototype.forceInRange = function(minimum, maximum) {
             this.controls.$last = this.$element.find('.js-paginationLast');
             this.controls.$reload = this.$element.find('.js-reload');
             // load the context menu
-            if (TYPO3.ClickMenu) {
-                // if available use the old ClickMenu
-                this.contextMenu = TYPO3.ClickMenu;
+            var me = this;
+            // if available use the old ClickMenu
+            if (this.contextMenuType === 'ClickMenu') {
+                require(['TYPO3/CMS/Backend/ClickMenu'], function(ClickMenu) {
+                    me.contextMenu = ClickMenu;
+                });
             } else {
                 // otherwise require the new ContextMenu
-                var me = this;
-                define(['TYPO3/CMS/Backend/ContextMenu'], function(ContextMenu) {
+                require(['TYPO3/CMS/Backend/ContextMenu'], function (ContextMenu) {
                     me.contextMenu = ContextMenu;
                 });
             }
@@ -582,7 +585,13 @@ Number.prototype.forceInRange = function(minimum, maximum) {
         },
 
         openClickMenu: function(uid) {
-            this.contextMenu.show('tx_naworkuri_uri', uid, this.state.selectedRecords.length < 2 ? 'single' : 'multiple');
+            if (this.contextMenuType === 'ClickMenu') {
+                // old menu used in version 7
+                this.contextMenu.show('tx_naworkuri_uri', uid, '1', encodeURIComponent('+') + 'show,edit,lock,unlock,delete' + (this.state.selectedRecords.length > 0 ? ',deleteSelected' : ''), '');
+            } else {
+                // new menu used in version 8 and above
+                this.contextMenu.show('tx_naworkuri_uri', uid, this.state.selectedRecords.length < 2 ? 'single' : 'multiple');
+            }
         }
     };
 

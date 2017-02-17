@@ -113,8 +113,10 @@ class UrlController extends AbstractController {
             $this->view->getModuleTemplate()->getPageRenderer()->addJsFile('../typo3conf/ext/nawork_uri/Resources/Public/JavaScript/script.js' ,'text/javascript', false, false, '', true);
             if (VersionNumberUtility::convertVersionNumberToInteger(VersionNumberUtility::getCurrentTypo3Version()) <= 8005000) {
                 $this->view->assign('includeRequireJsModules', ['TYPO3/CMS/Backend/ClickMenu']);
+                $this->view->assign('menu', 'ClickMenu');
             } else {
                 $this->view->assign('includeRequireJsModules', ['TYPO3/CMS/Backend/ContextMenu', 'TYPO3/CMS/NaworkUri/ContextMenuActions']);
+                $this->view->assign('menu', 'ContextMenu');
             }
 
             if ($this->actionMethodName !== 'noPageIdAction') {

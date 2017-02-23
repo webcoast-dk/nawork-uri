@@ -14,7 +14,8 @@ class TransformationConfiguration extends AbstractTransformationConfiguration {
 		'Fields' => 'string',
 		'PathOverrideField' => 'string',
 		'PathSeparator' => 'string',
-		'ExcludeFromPathField' => 'string'
+		'ExcludeFromPathField' => 'string',
+        'ExcludeDokTypes' => 'string'
 	);
 
 	/**
@@ -26,6 +27,7 @@ class TransformationConfiguration extends AbstractTransformationConfiguration {
 	protected $pathOverrideField = 'tx_naworkuri_pathoverride';
 	protected $pathSeparator = '/';
 	protected $excludeFromPathField = 'tx_naworkuri_exclude';
+	protected $excludeDokTypes = '';
 
 	public function getTable() {
 		return $this->table;
@@ -54,6 +56,14 @@ class TransformationConfiguration extends AbstractTransformationConfiguration {
 		return $this->excludeFromPathField;
 	}
 
+    /**
+     * @return string
+     */
+    public function getExcludeDokTypes(): string
+    {
+        return $this->excludeDokTypes;
+    }
+
 	public function setTable($table) {
 		$this->table = $table;
 	}
@@ -80,4 +90,12 @@ class TransformationConfiguration extends AbstractTransformationConfiguration {
 	public function setExcludeFromPathField($excludeFromPathField) {
 		$this->excludeFromPathField = $excludeFromPathField;
 	}
+
+    /**
+     * @param string $excludeDokTypes
+     */
+    public function setExcludeDokTypes(string $excludeDokTypes)
+    {
+        $this->excludeDokTypes = $excludeDokTypes;
+    }
 }

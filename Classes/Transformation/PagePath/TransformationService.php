@@ -33,6 +33,7 @@ class TransformationService extends AbstractTransformationService {
 			// remove the first item, the root page
 			array_shift($rootLine);
 			$transformedValue = array();
+			$excludedDokTypes = GeneralUtility::trimExplode(',', $configuration->getExcludeDokTypes(), true);
 			foreach ($rootLine as $pageRecord) {
 				if ($transformationUtility->getLanguage() > 0) {
 					$translatedFields = $this->getPageOverlay($pageRecord['uid'],
@@ -42,7 +43,7 @@ class TransformationService extends AbstractTransformationService {
 						ArrayUtility::mergeRecursiveWithOverrule($pageRecord, $translatedFields);
 					}
 				}
-				if (!$pageRecord['tx_naworkuri_exclude']) {
+                if (!$pageRecord['tx_naworkuri_exclude'] && !in_array($pageRecord['doktype'], $excludedDokTypes)) {
 					$fields = GeneralUtility::trimExplode('//', $configuration->getFields(), TRUE);
 					array_unshift($fields, 'tx_naworkuri_pathsegment');
 					foreach ($fields as $field) {

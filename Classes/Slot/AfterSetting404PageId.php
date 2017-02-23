@@ -1,6 +1,6 @@
 <?php
 
-namespace Nawork\NaworkUri\Signals;
+namespace Nawork\NaworkUri\Slot;
 
 use Nawork\NaworkUri\Utility\ConfigurationUtility;
 use TYPO3\CMS\Core\SingletonInterface;

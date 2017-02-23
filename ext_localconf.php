@@ -41,3 +41,24 @@ $GLOBALS['TYPO3_CONF_VARS']['EXT']['tx_naworkuri'][UrlController::class] = array
 
 // add nawork-uri fields to pageOverlayFields
 $GLOBALS['TYPO3_CONF_VARS']['FE']['pageOverlayFields'] .= ',tx_naworkuri_pathsegment,tx_naworkuri_exclude';
+
+// slot registration
+$extensionConfiguration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['nawork_uri']);
+if ($extensionConfiguration['pageNotFoundBasicLanguageSupportEnable']) {
+    $signalSlotDispatcher = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
+        \TYPO3\CMS\Extbase\SignalSlot\Dispatcher::class
+    );
+    $signalSlotDispatcher->connect(
+        \Nawork\NaworkUri\Controller\Frontend\UrlController::class,
+        'afterSetting404PageId',
+        \Nawork\NaworkUri\Slot\AfterSetting404PageId::class,
+        'afterSetting404PageId'
+    );
+
+    $signalSlotDispatcher->connect(
+        \Nawork\NaworkUri\Controller\Frontend\UrlController::class,
+        'beforeInternal404Request',
+        \Nawork\NaworkUri\Slot\BeforeInternal404Request::class,
+        'beforeInternal404Request'
+    );
+}

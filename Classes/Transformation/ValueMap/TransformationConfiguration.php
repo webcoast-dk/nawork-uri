@@ -14,7 +14,19 @@ class TransformationConfiguration extends AbstractTransformationConfiguration {
 	 */
 	protected $mappings = array();
 
-	public function addMapping($language, $value, $replacement) {
+    /**
+     * @return array
+     */
+    public function getMappings() {
+        return $this->mappings;
+    }
+
+    /**
+     * @param $language
+     * @param $value
+     * @param $replacement
+     */
+    public function addMapping($language, $value, $replacement) {
 		if (!array_key_exists($value, $this->mappings)) {
 			$this->mappings[$value] = array();
 		}
@@ -38,4 +50,5 @@ class TransformationConfiguration extends AbstractTransformationConfiguration {
 		}
 		throw new \Exception('No mapping found for value "'.$value.'"', 1394822329);
 	}
+
 }

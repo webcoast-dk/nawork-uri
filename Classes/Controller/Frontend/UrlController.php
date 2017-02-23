@@ -18,6 +18,7 @@ use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\HttpUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
+use TYPO3\CMS\Extbase\SignalSlot\Dispatcher;
 use TYPO3\CMS\Frontend\Http\RequestHandler;
 
 class UrlController implements SingletonInterface {
@@ -333,6 +334,8 @@ class UrlController implements SingletonInterface {
                                 if (is_array($params['pageAccessFailureReasons']) && !array_key_exists('nawork_uri', $params['pageAccessFailureReasons'])) {
                                     // the TSFE called the page not found handling, so we build a new request
                                     GeneralUtility::_GETset($pageNotFoundConfiguration->getValue(), 'id');
+                                    $signalSlotDispatcher = GeneralUtility::makeInstance(Dispatcher::class);
+                                    $signalSlotDispatcher->dispatch(UrlController::class, 'beforeInternal404Request', ['params' => $params]);
                                     $request = ServerRequestFactory::fromGlobals();
                                     $bootstrap = Bootstrap::getInstance();
                                     $requestHandler = new RequestHandler($bootstrap);
@@ -342,11 +345,15 @@ class UrlController implements SingletonInterface {
                                     // the page not found handling is called by nawork-uri after request to unknown url/path
                                     $frontendController->id = $pageNotFoundConfiguration->getValue();
                                     $disableOutput = TRUE; // let the frontend render normally
+                                    $signalSlotDispatcher = GeneralUtility::makeInstance(Dispatcher::class);
+                                    $signalSlotDispatcher->dispatch(UrlController::class, 'afterSetting404PageId', ['params' => $params]);
                                 }
                             } elseif (GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
                                 // we have a url as the page not found config value AND the user agent is not nawork_uri (avoid loops)
                                 $urlParts = parse_url($pageNotFoundConfiguration->getValue());
                                 $urlParts['scheme'] = GeneralUtility::getIndpEnv('TYPO3_SSL') ? 'https' : 'http';
+                                $signalSlotDispatcher = GeneralUtility::makeInstance(Dispatcher::class);
+                                $signalSlotDispatcher->dispatch(UrlController::class, 'beforeBuildingNotFoundUrl', ['urlParts' => &$urlParts]);
                                 $notFoundUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . $urlParts['path'] . (!empty($urlParts['query']) ? '?' . $urlParts['query'] : '');
                                 $output = \Nawork\NaworkUri\Utility\HttpUtility::getUrlByCurl($notFoundUrl);
                             }

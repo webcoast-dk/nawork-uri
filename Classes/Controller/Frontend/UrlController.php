@@ -335,7 +335,7 @@ class UrlController implements SingletonInterface {
                                     // the TSFE called the page not found handling, so we build a new request
                                     GeneralUtility::_GETset($pageNotFoundConfiguration->getValue(), 'id');
                                     $signalSlotDispatcher = GeneralUtility::makeInstance(Dispatcher::class);
-                                    $signalSlotDispatcher->dispatch(UrlController::class, 'beforeInternal404Request');
+                                    $signalSlotDispatcher->dispatch(UrlController::class, 'beforeInternal404Request', ['params' => $params]);
                                     $request = ServerRequestFactory::fromGlobals();
                                     $bootstrap = Bootstrap::getInstance();
                                     $requestHandler = new RequestHandler($bootstrap);
@@ -346,7 +346,7 @@ class UrlController implements SingletonInterface {
                                     $frontendController->id = $pageNotFoundConfiguration->getValue();
                                     $disableOutput = TRUE; // let the frontend render normally
                                     $signalSlotDispatcher = GeneralUtility::makeInstance(Dispatcher::class);
-                                    $signalSlotDispatcher->dispatch(UrlController::class, 'afterSetting404PageId');
+                                    $signalSlotDispatcher->dispatch(UrlController::class, 'afterSetting404PageId', ['params' => $params]);
                                 }
                             } elseif (GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {
                                 // we have a url as the page not found config value AND the user agent is not nawork_uri (avoid loops)

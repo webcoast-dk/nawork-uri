@@ -16,6 +16,9 @@ a configuration using the given API. Activate the extension by selecting a regis
 * TYPO3 CMS 7
 * PHP 5.5 w/ cURL, SimpleXML
 
+## Documentation
+The documentation and some configuration examples can be found in the GitHub wiki: https://github.com/nawork/nawork-uri/wiki
+
 ## Contributing
 
 You are free to fork the repository, make changes in a new branch an create a pull request. If you are not into coding

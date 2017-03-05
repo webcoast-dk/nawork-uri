@@ -59,7 +59,7 @@ class TransformationConfiguration extends AbstractTransformationConfiguration {
     /**
      * @return string
      */
-    public function getExcludeDokTypes(): string
+    public function getExcludeDokTypes()
     {
         return $this->excludeDokTypes;
     }
@@ -94,7 +94,7 @@ class TransformationConfiguration extends AbstractTransformationConfiguration {
     /**
      * @param string $excludeDokTypes
      */
-    public function setExcludeDokTypes(string $excludeDokTypes)
+    public function setExcludeDokTypes($excludeDokTypes)
     {
         $this->excludeDokTypes = $excludeDokTypes;
     }

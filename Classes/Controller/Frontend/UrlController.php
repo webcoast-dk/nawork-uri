@@ -333,6 +333,8 @@ class UrlController implements SingletonInterface {
                                 if (is_array($params['pageAccessFailureReasons']) && !array_key_exists('nawork_uri', $params['pageAccessFailureReasons'])) {
                                     // the TSFE called the page not found handling, so we build a new request
                                     GeneralUtility::_GETset($pageNotFoundConfiguration->getValue(), 'id');
+                                    // clear cHash to avoid another 404 due to non matching cHash, which would just output the 404 text message
+                                    GeneralUtility::_GETset('', 'cHash');
                                     $request = ServerRequestFactory::fromGlobals();
                                     $bootstrap = Bootstrap::getInstance();
                                     $requestHandler = new RequestHandler($bootstrap);
@@ -341,6 +343,8 @@ class UrlController implements SingletonInterface {
                                 } else {
                                     // the page not found handling is called by nawork-uri after request to unknown url/path
                                     $frontendController->id = $pageNotFoundConfiguration->getValue();
+                                    // clear cHash to avoid another 404 due to non matching cHash, which would just output the 404 text message
+                                    $frontendController->cHash = '';
                                     $disableOutput = TRUE; // let the frontend render normally
                                 }
                             } elseif (GeneralUtility::getIndpEnv('HTTP_USER_AGENT') != 'nawork_uri') {

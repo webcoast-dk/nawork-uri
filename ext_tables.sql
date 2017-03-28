@@ -37,7 +37,7 @@ CREATE TABLE tx_naworkuri_uri (
   cruser_id int(11) DEFAULT '0' NOT NULL,
   sys_language_uid int(11) DEFAULT '0' NOT NULL,
   domain varchar(255) DEFAULT '' NOT NULL,
-  path varchar(255) DEFAULT '' NOT NULL,
+  path varchar(1000) DEFAULT '' NOT NULL,
   params text NOT NULL,
 	hash_path varchar(32) DEFAULT '' NOT NULL,
 	hash_params varchar(32) DEFAULT '' NOT NULL,

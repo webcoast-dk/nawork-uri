@@ -18,6 +18,14 @@ class GeneralUtility {
 	const LOG_SEVERITY_SYS = 2;
 	const LOG_SEVERITY_SECURITY = 3;
 
+    /**
+     * Cache determined domain name to uid mapping in here to avoid
+     * one or more database queries per generated link
+     *
+     * @var array
+     */
+	private static $domainNameUidMapping = [];
+
 	/**
 	 * Tests if the input can be interpreted as integer.
 	 *
@@ -224,12 +232,15 @@ class GeneralUtility {
 	}
 
 	public static function getCurrentDomain($linkDomain = NULL) {
+		$domainName = $linkDomain === NULL ? \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_HOST') : $linkDomain;
+		if (isset(self::$domainNameUidMapping[$domainName])) {
+		    return self::$domainNameUidMapping[$domainName];
+        }
 		/* @var $tableConfiguration \Nawork\NaworkUri\Configuration\TableConfiguration */
 		$tableConfiguration = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(TableConfiguration::class);
 		/* @var $db \TYPO3\CMS\Core\Database\DatabaseConnection */
 		$db = $GLOBALS['TYPO3_DB'];
 		$domain = 0;
-		$domainName = $linkDomain === NULL ? \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_HOST') : $linkDomain;
 		$domainRes = $db->exec_SELECTgetRows('uid,tx_naworkuri_masterDomain', $tableConfiguration->getDomainTable(), 'domainName LIKE \'' . $domainName . '\'', 'hidden=0');
 		if ($domainRes && count($domainRes)) {
 			$domain = $domainRes[0]['uid'];
@@ -249,6 +260,7 @@ class GeneralUtility {
 				} while ($continue);
 			}
 		}
+		self::$domainNameUidMapping[$domainName] = $domain;
 
 		return $domain;
 	}

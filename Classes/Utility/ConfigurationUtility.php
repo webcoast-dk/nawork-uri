@@ -188,6 +188,10 @@ class ConfigurationUtility {
 	 * @throws \Exception
 	 */
 	private static function getConfigurationObjectForDomain($domain) {
+		if(array_key_exists($domain, self::$configurations)) {
+			return self::$configurations[$domain];
+		}
+
 	    /** @var TableConfiguration $tableConfiguration */
 	    $tableConfiguration = GeneralUtility::makeInstance(TableConfiguration::class);
 	    $domainRecord = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('tx_naworkuri_masterDomain, tx_naworkuri_use_configuration', $tableConfiguration->getDomainTable(), 'domainName=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($domain, $tableConfiguration->getDomainTable()));
@@ -202,9 +206,6 @@ class ConfigurationUtility {
             $identifier = $domain;
         }
 
-		if(array_key_exists($domain, self::$configurations)) {
-			return self::$configurations[$domain];
-		}
 		try {
 			return self::readCompiledConfigurationFile($identifier);
 		} catch (\Exception $e) {

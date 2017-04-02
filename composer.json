@@ -7,7 +7,7 @@
 		}
 	},
 	"type": "typo3-cms-extension",
-    "version": "2.7.7",
+    "version": "2.7.8",
 	"license": "GPL-3.0",
 	"authors": [
 		{

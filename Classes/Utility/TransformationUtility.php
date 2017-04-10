@@ -234,7 +234,8 @@ class TransformationUtility implements \TYPO3\CMS\Core\SingletonInterface {
 		// read not encoded parameters
 		$i = 0;
 		foreach ($unencodedParameters as $key => $value) {
-			$uri.= ( ($i > 0) ? '&' : '?' ) . $key . '=' . $value;
+		    // rawurlencode key and value to avoid invalid urls
+			$uri.= ( ($i > 0) ? '&' : '?' ) . rawurlencode($key) . '=' . rawurlencode($value);
 			$i++;
 		}
 

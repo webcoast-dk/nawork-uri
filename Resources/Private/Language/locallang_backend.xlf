@@ -6,8 +6,14 @@
 			<trans-unit id="cache.clearUrlCache">
 				<source>Clear URL cache</source>
 			</trans-unit>
+			<trans-unit id="cache.clearUrlCache.description">
+				<source>Resets cache timestamps for url to have them regenerated on next uncached hit.</source>
+			</trans-unit>
 			<trans-unit id="cache.clearConfigurationCache">
 				<source>Clear configuration cache</source>
+			</trans-unit>
+			<trans-unit id="cache.clearConfigurationCache.description">
+				<source>Remove cached configurations. This is necessary after changing anything in the configuration files.</source>
 			</trans-unit>
 		</body>
 	</file>

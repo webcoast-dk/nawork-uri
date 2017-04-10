@@ -60,17 +60,19 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = TceMainProcessDatamap::class;
 	// add an additional cache clearing function to the menu
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['additionalBackendItems']['cacheActions'][] = ClearCache::class;
-    /* register the ajax ids for the clear cache options (urls and url configuration) */
-    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::registerAjaxHandler(
-        'tx_naworkuri::clearUrlCache',
-        '&' . \Nawork\NaworkUri\Cache\ClearCache::class . '->clearUrlCache',
-        FALSE
-    );
-    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::registerAjaxHandler(
-        'tx_naworkuri::clearUrlConfigurationCache',
-        '&' . \Nawork\NaworkUri\Cache\ClearCache::class . '->clearConfigurationCache',
-        FALSE
-    );
+	if (TYPO3\CMS\Core\Utility\VersionNumberUtility::convertVersionNumberToInteger(TYPO3\CMS\Core\Utility\VersionNumberUtility::getCurrentTypo3Version()) < 8007000) {
+        /* register the ajax ids for the clear cache options (urls and url configuration) */
+        \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::registerAjaxHandler(
+            'tx_naworkuri::clearUrlCache',
+            '&' . \Nawork\NaworkUri\Cache\ClearCache::class . '->clearUrlCache',
+            false
+        );
+        \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::registerAjaxHandler(
+            'tx_naworkuri::clearUrlConfigurationCache',
+            '&' . \Nawork\NaworkUri\Cache\ClearCache::class . '->clearConfigurationCache',
+            false
+        );
+    }
 
 	// register command controller for uri testing
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = NaworkUriCommandController::class;

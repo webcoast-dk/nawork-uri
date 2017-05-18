@@ -16,6 +16,7 @@ if (!defined('TYPO3_MODE')) {
                 'internal_type' => 'db',
                 'allowed' => 'sys_domain',
                 'size' => '1',
+                'default' => 0,
                 'minitems' => '0',
                 'maxitems' => '1',
                 'wizards' => array(

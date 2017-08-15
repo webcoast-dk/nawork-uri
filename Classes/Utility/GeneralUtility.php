@@ -8,16 +8,11 @@ namespace Nawork\NaworkUri\Utility;
 
 use Nawork\NaworkUri\Configuration\TableConfiguration;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Utility\HttpUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 class GeneralUtility {
-
-	const LOG_SEVERITY_INFO = 0;
-	const LOG_SEVERITY_ERROR = 1;
-	const LOG_SEVERITY_SYS = 2;
-	const LOG_SEVERITY_SECURITY = 3;
-
     /**
      * Cache determined domain name to uid mapping in here to avoid
      * one or more database queries per generated link
@@ -347,10 +342,9 @@ class GeneralUtility {
 		return $alias;
 	}
 
-	public static function log($msg, $severity = \TYPO3\CMS\Core\Utility\GeneralUtility::SYSLOG_SEVERITY_INFO, $data = array()) {
-		$db = $GLOBALS['TYPO3_DB'];
-		/* @var $db \TYPO3\CMS\Core\Database\DatabaseConnection */
-		$db->exec_INSERTquery('sys_log', array('type' => 5, 'IP' => \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('REMOTE_ADDR'), 'log_data' => serialize($data), 'details' => $msg, 'error' => $severity, 'tstamp' => time()), array('error', 'tstamp'));
+	public static function log($msg, $severity, $data = array()) {
+	    $logger = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
+	    $logger->log($severity, vsprintf($msg, $data));
 	}
 
 	/**

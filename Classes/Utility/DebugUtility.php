@@ -3,6 +3,8 @@
 namespace Nawork\NaworkUri\Utility;
 
 
+use TYPO3\CMS\Core\Log\LogManager;
+
 class DebugUtility
 {
     public static function debug($title, $data, $tag, $additionalEnvironment = null)
@@ -14,10 +16,7 @@ class DebugUtility
                     \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $extensionConfiguration['debugEnableTags'])
                 )
             ) {
-                $logFile = $extensionConfiguration['debugLogFile'];
-                if (!file_exists($logFile)) {
-                    touch($logFile);
-                }
+                $logger = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
                 $temporaryServer = $_SERVER;
                 unset($temporaryServer['HTTP_ACCEPT']);
                 unset($temporaryServer['HTTP_ACCEPT_LANGUAGE']);
@@ -43,16 +42,11 @@ class DebugUtility
                 if ($additionalEnvironment !== null) {
                     $environment['additionalEnvironment'] = $additionalEnvironment;
                 }
-                $identifier = crc32(serialize($_SERVER));
-                $logData = array(
-                    'environment' => $environment,
-                    'identifier' => $identifier,
-                    'time' => microtime(true),
-                    'title' => $title,
+                $logger->debug($title, [
                     'data' => $data,
-                    'tag' => $tag
-                );
-                file_put_contents($logFile, json_encode($logData) . PHP_EOL, FILE_APPEND);
+                    'tag' => $tag,
+                    'environment' => $environment
+                ]);
             }
         }
     }

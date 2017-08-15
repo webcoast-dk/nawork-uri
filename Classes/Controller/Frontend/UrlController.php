@@ -14,6 +14,7 @@ use Nawork\NaworkUri\Utility\ConfigurationUtility;
 use Nawork\NaworkUri\Utility\TransformationUtility;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Http\ServerRequestFactory;
+use TYPO3\CMS\Core\Log\LogLevel;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\HttpUtility;
@@ -110,12 +111,12 @@ class UrlController implements SingletonInterface {
 				}
 			} catch (UrlIsNotUniqueException $ex) {
 				/* log unique failure to belog */
-				\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "%s" is not unique with parameters %s. Referrer: %s', GeneralUtility::SYSLOG_SEVERITY_ERROR, array($ex->getPath(), \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL')));
+				\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "%s" is not unique with parameters %s. Referrer: %s', LogLevel::ERROR, array($ex->getPath(), \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL')));
 			} catch (DbErrorException $ex) {
 				/* log db errors to belog */
-				\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "%s"', GeneralUtility::SYSLOG_SEVERITY_ERROR, array($ex->getSqlError()));
+				\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "%s". Referrer: %s', LogLevel::ERROR, array($ex->getSqlError(), GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL')));
 			} catch (TransformationServiceException $ex) {
-                \Nawork\NaworkUri\Utility\GeneralUtility::log('A transformation could not completed: ' . $ex->getMessage() . ($ex->getPrevious() instanceof \Exception ? ' The previous error was:' . $ex->getPrevious()->getMessage(): ''));
+                \Nawork\NaworkUri\Utility\GeneralUtility::log('A transformation could not completed: ' . $ex->getMessage() . ($ex->getPrevious() instanceof \Exception ? ' The previous error was:' . $ex->getPrevious()->getMessage(): ''), LogLevel::WARNING);
             }
 		}
 	}
@@ -245,12 +246,12 @@ class UrlController implements SingletonInterface {
                         }
                     } catch (UrlIsNotUniqueException $ex) {
 						/* log unique failure to belog */
-						\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "%s" is not unique with parameters %s. Referrer: %s', GeneralUtility::SYSLOG_SEVERITY_ERROR, array($ex->getPath(), \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL')));
+						\Nawork\NaworkUri\Utility\GeneralUtility::log('Url "%s" is not unique with parameters %s. Referrer: %s', LogLevel::ERROR, array($ex->getPath(), \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($ex->getParameters()), GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL')));
 					} catch (DbErrorException $ex) {
 						/* log db errors to belog */
-						\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "%s"', GeneralUtility::SYSLOG_SEVERITY_ERROR, array($ex->getSqlError()));
+						\Nawork\NaworkUri\Utility\GeneralUtility::log('An database error occured while creating a url. The SQL error was: "%s". Referrer: %s', LogLevel::ERROR, array($ex->getSqlError(), GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL')));
 					} catch (TransformationServiceException $ex) {
-					    \Nawork\NaworkUri\Utility\GeneralUtility::log('A transformation could not completed: ' . $ex->getMessage() . ($ex->getPrevious() instanceof \Exception ? ' The previous error was:' . $ex->getPrevious()->getMessage(): ''));
+					    \Nawork\NaworkUri\Utility\GeneralUtility::log('A transformation could not completed: ' . $ex->getMessage() . ($ex->getPrevious() instanceof \Exception ? ' The previous error was:' . $ex->getPrevious()->getMessage(): ''), LogLevel::WARNING);
                     }
 				}
 			}

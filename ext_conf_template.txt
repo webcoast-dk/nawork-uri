@@ -15,6 +15,3 @@ debugEnable = 0
 
 # cat=debug; type=string; label=What to debug
 debugEnableTags =
-
-# cat=debug; type=string; label=Where to write the log
-debugLogFile =

@@ -25,7 +25,7 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
     );
 
 	\TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule('Nawork.' . $_EXTKEY, $mainModuleName, 'uri', '', array(
-		'Url' => 'indexUrls,loadUrls,updateSettings,lock,unlock,delete,deleteSelected'
+		'Url' => 'indexUrls,loadUrls,updateSettings,lock,unlock,delete,deleteSelected,message'
 		), array(
 		'access' => 'user,group',
 		'icon' => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/module.png',
@@ -34,7 +34,7 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
 	));
 
 	\TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule('Nawork.' . $_EXTKEY, $mainModuleName, 'redirect', '', array(
-		'Url' => 'indexRedirects,loadRedirects,updateSettings,delete,deleteSelected'
+		'Url' => 'indexRedirects,loadRedirects,updateSettings,delete,deleteSelected,message'
 		), array(
 		'access' => 'user,group',
 		'icon' => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/module.png',

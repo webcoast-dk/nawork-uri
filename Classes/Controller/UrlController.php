@@ -11,6 +11,7 @@ use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Backend\View\BackendTemplateView;
 use TYPO3\CMS\Core\Database\DatabaseConnection;
 use TYPO3\CMS\Core\Imaging\Icon;
+use TYPO3\CMS\Core\Messaging\AbstractMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
@@ -119,7 +120,7 @@ class UrlController extends AbstractController {
                 $this->view->assign('menu', 'ContextMenu');
             }
 
-            if ($this->actionMethodName !== 'noPageIdAction') {
+            if ($this->actionMethodName !== 'messageAction') {
                 $buttonBar = $this->view->getModuleTemplate()->getDocHeaderComponent()->getButtonBar();
                 $returnUrl = rawurlencode(BackendUtility::getModuleUrl('naworkuri_NaworkUriUri'));
                 $parameters = GeneralUtility::explodeUrl2Array('edit[tx_naworkuri_uri][0]=new&returnUrl=' . $returnUrl);
@@ -144,7 +145,7 @@ class UrlController extends AbstractController {
                 }
                 $this->addPageRootMenu();
             }
-            if ($this->actionMethodName !== 'noPageIdAction') {
+            if ($this->actionMethodName !== 'messageAction') {
                 $this->addDomainMenu();
             }
             if ($this->actionMethodName === 'indexUrlsAction') {
@@ -161,9 +162,17 @@ class UrlController extends AbstractController {
      * @param Filter $filter
      */
 	public function indexUrlsAction(Filter $filter) {
-		if (!$this->pageId > 0) {
-			$this->forward('noPageId');
+	    $forwardToMessage = false;
+		if (!$filter->getDomain() instanceof Domain) {
+		    $this->addFlashMessage('Please configure your domain records correctly. You need at least one domain record without a master domain.', 'Missing or faulty domain records', AbstractMessage::ERROR);
+		    $forwardToMessage = true;
+        } elseif (!$this->pageId > 0) {
+		    $this->addFlashMessage('Please select a page from the page tree on the left', 'Select page', AbstractMessage::INFO);
+		    $forwardToMessage = true;
 		}
+        if ($forwardToMessage) {
+            $this->forward('message');
+        }
         $this->view->assignMultiple(
             [
                 'filter' => json_encode($filter),
@@ -187,6 +196,10 @@ class UrlController extends AbstractController {
      * @param \Nawork\NaworkUri\Domain\Model\Filter $filter
      */
 	public function indexRedirectsAction(Filter $filter) {
+	    if (!$filter->getDomain() instanceof Domain) {
+		    $this->addFlashMessage('Please configure your domain records correctly. You need at least one domain record without a master domain.', 'Missing or faulty domain records', AbstractMessage::ERROR);
+		    $this->forward('message');
+        }
 		$this->setUserSettings('pageRoot', $this->pageId);
 		$this->view->assignMultiple(
             [
@@ -197,10 +210,7 @@ class UrlController extends AbstractController {
         );
 	}
 
-    /**
-     * @param Filter $filter
-     */
-	public function noPageIdAction(Filter $filter) {
+    public function messageAction() {
 
 	}
 

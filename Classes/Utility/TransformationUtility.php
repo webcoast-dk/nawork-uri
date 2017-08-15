@@ -79,13 +79,17 @@ class TransformationUtility implements SingletonInterface {
 		// look into the db
 		$cache = $this->cache->read_path($path, $this->domain);
 		if ($cache === FALSE) {
-			/* if we have not found an entry, try to append a "/" an try again */
-			if (!empty($path) && $append == '/' && substr($path, -strlen($append)) != $append && !preg_match('/\.\w{3,5}\d?$/', $path)) {
+			// catch calls to urls missing the "append" value
+			if (!empty($path) && !empty($append) && substr($path, -strlen($append)) != $append) {
+			    // the "append" value is not the last part of the url append it
 				$path .= $append;
+				// and check again
+                if ($this->cache->read_path($path, $this->domain) !== false) {
+                    // if the url with the appended value is found redirect to it
+                    throw new UrlIsRedirectException(['redirect_path' => $path, 'type' => 2, 'redirect_mode', 301]);
+                }
 			}
-			$cache = $this->cache->read_path($path, $this->domain);
-		}
-		if ($cache) {
+		} elseif ($cache) {
 			if ($cache['type'] > 0) {
 				throw new UrlIsRedirectException($cache);
 			}

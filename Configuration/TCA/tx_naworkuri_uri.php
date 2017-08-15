@@ -56,6 +56,7 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 			'config' => array(
 				'type' => 'select',
                 'renderType' => 'selectSingle',
+				'default' => 0,
 				'foreign_table' => 'sys_language',
 				'foreign_table_where' => 'ORDER BY sys_language.title',
 				'items' => array(
@@ -90,6 +91,7 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 			'config' => Array(
 				'type' => 'input',
 				'size' => '30',
+				'default' => '',
 			)
 		),
 		'path_hash' => Array(

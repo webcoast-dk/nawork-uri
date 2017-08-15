@@ -52,7 +52,7 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 		),
 		'sys_language_uid' => array(
 			'exclude' => 1,
-			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.language',
+			'label' => 'LLL:EXT:lang/locallang_general.xlf:LGL.language',
 			'config' => array(
 				'type' => 'select',
                 'renderType' => 'selectSingle',
@@ -60,7 +60,7 @@ $GLOBALS['TCA']['tx_naworkuri_uri'] = array(
 				'foreign_table' => 'sys_language',
 				'foreign_table_where' => 'ORDER BY sys_language.title',
 				'items' => array(
-					array('LLL:EXT:lang/locallang_general.xml:LGL.default_value', 0)
+					array('LLL:EXT:lang/locallang_general.xlf:LGL.default_value', 0)
 				)
 			)
 		),

@@ -15,6 +15,11 @@
 			"email": "thorben@work.de"
 		}
 	],
+	"extra": {
+		"branch-alias": {
+			"dev-master": "3.x-dev"
+		}
+	},
 	"require": {
 		"typo3/cms": "^7.6.0 || ^8.4.0"
 	},

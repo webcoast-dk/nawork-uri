@@ -16,6 +16,7 @@ use Nawork\NaworkUri\Transformation\AbstractConfigurationReader;
 use Nawork\NaworkUri\Transformation\AbstractTransformationConfiguration;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
+use TYPO3\CMS\Core\Log\LogLevel;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class ConfigurationUtility {
@@ -641,10 +642,15 @@ class ConfigurationUtility {
 						// if the configuration class does not exist - and can not be loaded - log this and continue
 						// this leaves this parameter out of the configuration
 						if (!class_exists($transformationConfigurationClassName)) {
-							/**
-							 * @todo Log this somewhere
-							 */
-							continue;
+                            \Nawork\NaworkUri\Utility\GeneralUtility::log(
+                                'The transformation configuration class "%s" does not exist. Transformation service: %s. Referrer: %s',
+                                LogLevel::ERROR,
+                                [
+                                    $transformationConfigurationClassName,
+                                    $transformationServiceClassName,
+                                    GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL')
+                                ]
+                            );
 						}
 						/* @var $transformationConfiguration AbstractTransformationConfiguration */
 						$transformationConfiguration = new $transformationConfigurationClassName();

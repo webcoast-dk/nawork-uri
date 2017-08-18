@@ -1,12 +1,5 @@
 <?php
 
-use Nawork\NaworkUri\Command\MigrationCommandController;
-use Nawork\NaworkUri\Command\NaworkUriCommandController;
-use Nawork\NaworkUri\Hooks\ClearCache;
-use Nawork\NaworkUri\Hooks\ClickMenu;
-use Nawork\NaworkUri\Hooks\TceFormsMainFields;
-use Nawork\NaworkUri\Hooks\TceMainProcessDatamap;
-
 if (!defined('TYPO3_MODE')) {
 	die('Access denied.');
 }
@@ -55,11 +48,11 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
 	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTypoScriptSetup('<INCLUDE_TYPOSCRIPT: source="FILE:EXT:nawork_uri/Configuration/TypoScript/module.ts">');
 
 	// register hook for manipulating default type for new records
-	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tceforms.php']['getMainFieldsClass'][] = TceFormsMainFields::class;
+	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tceforms.php']['getMainFieldsClass'][] = Nawork\NaworkUri\Hooks\TceFormsMainFields::class;
 	// add a hook to create the path and parameter hashes automatically when creating or altering urls manually
-	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = TceMainProcessDatamap::class;
+	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = Nawork\NaworkUri\Hooks\TceMainProcessDatamap::class;
 	// add an additional cache clearing function to the menu
-	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['additionalBackendItems']['cacheActions'][] = ClearCache::class;
+	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['additionalBackendItems']['cacheActions'][] = Nawork\NaworkUri\Hooks\ClearCache::class;
 	if (TYPO3\CMS\Core\Utility\VersionNumberUtility::convertVersionNumberToInteger(TYPO3\CMS\Core\Utility\VersionNumberUtility::getCurrentTypo3Version()) < 8007000) {
         /* register the ajax ids for the clear cache options (urls and url configuration) */
         \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::registerAjaxHandler(
@@ -75,13 +68,13 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
     }
 
 	// register command controller for uri testing
-	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = NaworkUriCommandController::class;
-	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = MigrationCommandController::class;
+	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = Nawork\NaworkUri\Command\NaworkUriCommandController::class;
+	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = Nawork\NaworkUri\Command\MigrationCommandController::class;
 
     // click menu processing
     if (TYPO3\CMS\Core\Utility\VersionNumberUtility::convertVersionNumberToInteger(TYPO3\CMS\Core\Utility\VersionNumberUtility::getCurrentTypo3Version()) <= 8005000) {
         $GLOBALS['TBE_MODULES_EXT']['xMOD_alt_clickmenu']['extendCMclasses'][] = [
-            'name' => ClickMenu::class
+            'name' => Nawork\NaworkUri\Hooks\ClickMenu::class
         ];
     } else {
 	    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addUserTSConfig('<INCLUDE_TYPOSCRIPT: source="FILE:EXT:nawork_uri/Configuration/TSConfig/module.ts">');

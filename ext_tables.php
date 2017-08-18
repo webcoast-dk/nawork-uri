@@ -120,4 +120,7 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
         TYPO3\CMS\Core\Imaging\IconProvider\BitmapIconProvider::class,
         ['source' => 'EXT:nawork_uri/Resources/Public/Icons/module.png']
     );
+
+    // add update wizards
+    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/install']['update'][Nawork\NaworkUri\Install\FieldsV2xToV3Wizard::class] = Nawork\NaworkUri\Install\FieldsV2xToV3Wizard::class;
 }

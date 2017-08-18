@@ -187,18 +187,6 @@ class MigrationCommandController extends CommandController {
 		$this->databaseConnection->exec_DELETEquery('tx_naworkuri_uri', 'domain NOT REGEXP "^[0-9]+$"');
 	}
 
-    /**
-     * Migrate fields from 2.x to 3.0
-     *
-     * * hash_path => path_hash
-     * * params => parameters
-     * * hash_params => parameters_hash
-     */
-    public function fieldsV2xToV3Command()
-    {
-        $this->databaseConnection->sql_query('UPDATE tx_naworkuri_uri SET parameters=params, path_hash=hash_path, parameters_hash=hash_params');
-	}
-
 	/**
 	 * Determine the correct domain record recursively,
 	 * using the domain name or record uid and respect the

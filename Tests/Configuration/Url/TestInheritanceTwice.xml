@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<nawork_uri extends="test">
+	<Parameters>
+		<TransformationConfiguration extends="test">
+			<Name>tx_ttnews[tt_news]</Name>
+			<Patterns>
+				<Pattern>{title}</Pattern>
+			</Patterns>
+		</TransformationConfiguration>
+	</Parameters>
+</nawork_uri>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<nawork_uri extends="default">
+	<General>
+		<Append>.htm</Append>
+	</General>
+
+	<PageNotFound extends="default">
+		<Status>HTTP/1.0 404 Not Found!</Status>
+		<Behavior>Page</Behavior>
+		<Value>page-not-found</Value>
+	</PageNotFound>
+
+	<Parameters>
+		<TransformationConfiguration extends="default">
+			<Name>L</Name>
+			<Mappings>
+				<Mapping Value="2">
+					<Replacement>fr</Replacement>
+				</Mapping>
+			</Mappings>
+		</TransformationConfiguration>
+		<TransformationConfiguration extends="default">
+			<Name>id</Name>
+			<Fields>alias//nav_title//title</Fields>
+		</TransformationConfiguration>
+		<TransformationConfiguration>
+			<Name>tx_ttnews[tt_news]</Name>
+			<Type>Database</Type>
+			<Table>tt_news</Table>
+			<Patterns>
+				<Pattern>{title}-{uid}</Pattern>
+			</Patterns>
+		</TransformationConfiguration>
+	</Parameters>
+</nawork_uri>

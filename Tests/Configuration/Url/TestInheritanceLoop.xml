@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<nawork_uri extends="default">
+	<General>
+		<Append>.htm</Append>
+	</General>
+
+	<Parameters>
+		<TransformationConfiguration extends="test">
+			<Name>cHash</Name>
+			<Type>Plain</Type>
+		</TransformationConfiguration>
+	</Parameters>
+</nawork_uri>

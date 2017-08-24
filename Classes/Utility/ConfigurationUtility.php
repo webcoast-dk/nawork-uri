@@ -30,6 +30,11 @@ class ConfigurationUtility {
 	 */
 	protected static $configurations = array();
 
+	/**
+	 * @var \Nawork\NaworkUri\Configuration\Configuration[]
+	 */
+	protected static $configurationsByIdentifier = array();
+
 	protected static $inheritanceLock = array();
 
 	public static function getConfigurationFileForCurrentDomain() {
@@ -207,20 +212,29 @@ class ConfigurationUtility {
             $identifier = $domain;
         }
 
-		try {
-			return self::readCompiledConfigurationFile($identifier);
+		return self::getConfigurationByIdentifier($identifier);
+	}
+
+	private static function getConfigurationByIdentifier($identifier)
+    {
+        if (array_key_exists($identifier, self::$configurationsByIdentifier)) {
+            return self::$configurationsByIdentifier[$identifier];
+        }
+        try {
+			self::$configurationsByIdentifier[$identifier] = self::readCompiledConfigurationFile($identifier);
+			return self::$configurationsByIdentifier[$identifier];
 		} catch (\Exception $e) {
 			if (array_key_exists($identifier, $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nawork_uri']['Configurations'])) {
-				$configuration = self::buildConfigurationForDomain($identifier);
+				self::$configurationsByIdentifier[$identifier] = self::buildConfiguration($identifier);
 				self::storeCompiledConfigurationToFile(
-					$configuration,
+					self::$configurationsByIdentifier[$identifier],
 					$identifier
 				);
-				return $configuration;
+				return self::$configurationsByIdentifier[$identifier];
 			}
 			throw new \Exception('No configuration is registered with identifer "' . $identifier. '"', 1394135040);
 		}
-	}
+    }
 
 	private static function storeCompiledConfigurationToFile($configuration, $identifier) {
 		$cacheIdentifier = md5($identifier);
@@ -276,8 +290,9 @@ class ConfigurationUtility {
 	 * @return \Nawork\NaworkUri\Configuration\Configuration
 	 *
 	 * @throws \Nawork\NaworkUri\Exception\InheritanceException
+     * @internal
 	 */
-	private static function buildConfigurationForDomain($identifier) {
+	public static function buildConfiguration($identifier) {
 		$xml = self::readXmlConfigurationFile($identifier);
 		$configuration = NULL;
 		if ($xml->attributes()->extends && strcmp('', (string)$xml->attributes()->extends)) {
@@ -288,7 +303,7 @@ class ConfigurationUtility {
 			}
 			try {
 				self::$inheritanceLock[$extendedDomainName] = TRUE;
-				$configuration = self::getConfigurationObjectForDomain((string)$xml->attributes()->extends);
+				$configuration = self::getConfigurationByIdentifier((string)$xml->attributes()->extends);
 			} catch (\Exception $e) {
 				// inheritance exceptions must bubble up
 				if ($e instanceof InheritanceException) {
@@ -337,7 +352,7 @@ class ConfigurationUtility {
 			}
 			try {
 				self::$inheritanceLock[$extendedDomainName . '.General'] = TRUE;
-				$configuration = self::getConfigurationObjectForDomain((string)$xml->attributes()->extends)
+				$configuration = self::getConfigurationByIdentifier((string)$xml->attributes()->extends)
 					->getGeneralConfiguration();
 			} catch (\Exception $e) {
 				if ($e instanceof InheritanceException) {
@@ -384,7 +399,7 @@ class ConfigurationUtility {
 			}
 			try {
 				self::$inheritanceLock[$extendedDomainName . '.Transliterations'] = TRUE;
-				$configuration = self::getConfigurationObjectForDomain((string)$xml->attributes()->extends)
+				$configuration = self::getConfigurationByIdentifier((string)$xml->attributes()->extends)
 					->getTransliterationsConfiguration();
 			} catch (\Exception $e) {
 				if ($e instanceof InheritanceException) {
@@ -426,7 +441,7 @@ class ConfigurationUtility {
 			}
 			try {
 				self::$inheritanceLock[$extendedDomainName . '.PageNotFound'] = TRUE;
-				$configuration = self::getConfigurationObjectForDomain((string)$xml->attributes()->extends)
+				$configuration = self::getConfigurationByIdentifier((string)$xml->attributes()->extends)
 					->getPageNotFoundConfiguration();
 			} catch (\Exception $e) {
 				if ($e instanceof InheritanceException) {
@@ -479,7 +494,7 @@ class ConfigurationUtility {
 			}
 			try {
 				self::$inheritanceLock[$extendedDomainName . '.PageNotAccessible'] = TRUE;
-				$configuration = self::getConfigurationObjectForDomain((string)$xml->attributes()->extends)
+				$configuration = self::getConfigurationByIdentifier((string)$xml->attributes()->extends)
 					->getPageNotAccessibleConfiguration();
 			} catch (\Exception $e) {
 				if ($e instanceof InheritanceException) {
@@ -533,7 +548,7 @@ class ConfigurationUtility {
 			}
 			try {
 				self::$inheritanceLock[$extendedDomainName . '.PageNotTranslated'] = TRUE;
-				$configuration = self::getConfigurationObjectForDomain((string)$xml->attributes()->extends)
+				$configuration = self::getConfigurationByIdentifier((string)$xml->attributes()->extends)
 					->getPageNotTranslatedConfiguration();
 			} catch (\Exception $e) {
 				if ($e instanceof InheritanceException) {
@@ -588,13 +603,12 @@ class ConfigurationUtility {
 			}
 			try {
 				self::$inheritanceLock[$extendedDomainName . '.Parameters'] = TRUE;
-				$configuration = self::getConfigurationObjectForDomain((string)$xml->attributes()->extends)
+				$configuration = self::getConfigurationByIdentifier((string)$xml->attributes()->extends)
 					->getParametersConfiguration();
 			} catch (\Exception $e) {
 				if ($e instanceof InheritanceException) {
 					throw $e;
 				}
-				$configuration = NULL;
 				self::$inheritanceLock[$extendedDomainName . '.Parameters'] = FALSE;
 			}
 		}
@@ -605,6 +619,7 @@ class ConfigurationUtility {
 
 			/* @var $transformationConfigurationXml \SimpleXMLElement */
 			foreach ($xml->children() as $transformationConfigurationXml) {
+			    $transformationConfiguration = null;
 				if ($transformationConfigurationXml->getName() == 'TransformationConfiguration') {
 					$parameterName = (string)$transformationConfigurationXml->Name;
 					if ($transformationConfigurationXml->attributes()->extends && strcmp('',
@@ -617,47 +632,47 @@ class ConfigurationUtility {
 						}
 						try {
 							self::$inheritanceLock[$extendedDomainName . '.Parameters.' . $parameterName] = TRUE;
-							$transformationConfiguration = self::getConfigurationObjectForDomain((string)$transformationConfigurationXml->attributes()->extends)
+							$transformationConfiguration = self::getConfigurationByIdentifier((string)$transformationConfigurationXml->attributes()->extends)
 								->getParametersConfiguration()
 								->getParameterTransformationConfigurationByName($parameterName);
 						} catch (\Exception $e) {
 							if ($e instanceof InheritanceException) {
 								throw $e;
 							}
-							$transformationConfiguration = NULL;
 							self::$inheritanceLock[$extendedDomainName . '.Parameters.' . $parameterName] = FALSE;
 						}
-					} else {
-						$transformationConfiguration = NULL;
 					}
-					if ($transformationConfiguration === NULL) {
+					if ($transformationConfiguration === null || (strcmp('', (string)$transformationConfigurationXml->Type) !== 0 && $transformationConfiguration->getType() !== (string)$transformationConfigurationXml->Type)) {
 						$type = (string)$transformationConfigurationXml->Type;
 					} else {
 						$type = $transformationConfiguration->getType();
 					}
 					if (TransformationUtility::isTransformationServiceRegistered($type)) {
-						$transformationServiceClassName = TransformationUtility::getTransformationServiceClassName($type);
-						$classNameParts = GeneralUtility::trimExplode('\\', $transformationServiceClassName);
-						// build configuration class name
-						array_pop($classNameParts);
-						array_push($classNameParts, 'TransformationConfiguration');
-						$transformationConfigurationClassName = implode('\\', $classNameParts);
-						// if the configuration class does not exist - and can not be loaded - log this and continue
-						// this leaves this parameter out of the configuration
-						if (!class_exists($transformationConfigurationClassName)) {
-                            \Nawork\NaworkUri\Utility\GeneralUtility::log(
-                                'The transformation configuration class "%s" does not exist. Transformation service: %s. Referrer: %s',
-                                LogLevel::ERROR,
-                                [
-                                    $transformationConfigurationClassName,
-                                    $transformationServiceClassName,
-                                    GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL')
-                                ]
-                            );
-						}
-						/* @var $transformationConfiguration AbstractTransformationConfiguration */
-						$transformationConfiguration = new $transformationConfigurationClassName();
-						$transformationConfiguration->setName((string)$transformationConfigurationXml->Name);
+                        $transformationServiceClassName = TransformationUtility::getTransformationServiceClassName($type);
+                        $classNameParts = GeneralUtility::trimExplode('\\', $transformationServiceClassName);
+					    if ($transformationConfiguration === null || $transformationConfiguration->getType() !== $type) {
+					        // create a new transformation configuration object, if there is non or the type has changed
+                            // build configuration class name
+                            array_pop($classNameParts);
+                            array_push($classNameParts, 'TransformationConfiguration');
+                            $transformationConfigurationClassName = implode('\\', $classNameParts);
+                            // if the configuration class does not exist - and can not be loaded - log this and continue
+                            // this leaves this parameter out of the configuration
+                            if (!class_exists($transformationConfigurationClassName)) {
+                                \Nawork\NaworkUri\Utility\GeneralUtility::log(
+                                    'The transformation configuration class "%s" does not exist. Transformation service: %s. Referrer: %s',
+                                    LogLevel::ERROR,
+                                    [
+                                        $transformationConfigurationClassName,
+                                        $transformationServiceClassName,
+                                        GeneralUtility::getIndpEnv('TYPO3_REQUEST_URL')
+                                    ]
+                                );
+                            }
+                            /* @var $transformationConfiguration AbstractTransformationConfiguration */
+                            $transformationConfiguration = new $transformationConfigurationClassName();
+                            $transformationConfiguration->setName((string)$transformationConfigurationXml->Name);
+                        }
 						// build the configuration based in the given properties
 						foreach($transformationConfiguration->getAdditionalProperties() as $name => $type) {
 							// exclude name and type values as there are set already

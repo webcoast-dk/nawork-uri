@@ -236,7 +236,7 @@ class GeneralUtility {
 		/* @var $db \TYPO3\CMS\Core\Database\DatabaseConnection */
 		$db = $GLOBALS['TYPO3_DB'];
 		$domain = 0;
-		$domainRes = $db->exec_SELECTgetRows('uid,tx_naworkuri_masterDomain', $tableConfiguration->getDomainTable(), 'domainName LIKE \'' . $domainName . '\'', 'hidden=0');
+		$domainRes = $db->exec_SELECTgetRows('uid,tx_naworkuri_masterDomain', $tableConfiguration->getDomainTable(), 'domainName LIKE \'' . $domainName . '\' AND hidden=0');
 		if ($domainRes && count($domainRes)) {
 			$domain = $domainRes[0]['uid'];
 			if (intval($domainRes[0]['tx_naworkuri_masterDomain']) > 0) {

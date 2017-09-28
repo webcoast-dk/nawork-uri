@@ -71,7 +71,6 @@ class ConfigurationUtilityTest extends TestCase
      */
     public function buildConfigurationTest()
     {
-        $this->setUpTransformationServices();
         ConfigurationUtility::registerConfiguration(
             'default',
             'EXT:nawork_uri/Configuration/Url/DefaultConfiguration.xml'
@@ -89,7 +88,6 @@ class ConfigurationUtilityTest extends TestCase
      */
     public function buildConfigurationInheritanceTest()
     {
-        $this->setUpTransformationServices();
         ConfigurationUtility::registerConfiguration(
             'default',
             'EXT:nawork_uri/Configuration/Url/DefaultConfiguration.xml'
@@ -132,7 +130,6 @@ class ConfigurationUtilityTest extends TestCase
      */
     public function buildConfigurationInheritanceChangeTransformationTypeTest()
     {
-        $this->setUpTransformationServices();
         ConfigurationUtility::registerConfiguration(
             'default',
             'EXT:nawork_uri/Configuration/Url/DefaultConfiguration.xml'
@@ -156,7 +153,6 @@ class ConfigurationUtilityTest extends TestCase
      */
     public function buildConfigurationInheritanceLoopTest()
     {
-        $this->setUpTransformationServices();
         ConfigurationUtility::registerConfiguration(
             'default',
             'EXT:nawork_uri/Configuration/Url/DefaultConfiguration.xml'
@@ -174,7 +170,6 @@ class ConfigurationUtilityTest extends TestCase
      */
     public function buildConfigurationInheritanceTwiceTest()
     {
-        $this->setUpTransformationServices();
         ConfigurationUtility::registerConfiguration(
             'default',
             'EXT:nawork_uri/Configuration/Url/DefaultConfiguration.xml'

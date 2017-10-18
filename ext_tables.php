@@ -124,4 +124,5 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
     // add update wizards
     $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/install']['update'][Nawork\NaworkUri\Install\FieldsV2xToV3Wizard::class] = Nawork\NaworkUri\Install\FieldsV2xToV3Wizard::class;
     $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/install']['update'][Nawork\NaworkUri\Install\AssignDomainWizard::class] = Nawork\NaworkUri\Install\AssignDomainWizard::class;
+    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/install']['update'][Nawork\NaworkUri\Install\UpdateCacheHashWizard::class] = Nawork\NaworkUri\Install\UpdateCacheHashWizard::class;
 }

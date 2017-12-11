@@ -28,7 +28,24 @@ class UpdateCacheHashWizard extends AbstractUpdate
         $explanation = sprintf('There are %d urls that contain a cHash parameter.', $count);
 
         if ($count === 0) {
-            $this->markWizardAsDone();
+            $fieldsStatement = $connection->query('SHOW FIELDS FROM `tx_naworkuri_uri`');
+            $hasOldParamsField = false;
+            foreach ($fieldsStatement as $row) {
+                if ($row['Field'] === 'params') {
+                    $hasOldParamsField = true;
+                    break;
+                }
+            }
+            if ($hasOldParamsField) {
+                $query->where(
+                    $query->expr()->like('params', $query->quote('%cHash=%', \PDO::PARAM_STR))
+                );
+                $count = $query->execute()->fetchColumn(0);
+                if ($count === 0) {
+                    // if $count is still no, we can mark this done. Otherwise, this is an indication, that the migration to the new fields has not occurred yet, so we should just skip this one.
+                    $this->markWizardAsDone();
+                }
+            }
 
             return false;
         }

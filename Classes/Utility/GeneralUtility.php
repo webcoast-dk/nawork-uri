@@ -278,8 +278,8 @@ class GeneralUtility {
 		}
 
 		$prefix = '/';
-		if (!empty($GLOBALS['TSFE']->config['config']['absRefPrefix'])) {
-			$prefix = $GLOBALS['TSFE']->config['config']['absRefPrefix'];
+		if (!empty($GLOBALS['TSFE']->absRefPrefix)) {
+			$prefix = $GLOBALS['TSFE']->absRefPrefix;
 		}
 
 		return $prefix . $url;

@@ -3,8 +3,6 @@
 namespace Nawork\NaworkUri\Install;
 
 
-use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Install\Updates\AbstractUpdate;
 
 class FieldsV2xToV3Wizard extends AbstractUpdate
@@ -17,25 +15,11 @@ class FieldsV2xToV3Wizard extends AbstractUpdate
             return false;
         }
 
-        $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('tx_naworkuri_uri');
-        $query = $connection->createQueryBuilder()->count('*')->from('tx_naworkuri_uri');
-        $query->getRestrictions()->removeAll();
-        $count = $query->where(
-            $query->expr()->orX(
-                $query->expr()->andX(
-                    'params!=""',
-                    'parameters=""'
-                ),
-                $query->expr()->andX(
-                    'hash_path!=""',
-                    'path_hash=""'
-                ),
-                $query->expr()->andX(
-                    'hash_params!=""',
-                    'parameters_hash=""'
-                )
-            )
-        )->execute()->fetchColumn(0);
+        $count = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows(
+            '*',
+            'tx_naworkuri_uri',
+            '(params!="" AND parameters="") OR (hash_path!="" AND path_hash="") OR (hash_params!="" AND parameters_hash="")'
+        );
         $explanation = sprintf('There are %d urls to be migrated to the new database structure.', $count);
 
         if ($count === 0) {
@@ -51,42 +35,29 @@ class FieldsV2xToV3Wizard extends AbstractUpdate
     {
         $result = true;
         $changedRows = 0;
-        $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('tx_naworkuri_uri');
-        $query = $connection->createQueryBuilder()
-            ->select('uid', 'params', 'hash_path', 'hash_params')
-            ->from('tx_naworkuri_uri');
-        $query->getRestrictions()->removeAll();
-        $query->where(
-            $query->expr()->orX(
-                $query->expr()->andX(
-                    'params!=""',
-                    'parameters=""'
-                ),
-                $query->expr()->andX(
-                    'hash_path!=""',
-                    'path_hash=""'
-                ),
-                $query->expr()->andX(
-                    'hash_params!=""',
-                    'parameters_hash=""'
-                )
-            )
+        $errors = array();
+        $queryResult = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
+            'uid, params, hash_path, hash_params',
+            'tx_naworkuri_uri',
+            '(params!="" AND parameters="") OR (hash_path!="" AND path_hash="") OR (hash_params!="" AND parameters_hash="")'
         );
-        if ($statement = $query->execute()) {
-            $statement->setFetchMode(\PDO::FETCH_ASSOC);
-            foreach ($statement as $record) {
+        if ($queryResult) {
+            while ($record = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($queryResult)) {
                 try {
-                    $updateQuery = $connection->createQueryBuilder()->update('tx_naworkuri_uri')
-                        ->set('parameters', $record['params'])
-                        ->set('path_hash', $record['hash_path'])
-                        ->set('parameters_hash', $record['hash_params'])
-                        ->where('uid=' . (int)$record['uid']);
-                    $databaseQueries[] = $updateQuery->getSQL();
-                    $affectedRows = $updateQuery->execute();
-                    if ($affectedRows === 1) {
+                    $updateResult = $GLOBALS['TYPO3_DB']->exec_UPDATEquery(
+                        'tx_naworkuri_uri',
+                        'uid=' . (int)$record['uid'],
+                        [
+                            'parameters' => $record['params'],
+                            'path_hash' => $record['hash_path'],
+                            'parameters_hash' => $record['hash_params']
+                        ]
+                    );
+                    if ($updateResult === true) {
                         ++$changedRows;
                     } else {
                         $result = false;
+                        $errors[] = $GLOBALS['TYPO3_DB']->sql_error();
                     }
                 } catch (\Exception $e) {
                     $result = false;
@@ -110,19 +81,5 @@ class FieldsV2xToV3Wizard extends AbstractUpdate
         }
 
         return $result;
-    }
-
-    private function getNewLayoutValue($oldValue)
-    {
-        switch ($oldValue) {
-            case 1:
-                return 'typo3_base_setup__igcitysued_resources-homepage';
-            case 2:
-                return 'typo3_base_setup__igcitysued_resources-2columns';
-            case 3:
-                return 'typo3_base_setup__igcitysued_resources-1column';
-            default:
-                return '';
-        }
     }
 }

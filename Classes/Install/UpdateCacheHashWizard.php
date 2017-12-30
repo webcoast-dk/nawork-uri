@@ -3,7 +3,6 @@
 namespace Nawork\NaworkUri\Install;
 
 
-use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Page\CacheHashCalculator;
 use TYPO3\CMS\Install\Updates\AbstractUpdate;
@@ -18,31 +17,22 @@ class UpdateCacheHashWizard extends AbstractUpdate
             return false;
         }
 
-        /** @var \TYPO3\CMS\Core\Database\Connection $connection */
-        $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('tx_naworkuri_uri');
-        $query = $connection->createQueryBuilder()->count('*')->from('tx_naworkuri_uri');
-        $query->getRestrictions()->removeAll();
-        $count = $query->where(
-            $query->expr()->like('parameters', $query->quote('%cHash=%', \PDO::PARAM_STR))
-        )->execute()->fetchColumn(0);
+        $count = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('*', 'tx_naworkuri_uri', 'parameters LIKE "%cHash=%"');
         $explanation = sprintf('There are %d urls that contain a cHash parameter.', $count);
 
         if ($count === 0) {
-            $fieldsStatement = $connection->query('SHOW FIELDS FROM `tx_naworkuri_uri`');
+            $fieldsResult = $GLOBALS['TYPO3_DB']->query('SHOW FIELDS FROM `tx_naworkuri_uri`');
             $hasOldParamsField = false;
-            foreach ($fieldsStatement as $row) {
+            while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($fieldsResult)) {
                 if ($row['Field'] === 'params') {
                     $hasOldParamsField = true;
                     break;
                 }
             }
             if ($hasOldParamsField) {
-                $query->where(
-                    $query->expr()->like('params', $query->quote('%cHash=%', \PDO::PARAM_STR))
-                );
-                $count = $query->execute()->fetchColumn(0);
+                $count = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('*', 'tx_naworkuri_uri', 'params LIKE "%cHash=%"');
                 if ($count === 0) {
-                    // if $count is still no, we can mark this done. Otherwise, this is an indication, that the migration to the new fields has not occurred yet, so we should just skip this one.
+                    // if $count is still 0, we can mark this done. Otherwise, this is an indication, that the migration to the new fields has not occurred yet, so we should just skip this one.
                     $this->markWizardAsDone();
                 }
             }
@@ -57,26 +47,23 @@ class UpdateCacheHashWizard extends AbstractUpdate
     {
         $result = true;
         $changedRows = 0;
-        $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('tx_naworkuri_uri');
-        $query = $connection->createQueryBuilder()
-            ->select('uid', 'page_uid', 'sys_language_uid', 'parameters')
-            ->from('tx_naworkuri_uri');
-        $query->getRestrictions()->removeAll();
-        $query->where(
-            $query->expr()->like('parameters', $query->quote('%cHash=%', \PDO::PARAM_STR))
+        $queryResult = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
+            'uid, page_uid, sys_language_uid, parameters',
+            'tx_naworkuri_uri',
+            'parameters LIKE "%cHash=%"'
         );
         $errors = [];
-        if ($statement = $query->execute()) {
-            $statement->setFetchMode(\PDO::FETCH_ASSOC);
-
-		    $cacheHashCalculator = GeneralUtility::makeInstance(CacheHashCalculator::class);
-            foreach ($statement as $url) {
+        if ($queryResult) {
+            $cacheHashCalculator = GeneralUtility::makeInstance(CacheHashCalculator::class);
+            while ($url = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($queryResult)) {
                 try {
-                    $parametersAsArray = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters($url['parameters']);
+                    $parametersAsArray = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters(
+                        $url['parameters']
+                    );
                     $parametersAsArray['id'] = $url['page_uid'];
                     $parametersAsArray['L'] = $url['sys_language_uid'];
                     $cacheHash = $cacheHashCalculator->generateForParameters(
-                        \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parametersAsArray, FALSE)
+                        \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters($parametersAsArray, false)
                     );
                     if ($parametersAsArray['cHash'] !== $cacheHash) {
                         unset($parametersAsArray['id']);
@@ -84,17 +71,18 @@ class UpdateCacheHashWizard extends AbstractUpdate
                         $parametersAsArray['cHash'] = $cacheHash;
                         $parameterString = \Nawork\NaworkUri\Utility\GeneralUtility::implode_parameters(
                             $parametersAsArray,
-                            FALSE
+                            false
                         );
-                        $affectedRows = $connection->update(
+                        $updateResult = $GLOBALS['TYPO3_DB']->exec_UPDATEquery(
                             'tx_naworkuri_uri',
-                            ['parameters' => $parameterString, 'parameters_hash' => md5($parameterString)],
-                            ['uid' => $url['uid']]
+                            'uid=' . (int)$url['uid'],
+                            ['parameters' => $parameterString, 'parameters_hash' => md5($parameterString)]
                         );
-                        if ($affectedRows === 1) {
+                        if ($updateResult === true) {
                             ++$changedRows;
                         } else {
                             $result = false;
+                            $errors[] = $GLOBALS['TYPO3_DB']->sql_error();
                         }
                     }
                 } catch (\Exception $e) {

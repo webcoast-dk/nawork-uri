@@ -426,6 +426,16 @@ Number.prototype.forceInRange = function(minimum, maximum) {
             this.$element.on('delete', function(ev, uid) {
                 var _this = $(this).data('urlModule');
                 var $row = _this.$element.find('[data-uid="' + uid + '"]').first();
+                var data = {};
+                if (_this.urls.delete.indexOf('redirect') >= 0) {
+                    data.tx_naworkuri_naworkuri_naworkuriredirect = {
+                        url: uid
+                    }
+                } else {
+                    data.tx_naworkuri_naworkuri_naworkuriuri = {
+                        url: uid
+                    }
+                }
                 if ($row && $row.length === 1) {
                     var $url = $row.find('.urlTable__column--text').first();
                     if ($url && $url.length === 1) {
@@ -438,11 +448,7 @@ Number.prototype.forceInRange = function(minimum, maximum) {
                             top.TYPO3.Modal.dismiss();
                             $.ajax({
                                 url: _this.urls.delete,
-                                data: {
-                                    tx_naworkuri_naworkuri_naworkuriuri: {
-                                        url: uid
-                                    }
-                                },
+                                data: data,
                                 success: function () {
                                     // just reload the urls
                                     _this.loadUrls();

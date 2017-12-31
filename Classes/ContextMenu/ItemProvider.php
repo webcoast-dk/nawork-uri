@@ -21,6 +21,23 @@ class ItemProvider extends AbstractProvider
             'callbackAction' => 'unlockUrl',
             'additionalAttributes' => ['data-callback-module' => 'TYPO3/CMS/NaworkUri/ContextMenuActions']
         ],
+        'divider1' => [
+            'type' => 'divider'
+        ],
+        'edit' => [
+            'label' => 'LLL:EXT:lang/Resources/Private/Language/locallang_core.xlf:cm.edit',
+            'iconIdentifier' => 'actions-open',
+            'callbackAction' => 'editRecord'
+        ],
+        'divider2' => [
+            'type' => 'divider'
+        ],
+        'delete' => [
+            'label' => 'LLL:EXT:lang/Resources/Private/Language/locallang_core.xlf:cm.delete',
+            'iconIdentifier' => 'actions-edit-delete',
+            'callbackAction' => 'delete',
+            'additionalAttributes' => ['data-callback-module' => 'TYPO3/CMS/NaworkUri/ContextMenuActions']
+        ],
         'deleteSelected' => [
             'label' => 'LLL:EXT:nawork_uri/Resources/Private/Language/locallang.xlf:clickMenu.deleteSelected',
             'iconIdentifier' => 'actions-edit-delete',
@@ -50,6 +67,7 @@ class ItemProvider extends AbstractProvider
      *
      * @param string $itemName
      * @param string $type
+     *
      * @return bool
      */
     protected function canRender(string $itemName, string $type): bool
@@ -58,27 +76,28 @@ class ItemProvider extends AbstractProvider
             return false;
         }
 
-        if ($itemName === 'lock' || $itemName === 'unlock') {
-            $record = BackendUtility::getRecord($this->table, $this->identifier);
-            if ((int)$record['type'] !== 0) {
-                return false;
+        if ($this->backendUser->check('tables_modify', $this->table)) {
+            if ($itemName === 'lock' || $itemName === 'unlock') {
+                $record = BackendUtility::getRecord($this->table, $this->identifier);
+                if ((int)$record['type'] !== 0) {
+                    return false;
+                }
+
+                return ($itemName === 'lock') ? (int)$record['locked'] === 0 : (int)$record['locked'] === 1;
+            } elseif ($itemName === 'deleteSelected') {
+                // only show "delete selected" option if there are multiple records selected
+                return $this->context === 'multiple';
             }
 
-            return ($itemName === 'lock') ? (int)$record['locked'] === 0 : (int)$record['locked'] === 1;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     public function addItems(array $items): array
     {
-        $items = parent::addItems($items);
-        if (isset($items['delete'])) {
-            $items['delete']['callbackAction'] = 'delete';
-            $items['delete']['additionalAttributes'] = ['data-callback-module' => 'TYPO3/CMS/NaworkUri/ContextMenuActions'];
-        }
-
-        return $items;
+        return $this->prepareItems($this->itemsConfiguration);
     }
 
     protected function getAdditionalAttributes(string $itemName): array

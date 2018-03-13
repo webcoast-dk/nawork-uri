@@ -217,7 +217,7 @@ class UrlController implements SingletonInterface {
 					}
 					\Nawork\NaworkUri\Utility\GeneralUtility::sendRedirect($uri, $redirectStatus);
 				}
-			} elseif ($configuration instanceof Configuration && count(GeneralUtility::_GP('TSFE_ADMIN_PANEL')) == 0 && $GLOBALS['TSFE']->siteScript) {
+			} elseif ($configuration instanceof Configuration && empty(GeneralUtility::_GP('TSFE_ADMIN_PANEL')) && $GLOBALS['TSFE']->siteScript) {
 				list($path, $params) = explode('?', $GLOBALS['TSFE']->siteScript);
 				$params = rawurldecode(html_entity_decode($params)); // decode the query string because it is expected by the further processing functions
 				$translator = GeneralUtility::makeInstance(TransformationUtility::class);

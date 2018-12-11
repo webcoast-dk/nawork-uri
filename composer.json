@@ -1,5 +1,5 @@
 {
-	"name": "nawork/nawork-uri",
+	"name": "webcoast/nawork-uri",
 	"description": "A modern, flexible extension for creating and managing urls and redirects in the TYPO3 CMS.",
 	"autoload": {
 		"psr-4": {

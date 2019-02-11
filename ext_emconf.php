@@ -28,13 +28,13 @@ $EM_CONF[$_EXTKEY] = array(
 	'clearcacheonload' => 0,
 	'lockType' => '',
 	'author' => 'Thorben Nissen',
-	'author_email' => 'thorben@work.de',
+	'author_email' => 'thorben.nissen@kapp-hamburg.de',
 	'author_company' => 'n@work',
 	'CGLcompliance' => '',
 	'CGLcompliance_note' => '',
 	'constraints' => array(
 		'depends' => array(
-			'typo3' => '7.6.0-8.99.99',
+			'typo3' => '8.4.0-9.5.99',
 			'extbase' => '',
 			'fluid' => '',
 		),

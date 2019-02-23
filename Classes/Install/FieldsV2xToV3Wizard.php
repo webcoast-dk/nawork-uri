@@ -17,31 +17,42 @@ class FieldsV2xToV3Wizard extends AbstractUpdate
             return false;
         }
 
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_naworkuri_uri');
-        $queryBuilder->count('uid')->from('tx_naworkuri_uri')->where($queryBuilder->expr()->orX(
-            $queryBuilder->expr()->andX(
-                $queryBuilder->expr()->neq('params', ''),
-                $queryBuilder->expr()->eq('parameters', '')
-            ),
-            $queryBuilder->expr()->andX(
-                $queryBuilder->expr()->neq('hash_path', ''),
-                $queryBuilder->expr()->eq('path_hash', '')
-            ),
-            $queryBuilder->expr()->andX(
-                $queryBuilder->expr()->neq('hash_params', ''),
-                $queryBuilder->expr()->eq('parameters_hash', '')
-            )
-        ));
-        $count = $queryBuilder->execute()->fetchColumn(0);
-        $explanation = sprintf('There are %d urls to be migrated to the new database structure.', $count);
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('tx_naworkuri_uri');
+        $hasOldFields = false;
+        foreach ($connection->getSchemaManager()->listTableColumns('tx_naworkuri_uri') as $field) {
+            if (in_array($field->getName(), ['params', 'hash_path', 'hash_params'])) {
+                $hasOldFields = true;
+            }
+        }
+        if ($hasOldFields) {
+            $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_naworkuri_uri');
+            $queryBuilder->count('uid')->from('tx_naworkuri_uri')->where($queryBuilder->expr()->orX(
+                $queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->neq('params', ''),
+                    $queryBuilder->expr()->eq('parameters', '')
+                ),
+                $queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->neq('hash_path', ''),
+                    $queryBuilder->expr()->eq('path_hash', '')
+                ),
+                $queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->neq('hash_params', ''),
+                    $queryBuilder->expr()->eq('parameters_hash', '')
+                )
+            ));
+            $count = $queryBuilder->execute()->fetchColumn(0);
+            $explanation = sprintf('There are %d urls to be migrated to the new database structure.', $count);
 
-        if ($count === 0) {
-            $this->markWizardAsDone();
+            if ($count === 0) {
+                $this->markWizardAsDone();
 
-            return false;
+                return false;
+            }
+
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     public function performUpdate(array &$databaseQueries, &$customOutput)

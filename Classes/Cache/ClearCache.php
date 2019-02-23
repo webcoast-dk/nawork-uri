@@ -20,14 +20,10 @@ class ClearCache
     {
         $response = GeneralUtility::makeInstance(Response::class);
         if ($GLOBALS['BE_USER']->isAdmin() || $GLOBALS['BE_USER']->getTSConfigVal('options.clearCache.urls')) {
-            if (VersionNumberUtility::convertVersionNumberToInteger(VersionNumberUtility::getCurrentTypo3Version()) < VersionNumberUtility::convertVersionNumberToInteger('9.5.0')) {
-                $GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_naworkuri_uri', '', ['tstamp' => 0], ['tstamp']);
-            } else {
-                $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_naworkuri_uri');
-                $queryBuilder->update('tx_naworkuri_uri')
-                    ->set('tstamp', 0)
-                    ->execute();
-            }
+            $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_naworkuri_uri');
+            $queryBuilder->update('tx_naworkuri_uri')
+                ->set('tstamp', 0)
+                ->execute();
             $response->withStatus(200);
         } else {
             $response->withStatus(403);

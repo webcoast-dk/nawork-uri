@@ -1,6 +1,7 @@
 <?php
 
 namespace Nawork\NaworkUri\Controller;
+
 use Nawork\NaworkUri\Backend\Template\Components\Menu\Menu;
 use Nawork\NaworkUri\Domain\Model\Domain;
 use Nawork\NaworkUri\Domain\Model\Filter;
@@ -9,12 +10,15 @@ use Nawork\NaworkUri\Domain\Model\Url;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Backend\View\BackendTemplateView;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\DatabaseConnection;
 use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Messaging\AbstractMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
+use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
+use TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException;
 use TYPO3\CMS\Extbase\Property\TypeConverter\PersistentObjectConverter;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Fluid\View\TemplateView;
@@ -24,41 +28,42 @@ use TYPO3\CMS\Fluid\View\TemplateView;
  *
  * @author thorben
  */
-class UrlController extends AbstractController {
+class UrlController extends AbstractController
+{
 
-	/**
-	 *
-	 * @var int
-	 */
-	protected $pageId;
+    /**
+     *
+     * @var int
+     */
+    protected $pageId;
 
     protected $pageRootIds = [];
 
-	/**
-	 *
-	 * @var \Nawork\NaworkUri\Domain\Repository\UrlRepository
-	 * @inject
-	 */
-	protected $urlRepository;
+    /**
+     *
+     * @var \Nawork\NaworkUri\Domain\Repository\UrlRepository
+     * @inject
+     */
+    protected $urlRepository;
 
-	/**
-	 *
-	 * @var \Nawork\NaworkUri\Domain\Repository\DomainRepository
-	 * @inject
-	 */
-	protected $domainRepository;
+    /**
+     *
+     * @var \Nawork\NaworkUri\Domain\Repository\DomainRepository
+     * @inject
+     */
+    protected $domainRepository;
 
-	/**
-	 *
-	 * @var \Nawork\NaworkUri\Domain\Repository\LanguageRepository
-	 * @inject
-	 */
-	protected $languageRepository;
+    /**
+     *
+     * @var \Nawork\NaworkUri\Domain\Repository\LanguageRepository
+     * @inject
+     */
+    protected $languageRepository;
 
-	/**
-	 * @var DatabaseConnection
-	 */
-	protected $databaseConnection;
+    /**
+     * @var DatabaseConnection
+     */
+    protected $databaseConnection;
 
     /**
      * @var \TYPO3\CMS\Extbase\Service\ExtensionService
@@ -66,21 +71,25 @@ class UrlController extends AbstractController {
      */
     protected $extensionService;
 
-	protected $userSettingsKey = 'tx_naworkuri_moduleUrl';
+    protected $userSettingsKey = 'tx_naworkuri_moduleUrl';
 
     public function __construct()
     {
         parent::__construct();
-        $this->databaseConnection = $GLOBALS['TYPO3_DB'];
         $this->pageId = intval(GeneralUtility::_GP('id'));
         $pageRoots = $this->determineRootPages($this->pageId);
-        foreach($pageRoots as $page) {
+        foreach ($pageRoots as $page) {
             $this->pageRootIds[] = $page['uid'];
         }
     }
 
-    public function initializeAction() {
-		parent::initializeAction();
+    /**
+     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\InvalidArgumentNameException
+     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException
+     */
+    public function initializeAction()
+    {
+        parent::initializeAction();
 
         if (!$this->request->hasArgument('filter')) {
             /** @var Filter $filter */
@@ -92,26 +101,19 @@ class UrlController extends AbstractController {
             $this->request->setArgument('filter', $filter);
         }
 
-//		if ($this->pageRenderer instanceof PageRenderer) {
-//			$this->pageRenderer->addInlineLanguageLabelFile('EXT:nawork_uri/Resources/Private/Language/locallang_mod_url.xml', '', '', 2);
-//			$this->pageRenderer->addInlineLanguageLabel('header_module', 'foo');
-//			$this->pageRenderer->addJsFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/jquery.urlModule.js');
-//			$this->pageRenderer->addJsFile(ExtensionManagementUtility::extRelPath('nawork_uri') . 'Resources/Public/JavaScript/urlModule.js');
-//		}
-
         if ($this->arguments->hasArgument('filter')) {
             $this->arguments->getArgument('filter')->getPropertyMappingConfiguration()->allowAllProperties();
             $this->arguments->getArgument('filter')->getPropertyMappingConfiguration()->setTypeConverterOption(PersistentObjectConverter::class, PersistentObjectConverter::CONFIGURATION_CREATION_ALLOWED, true);
         }
-	}
+    }
 
     protected function initializeView(ViewInterface $view)
     {
         parent::initializeView($view);
 
         if ($view instanceof BackendTemplateView) {
-            $this->view->getModuleTemplate()->getPageRenderer()->addCssFile('../typo3conf/ext/nawork_uri/Resources/Public/CSS/styles.css' ,'stylesheet', 'all', '', false, false, '', true);
-            $this->view->getModuleTemplate()->getPageRenderer()->addJsFile('../typo3conf/ext/nawork_uri/Resources/Public/JavaScript/script.js' ,'text/javascript', false, false, '', true);
+            $this->view->getModuleTemplate()->getPageRenderer()->addCssFile('../typo3conf/ext/nawork_uri/Resources/Public/CSS/styles.css', 'stylesheet', 'all', '', false, false, '', true);
+            $this->view->getModuleTemplate()->getPageRenderer()->addJsFile('../typo3conf/ext/nawork_uri/Resources/Public/JavaScript/script.js', 'text/javascript', false, false, '', true);
             if (VersionNumberUtility::convertVersionNumberToInteger(VersionNumberUtility::getCurrentTypo3Version()) <= 8005000) {
                 $this->view->assign('includeRequireJsModules', ['TYPO3/CMS/Backend/ClickMenu']);
                 $this->view->assign('menu', 'ClickMenu');
@@ -155,21 +157,23 @@ class UrlController extends AbstractController {
             }
             $this->view->assign('moduleParameterPrefix', $this->extensionService->getPluginNamespace($this->request->getControllerExtensionName(), $this->request->getPluginName()));
         }
-
     }
 
     /**
      * @param Filter $filter
+     *
+     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\StopActionException
      */
-	public function indexUrlsAction(Filter $filter) {
-	    $forwardToMessage = false;
-		if (!$filter->getDomain() instanceof Domain) {
-		    $this->addFlashMessage('Please configure your domain records correctly. You need at least one domain record without a master domain.', 'Missing or faulty domain records', AbstractMessage::ERROR);
-		    $forwardToMessage = true;
+    public function indexUrlsAction(Filter $filter)
+    {
+        $forwardToMessage = false;
+        if (!$filter->getDomain() instanceof Domain) {
+            $this->addFlashMessage('Please configure your domain records correctly. You need at least one domain record without a master domain.', 'Missing or faulty domain records', AbstractMessage::ERROR);
+            $forwardToMessage = true;
         } elseif (!$this->pageId > 0) {
-		    $this->addFlashMessage('Please select a page from the page tree on the left', 'Select page', AbstractMessage::INFO);
-		    $forwardToMessage = true;
-		}
+            $this->addFlashMessage('Please select a page from the page tree on the left', 'Select page', AbstractMessage::INFO);
+            $forwardToMessage = true;
+        }
         if ($forwardToMessage) {
             $this->forward('message');
         }
@@ -180,8 +184,11 @@ class UrlController extends AbstractController {
                 'labels' => $this->buildLabelsObject()
             ]
         );
-	}
+    }
 
+    /**
+     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException
+     */
     public function initializeIndexRedirectsAction()
     {
         if ($this->request->hasArgument('pageId')) {
@@ -190,110 +197,118 @@ class UrlController extends AbstractController {
         if (empty($this->pageId)) {
             $this->pageId = $this->userSettings['pageRoot'];
         }
-	}
+    }
 
     /**
-     * @param \Nawork\NaworkUri\Domain\Model\Filter $filter
+     * @param Filter $filter
+     *
+     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\StopActionException
      */
-	public function indexRedirectsAction(Filter $filter) {
-	    if (!$filter->getDomain() instanceof Domain) {
-		    $this->addFlashMessage('Please configure your domain records correctly. You need at least one domain record without a master domain.', 'Missing or faulty domain records', AbstractMessage::ERROR);
-		    $this->forward('message');
+    public function indexRedirectsAction(Filter $filter)
+    {
+        if (!$filter->getDomain() instanceof Domain) {
+            $this->addFlashMessage('Please configure your domain records correctly. You need at least one domain record without a master domain.', 'Missing or faulty domain records', AbstractMessage::ERROR);
+            $this->forward('message');
         }
-		$this->setUserSettings('pageRoot', $this->pageId);
-		$this->view->assignMultiple(
+        $this->setUserSettings('pageRoot', $this->pageId);
+        $this->view->assignMultiple(
             [
                 'filter' => json_encode($filter),
                 'userSettings' => json_encode($this->userSettings),
                 'labels' => $this->buildLabelsObject()
             ]
         );
-	}
+    }
 
-    public function messageAction() {
-
-	}
+    public function messageAction()
+    {
+    }
 
     public function initializeLoadUrlsAction()
     {
         $this->defaultViewObjectName = TemplateView::class;
-	}
-
-	/**
-	 *
-     * @param \Nawork\NaworkUri\Domain\Model\Filter $filter
-	 *
-	 * @return string
-	 */
-	public function loadUrlsAction(Filter $filter) {
-		$this->view->assign('urls', $this->urlRepository->findUrlsByFilter($filter));
-		$tsConfig = BackendUtility::getPagesTSconfig($this->pageId);
-		if(is_array($tsConfig) && !empty($tsConfig['mod.']['SHARED.']['defaultLanguageLabel'])) {
-			$this->view->assign('defaultLanguage', array('label' => $tsConfig['mod.']['SHARED.']['defaultLanguageLabel'], 'flag' => $tsConfig['mod.']['SHARED.']['defaultLanguageFlag']));
-		}
-		$count = $this->urlRepository->countUrlsByFilter($filter);
-        $maxPages = $count > 0 ? (int)($count / 100 + 1): 0;
-        $end = ($filter->getOffset() + 1) * 100;
-        if (!($filter->getOffset() < $maxPages - 1)) {
-            $end -= (100 - $count % 100);
-        } elseif ($count < 100) {
-            $end = $count;
-        }
-        return json_encode(
-            array(
-                'html' => $this->view->render(),
-                'count' => $count,
-                'start' => $count > 0 ? $filter->getOffset() * 100 + 1 : 0,
-                'end' => $end,
-                'page' => $count > 0 ? $filter->getOffset() : 0,
-                'pagesMax' => $maxPages
-            )
-        );
-	}
-
-	public function initializeLoadRedirectsAction()
-    {
-        $this->defaultViewObjectName = TemplateView::class;
-	}
+    }
 
     /**
-     * @param \Nawork\NaworkUri\Domain\Model\Filter $filter
+     *
+     * @param Filter $filter
      *
      * @return string
      */
-	public function loadRedirectsAction(Filter $filter) {
-	    $this->view->assign('urls', $this->urlRepository->findRedirectsByFilter($filter));
-		$count = $this->urlRepository->countRedirectsByFilter($filter);
-        $maxPages = $count > 0 ? (int)($count / 100 + 1): 0;
+    public function loadUrlsAction(Filter $filter)
+    {
+        $this->view->assign('urls', $this->urlRepository->findUrlsByFilter($filter));
+        $tsConfig = BackendUtility::getPagesTSconfig($this->pageId);
+        if (is_array($tsConfig) && !empty($tsConfig['mod.']['SHARED.']['defaultLanguageLabel'])) {
+            $this->view->assign('defaultLanguage', ['label' => $tsConfig['mod.']['SHARED.']['defaultLanguageLabel'], 'flag' => $tsConfig['mod.']['SHARED.']['defaultLanguageFlag']]);
+        }
+        $count = $this->urlRepository->countUrlsByFilter($filter);
+        $maxPages = $count > 0 ? (int)($count / 100 + 1) : 0;
         $end = ($filter->getOffset() + 1) * 100;
         if (!($filter->getOffset() < $maxPages - 1)) {
             $end -= (100 - $count % 100);
         } elseif ($count < 100) {
             $end = $count;
         }
+
         return json_encode(
-            array(
+            [
                 'html' => $this->view->render(),
                 'count' => $count,
                 'start' => $count > 0 ? $filter->getOffset() * 100 + 1 : 0,
                 'end' => $end,
                 'page' => $count > 0 ? $filter->getOffset() : 0,
                 'pagesMax' => $maxPages
-            )
+            ]
         );
-	}
+    }
 
-	/**
-	 *
-	 * @param \Nawork\NaworkUri\Domain\Model\Url $url
-	 * @param boolean $includeAddOption
-     * @param string  $returnUrl
-	 */
-	public function contextMenuAction($url, $includeAddOption = FALSE,  $returnUrl = '') {
-		$this->view->assign('url', $url);
-		$this->view->assign('includeAddOption', $includeAddOption);
+    public function initializeLoadRedirectsAction()
+    {
+        $this->defaultViewObjectName = TemplateView::class;
+    }
+
+    /**
+     * @param Filter $filter
+     *
+     * @return string
+     */
+    public function loadRedirectsAction(Filter $filter)
+    {
+        $this->view->assign('urls', $this->urlRepository->findRedirectsByFilter($filter));
+        $count = $this->urlRepository->countRedirectsByFilter($filter);
+        $maxPages = $count > 0 ? (int)($count / 100 + 1) : 0;
+        $end = ($filter->getOffset() + 1) * 100;
+        if (!($filter->getOffset() < $maxPages - 1)) {
+            $end -= (100 - $count % 100);
+        } elseif ($count < 100) {
+            $end = $count;
+        }
+
+        return json_encode(
+            [
+                'html' => $this->view->render(),
+                'count' => $count,
+                'start' => $count > 0 ? $filter->getOffset() * 100 + 1 : 0,
+                'end' => $end,
+                'page' => $count > 0 ? $filter->getOffset() : 0,
+                'pagesMax' => $maxPages
+            ]
+        );
+    }
+
+    /**
+     *
+     * @param \Nawork\NaworkUri\Domain\Model\Url $url
+     * @param boolean                            $includeAddOption
+     * @param string                             $returnUrl
+     */
+    public function contextMenuAction($url, $includeAddOption = false, $returnUrl = '')
+    {
+        $this->view->assign('url', $url);
+        $this->view->assign('includeAddOption', $includeAddOption);
         $this->view->assign('returnUrl', $returnUrl);
-	}
+    }
 
     /**
      * Set lock state on the given url
@@ -301,6 +316,8 @@ class UrlController extends AbstractController {
      * @param Url $url
      *
      * @return string
+     * @throws UnknownObjectException
+     * @throws IllegalObjectTypeException
      */
     public function lockAction(Url $url)
     {
@@ -308,33 +325,39 @@ class UrlController extends AbstractController {
         $this->urlRepository->update($url);
 
         return '';
-	}
+    }
 
-	/**
-	 * Unset lock state on the given url
-	 *
-	 * @param Url $url
+    /**
+     * Unset lock state on the given url
      *
-	 * @return string
-	 */
-	public function unlockAction(Url $url) {
-		$url->setLocked(false);
-		$this->urlRepository->update($url);
+     * @param Url $url
+     *
+     * @return string
+     * @throws IllegalObjectTypeException
+     * @throws UnknownObjectException
+     */
+    public function unlockAction(Url $url)
+    {
+        $url->setLocked(false);
+        $this->urlRepository->update($url);
 
-		return '';
-	}
+        return '';
+    }
 
-	/**
-	 * Delete a url
-	 *
-	 * @param Url $url
-	 * @return string
-	 */
-	public function deleteAction(Url $url) {
-		$this->urlRepository->remove($url);
+    /**
+     * Delete a url
+     *
+     * @param Url $url
+     *
+     * @return string
+     * @throws IllegalObjectTypeException
+     */
+    public function deleteAction(Url $url)
+    {
+        $this->urlRepository->remove($url);
 
-		return '';
-	}
+        return '';
+    }
 
     /**
      * @param array $uids
@@ -346,14 +369,14 @@ class UrlController extends AbstractController {
         $this->urlRepository->deleteByUids($uids);
 
         return '';
-	}
+    }
 
     private function addPageRootMenu()
     {
         if (count($this->pageRootIds) > 1) {
             $pageRootMenu = $this->view->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->makeMenu();
             $pageRootMenu->setIdentifier('PageRootMenu')->setLabel(LocalizationUtility::translate('menu.pageRoots', 'NaworkUri'));
-            foreach($this->pageRootIds as $rootId) {
+            foreach ($this->pageRootIds as $rootId) {
                 $pageRecord = BackendUtility::getRecord('pages', $rootId);
                 if (is_array($pageRecord)) {
                     $pageRootMenu->addMenuItem(
@@ -366,8 +389,11 @@ class UrlController extends AbstractController {
 
             $this->view->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->addMenu($pageRootMenu);
         }
-	}
+    }
 
+    /**
+     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException
+     */
     private function addDomainMenu()
     {
         // add domain menu
@@ -375,16 +401,16 @@ class UrlController extends AbstractController {
         $domainMenu = GeneralUtility::makeInstance(Menu::class);
         $domainMenu->setIdentifier('DomainMenu')->setLabel(LocalizationUtility::translate('menu.domain', 'NaworkUri'));
         $pageRoots = $this->determineRootPages($this->pageId);
-		$pageIds = array();
-		foreach($pageRoots as $page) {
-			$pageIds[] = $page['uid'];
-		}
+        $pageIds = [];
+        foreach ($pageRoots as $page) {
+            $pageIds[] = $page['uid'];
+        }
         $this->uriBuilder->reset();
         $this->uriBuilder->setRequest($this->request);
         /** @var Filter $filter */
         $filter = $this->arguments->getArgument('filter')->getValue();
-		/** @var Domain $domain */
-        foreach($this->domainRepository->findByRootPage($pageIds) as $domain) {
+        /** @var Domain $domain */
+        foreach ($this->domainRepository->findByRootPage($pageIds) as $domain) {
             $domainMenu->addMenuItem(
                 $domainMenu->makeMenuItem()
                     ->setTitle($domain->getDomainname())
@@ -399,9 +425,9 @@ class UrlController extends AbstractController {
             );
         }
         $this->view->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->addMenu($domainMenu);
-	}
+    }
 
-	private function addTypesMenu()
+    private function addTypesMenu()
     {
         // add types menu
         /** @var Menu $typesMenu */
@@ -419,6 +445,9 @@ class UrlController extends AbstractController {
         $this->view->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->addMenu($typesMenu);
     }
 
+    /**
+     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\NoSuchArgumentException
+     */
     private function addLanguageMenu()
     {
         /** @var Filter $filter */
@@ -439,7 +468,7 @@ class UrlController extends AbstractController {
                 ->setDataAttributes(['language' => 0])
         );
         /** @var Language $language */
-        foreach($this->languageRepository->findAll() as $language) {
+        foreach ($this->languageRepository->findAll() as $language) {
             $languageMenu->addMenuItem(
                 $languageMenu->makeMenuItem()
                     ->setTitle($language->getTitle())
@@ -469,33 +498,27 @@ class UrlController extends AbstractController {
         $this->view->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->addMenu($scopeMenu);
     }
 
-    private function determineRootPages($pid = NULL) {
-		$pageRoots = array();
-		if($pid > 0) {
-			do {
-				$page = $this->databaseConnection->exec_SELECTgetSingleRow('*', 'pages', 'uid=' . (int) $pid);
-				$pid = $page['pid'];
-			} while($page['pid'] != 0);
-			$pageRoots[] = $page;
-		} else {
-			// get page roots
-			$pageRoots = $this->databaseConnection->exec_SELECTgetRows('uid, title', 'pages', 'is_siteroot=1');
+    private function determineRootPages($pid = null)
+    {
+        $pageRoots = [];
+        if ($pid > 0) {
+            do {
+                $page = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('pages')->select(['*'], 'pages', ['uid' => (int)$pid], [], [], 1)->fetch();
+                $pid = $page['pid'];
+            } while ($page['pid'] != 0);
+            $pageRoots[] = $page;
+        } else {
+            // get page roots
+            $pageRoots = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('pages')->select(['uid', 'title'], 'pages', ['is_siteroot' => 1])->fetchAll();
+        }
+        if (!is_array($pageRoots) || empty($pageRoots)) {
+            $pageRoots = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('pages')->select(['uid', 'title'], 'pages', ['pid' => 0], [], ['sorting' => 'asc'])->fetchAll();
+        }
 
-		}
-		if (!is_array($pageRoots) || empty($pageRoots)) {
-			$pageRoots = $this->databaseConnection->exec_SELECTgetRows(
-				'uid, title',
-				'pages',
-				'pid=0',
-				'',
-				'sorting ASC',
-				1
-			);
-		}
-		return $pageRoots;
-	}
+        return $pageRoots;
+    }
 
-	private function buildLabelsObject()
+    private function buildLabelsObject()
     {
         return json_encode(
             [

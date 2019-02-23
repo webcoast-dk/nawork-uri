@@ -3,6 +3,7 @@
 namespace Nawork\NaworkUri\Install;
 
 
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Page\CacheHashCalculator;
 use TYPO3\CMS\Install\Updates\AbstractUpdate;
@@ -17,45 +18,26 @@ class UpdateCacheHashWizard extends AbstractUpdate
             return false;
         }
 
-        $count = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('*', 'tx_naworkuri_uri', 'parameters LIKE "%cHash=%"');
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_naworkuri_uri')
+            ->count('uid')->from('tx_naworkuri_uri');
+        $queryBuilder->where($queryBuilder->expr()->like('parameters', '%cHash=%'));
+        $count = $queryBuilder->execute()->fetchColumn(0);
         $explanation = sprintf('There are %d urls that contain a cHash parameter.', $count);
 
-        if ($count === 0) {
-            $fieldsResult = $GLOBALS['TYPO3_DB']->query('SHOW FIELDS FROM `tx_naworkuri_uri`');
-            $hasOldParamsField = false;
-            while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($fieldsResult)) {
-                if ($row['Field'] === 'params') {
-                    $hasOldParamsField = true;
-                    break;
-                }
-            }
-            if ($hasOldParamsField) {
-                $count = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('*', 'tx_naworkuri_uri', 'params LIKE "%cHash=%"');
-                if ($count === 0) {
-                    // if $count is still 0, we can mark this done. Otherwise, this is an indication, that the migration to the new fields has not occurred yet, so we should just skip this one.
-                    $this->markWizardAsDone();
-                }
-            }
-
-            return false;
-        }
-
-        return true;
+        return $count !== 0;
     }
 
     public function performUpdate(array &$databaseQueries, &$customOutput)
     {
         $result = true;
         $changedRows = 0;
-        $queryResult = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
-            'uid, page_uid, sys_language_uid, parameters',
-            'tx_naworkuri_uri',
-            'parameters LIKE "%cHash=%"'
-        );
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_naworkuri_uri')
+            ->select(['uid', 'page_uid', 'sys_language_uid', 'parameters'])->from('tx_naworkuri_uri');
+        $queryBuilder->where($queryBuilder->expr()->like('parameters', '%cHash=%'));
         $errors = [];
-        if ($queryResult) {
+        if ($statement = $queryBuilder->execute()) {
             $cacheHashCalculator = GeneralUtility::makeInstance(CacheHashCalculator::class);
-            while ($url = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($queryResult)) {
+            foreach ($statement as $url) {
                 try {
                     $parametersAsArray = \Nawork\NaworkUri\Utility\GeneralUtility::explode_parameters(
                         $url['parameters']
@@ -73,17 +55,12 @@ class UpdateCacheHashWizard extends AbstractUpdate
                             $parametersAsArray,
                             false
                         );
-                        $updateResult = $GLOBALS['TYPO3_DB']->exec_UPDATEquery(
-                            'tx_naworkuri_uri',
-                            'uid=' . (int)$url['uid'],
-                            ['parameters' => $parameterString, 'parameters_hash' => md5($parameterString)]
-                        );
-                        if ($updateResult === true) {
-                            ++$changedRows;
-                        } else {
-                            $result = false;
-                            $errors[] = $GLOBALS['TYPO3_DB']->sql_error();
-                        }
+                        $queryBuilder->resetQueryParts();
+                        $queryBuilder->update('tx_naworkuri_uri')
+                            ->set('parameters', $parameterString)
+                            ->set('parameters_hash', md5($parameterString))
+                            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($url['uid'], \PDO::PARAM_INT)));
+                        $changedRows += $queryBuilder->execute();
                     }
                 } catch (\Exception $e) {
                     $result = false;

@@ -2,7 +2,7 @@
 
 namespace Nawork\NaworkUri\Install;
 
-
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Install\Updates\AbstractUpdate;
 
@@ -16,7 +16,16 @@ class AssignDomainWizard extends AbstractUpdate
             return false;
         }
 
-        $count = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('*', 'tx_naworkuri_uri', 'domain="" OR domain=0');
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_naworkuri_uri')
+            ->count('uid')
+            ->from('tx_naworkuri_uri');
+        $queryBuilder->where(
+            $queryBuilder->expr()->orX(
+                $queryBuilder->expr()->eq('domain', $queryBuilder->createNamedParameter('', \PDO::PARAM_STR)),
+                $queryBuilder->expr()->eq('domain', $queryBuilder->createNamedParameter(0, \PDO::PARAM_INT))
+            )
+        );
+        $count = $queryBuilder->execute()->fetchColumn(0);
         $explanation = sprintf('There are %d urls without an assigned domain.', $count);
 
         if ($count === 0) {
@@ -30,13 +39,10 @@ class AssignDomainWizard extends AbstractUpdate
 
     public function getUserInput($inputPrefix)
     {
-        $result = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
-            'uid, domainName',
-            'sys_domain',
-            'tx_naworkuri_masterDomain=\'\''
-        );
-        $domainOptions = array();
-        while ($domainRecord = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($result)) {
+        $statement = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('sys_domain')
+            ->select(['uid', 'domainName'], 'sys_domain', ['tx_naworkuri_masterDomain' => '']);
+        $domainOptions = [];
+        foreach ($statement as $domainRecord) {
             $domainOptions[] = sprintf(
                 '<option value="%d">%s</option>',
                 $domainRecord['uid'],
@@ -45,7 +51,7 @@ class AssignDomainWizard extends AbstractUpdate
         }
         if (count($domainOptions) > 0) {
             return sprintf(
-                '<p>Assign not-assigned domains to the following domain:</p><select name="%s">%s</select>',
+                '<p>Assign not-assigned urls to the following domain:</p><select name="%s">%s</select>',
                 $inputPrefix . '[domain]',
                 implode('', $domainOptions)
             );
@@ -82,18 +88,16 @@ class AssignDomainWizard extends AbstractUpdate
         $result = true;
         $changedRows = 0;
         $requestParameters = GeneralUtility::_GP('install');
-        $errors = array();
+        $errors = [];
         try {
-            $queryResult = $GLOBALS['TYPO3_DB']->exec_UPDATEquery(
-                'tx_naworkuri_uri',
-                'domain=\'\' OR domain=0 OR domain=\'0\'',
-                ['domain' => $requestParameters['values'][$requestParameters['values']['identifier']]['domain']]
-            );
-            if ($queryResult === false) {
-                throw new \Exception($GLOBALS['TYPO3_DB']->sql_error());
-            } else {
-                $changedRows = $GLOBALS['TYPO3_DB']->sql_affected_rows();
-            }
+            $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_naworkuri_uri');
+            $queryBuilder->update('tx_naworkuri_uri')->set('domain', $requestParameters['values'][$requestParameters['values']['identifier']]['domain'])
+                ->where($queryBuilder->expr()->orX(
+                    $queryBuilder->expr()->eq('domain', $queryBuilder->createNamedParameter('', \PDO::PARAM_STR)),
+                    $queryBuilder->expr()->eq('domain', $queryBuilder->createNamedParameter(0, \PDO::PARAM_INT)),
+                    $queryBuilder->expr()->eq('domain', $queryBuilder->createNamedParameter('0', \PDO::PARAM_STR))
+                ));
+            $changedRows = $queryBuilder->execute();
         } catch (\Exception $e) {
             $result = false;
             $errors[] = $e->getMessage();

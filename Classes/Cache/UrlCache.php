@@ -298,7 +298,7 @@ class UrlCache
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($this->tableConfiguration->getUrlTable());
         $queryBuilder->insert($this->tableConfiguration->getUrlTable())->values(
             [
-                'page_uid' => $queryBuilder->createNamedParameter($path, \PDO::PARAM_INT),
+                'page_uid' => $queryBuilder->createNamedParameter($page, \PDO::PARAM_INT),
                 'tstamp' => $queryBuilder->createNamedParameter(time(), \PDO::PARAM_INT),
                 'crdate' => $queryBuilder->createNamedParameter(time(), \PDO::PARAM_INT),
                 'sys_language_uid' => $queryBuilder->createNamedParameter($language, \PDO::PARAM_INT),

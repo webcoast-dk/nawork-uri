@@ -20,7 +20,7 @@ class UpdateCacheHashWizard extends AbstractUpdate
 
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_naworkuri_uri')
             ->count('uid')->from('tx_naworkuri_uri');
-        $queryBuilder->where($queryBuilder->expr()->like('parameters', '%cHash=%'));
+        $queryBuilder->where($queryBuilder->expr()->like('parameters', $queryBuilder->createNamedParameter('%cHash=%', \PDO::PARAM_STR)));
         $count = $queryBuilder->execute()->fetchColumn(0);
         $explanation = sprintf('There are %d urls that contain a cHash parameter.', $count);
 
@@ -33,7 +33,7 @@ class UpdateCacheHashWizard extends AbstractUpdate
         $changedRows = 0;
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_naworkuri_uri')
             ->select(['uid', 'page_uid', 'sys_language_uid', 'parameters'])->from('tx_naworkuri_uri');
-        $queryBuilder->where($queryBuilder->expr()->like('parameters', '%cHash=%'));
+        $queryBuilder->where($queryBuilder->expr()->like('parameters', $queryBuilder->createNamedParameter('%cHash=%', \PDO::PARAM_STR)));
         $errors = [];
         if ($statement = $queryBuilder->execute()) {
             $cacheHashCalculator = GeneralUtility::makeInstance(CacheHashCalculator::class);

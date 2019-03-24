@@ -110,8 +110,8 @@ class TransformationService extends AbstractTransformationService
         } else {
             $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($configuration->getTable());
             $queryBuilder->select('*')->from($configuration->getTable())->where(
-                $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter($pageUid, \PDO::PARAM_INT)),
-                $queryBuilder->expr()->eq('sys_language_uid', $queryBuilder->createNamedParameter($language, \PDO::PARAM_INT))
+                $queryBuilder->expr()->eq($GLOBALS['TCA']['pages']['ctrl']['transOrigPointerField'], $queryBuilder->createNamedParameter($pageUid, \PDO::PARAM_INT)),
+                $queryBuilder->expr()->eq($GLOBALS['TCA']['pages']['ctrl']['languageField'], $queryBuilder->createNamedParameter($language, \PDO::PARAM_INT))
             )->setMaxResults(1);
             $statement = $queryBuilder->execute();
             if ($statement->rowCount() === 1) {

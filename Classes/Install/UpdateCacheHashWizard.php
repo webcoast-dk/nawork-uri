@@ -32,7 +32,7 @@ class UpdateCacheHashWizard extends AbstractUpdate
         $result = true;
         $changedRows = 0;
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_naworkuri_uri')
-            ->select(['uid', 'page_uid', 'sys_language_uid', 'parameters'])->from('tx_naworkuri_uri');
+            ->select('uid', 'page_uid', 'sys_language_uid', 'parameters')->from('tx_naworkuri_uri');
         $queryBuilder->where($queryBuilder->expr()->like('parameters', $queryBuilder->createNamedParameter('%cHash=%', \PDO::PARAM_STR)));
         $errors = [];
         if ($statement = $queryBuilder->execute()) {

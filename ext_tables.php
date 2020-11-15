@@ -69,7 +69,6 @@ if (defined('TYPO3_MODE') && TYPO3_MODE == 'BE') {
 
 	// register command controller for uri testing
 	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = Nawork\NaworkUri\Command\NaworkUriCommandController::class;
-	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = Nawork\NaworkUri\Command\MigrationCommandController::class;
 
     // click menu processing
     if (TYPO3\CMS\Core\Utility\VersionNumberUtility::convertVersionNumberToInteger(TYPO3\CMS\Core\Utility\VersionNumberUtility::getCurrentTypo3Version()) <= 8005000) {

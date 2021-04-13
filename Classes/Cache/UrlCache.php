@@ -9,7 +9,12 @@ use Nawork\NaworkUri\Exception\UrlIsNotUniqueException;
 use Nawork\NaworkUri\Utility\ConfigurationUtility;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
+use TYPO3\CMS\Core\Database\Query\Restriction\EndTimeRestriction;
+use TYPO3\CMS\Core\Database\Query\Restriction\FrontendGroupRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
+use TYPO3\CMS\Core\Database\Query\Restriction\FrontendWorkspaceRestriction;
+use TYPO3\CMS\Core\Database\Query\Restriction\HiddenRestriction;
+use TYPO3\CMS\Core\Database\Query\Restriction\StartTimeRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class UrlCache
@@ -267,7 +272,12 @@ class UrlCache
             );
         $queryBuilder->getRestrictions()->removeAll();
         if (!\Nawork\NaworkUri\Utility\GeneralUtility::isActiveBeUserSession()) {
-            $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(FrontendRestrictionContainer::class));
+            $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
+//            $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(FrontendWorkspaceRestriction::class));
+            $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(HiddenRestriction::class));
+            $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(StartTimeRestriction::class));
+            $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(EndTimeRestriction::class));
+//            $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(FrontendGroupRestriction::class));
         } else {
             $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
         }
